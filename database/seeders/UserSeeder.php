@@ -21,13 +21,14 @@ class UserSeeder extends Seeder
             ['employee_code' => 'EMP0006', 'username' => 'natalia', 'role' => 'karyawan'],
             ['employee_code' => 'EMP0007', 'username' => 'kezia', 'role' => 'karyawan'],
             ['employee_code' => 'EMP0008', 'username' => 'marsya', 'role' => 'karyawan'],
-            ['employee_code' => 'EMP0009', 'username' => 'achmad', 'role' => 'karyawan'],
-            ['employee_code' => 'EMP0010', 'username' => 'fitri', 'role' => 'karyawan'],
-            ['employee_code' => 'EMP0011', 'username' => 'deva', 'role' => 'karyawan'],
-            ['employee_code' => 'EMP0012', 'username' => 'eka', 'role' => 'karyawan'],
-            ['employee_code' => 'EMP0013', 'username' => 'isnaeny', 'role' => 'karyawan'],
-            ['employee_code' => 'EMP0014', 'username' => 'dwiayu', 'role' => 'karyawan'],
-            ['employee_code' => 'EMP0017', 'username' => 'febry', 'role' => 'karyawan'],
+            ['employee_code' => 'EMP0009', 'username' => 'nathania', 'role' => 'karyawan'],
+            ['employee_code' => 'EMP0010', 'username' => 'achmad', 'role' => 'karyawan'],
+            ['employee_code' => 'EMP0011', 'username' => 'fitri', 'role' => 'karyawan'],
+            ['employee_code' => 'EMP0012', 'username' => 'deva', 'role' => 'karyawan'],
+            ['employee_code' => 'EMP0013', 'username' => 'eka', 'role' => 'karyawan'],
+            ['employee_code' => 'EMP0014', 'username' => 'isnaeny', 'role' => 'karyawan'],
+            ['employee_code' => 'EMP0015', 'username' => 'dwiayu', 'role' => 'karyawan'],
+            ['employee_code' => 'EMP0016', 'username' => 'febry', 'role' => 'karyawan'],
         ];
             
         foreach ($users as $data) {
