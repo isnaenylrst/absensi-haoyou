@@ -18,6 +18,7 @@ class ClientVisitFactory extends Factory
         return [
             'employee_id' => Employee::factory(),
             'client_name' => fake()->company(),
+            'address' => fake()->address(),
             'visit_type' => fake()->randomElement(['Les Privat', 'Sales', 'Survei']),
             'latitude' => fake()->latitude(-8.5, -6.0),
             'longitude' => fake()->longitude(106.5, 113.5),

@@ -27,7 +27,7 @@ return new class extends Migration
             $table->string('position', 100)->nullable();
             $table->enum('employee_type', ['tetap', 'part_time']);
             $table->date('join_date');
-            $table->string('id_document_type', 30)->nullable();
+            $table->string('nik', 30)->nullable();
             $table->timestamps();
         });
     }

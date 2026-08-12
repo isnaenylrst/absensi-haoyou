@@ -15,6 +15,7 @@ class ClientVisit extends Model
     protected $fillable = [
         'employee_id',
         'client_name',
+        'address',
         'visit_type',
         'latitude',
         'longitude',

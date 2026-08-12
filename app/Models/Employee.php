@@ -30,7 +30,7 @@ class Employee extends Model
         'position',
         'employee_type',
         'join_date',
-        'id_document_type',
+        'nik',
     ];
 
     protected $casts = [

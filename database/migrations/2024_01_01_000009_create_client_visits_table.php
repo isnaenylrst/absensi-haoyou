@@ -12,11 +12,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete();
             $table->string('client_name', 150);
+            $table->text('address');
             $table->string('visit_type', 50);
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
             $table->decimal('accuracy_m', 8, 2)->nullable();
-            $table->text('photo_url')->nullable();
+            $table->text('photo_url');
             $table->text('notes')->nullable();
             $table->timestamp('visited_at');
             $table->enum('review_status', ['wajar', 'perlu_ditinjau'])->default('wajar');
