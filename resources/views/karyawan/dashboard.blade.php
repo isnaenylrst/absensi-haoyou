@@ -57,19 +57,18 @@
     @stack('styles')
 </head>
 
-<body data-role="owner">
+<body data-role="karyawan">
 
 <div class="app" id="absensiApp">
 
     {{-- =====================================================
-        SIDEBAR (OWNER)
+        SIDEBAR (KARYAWAN)
     ====================================================== --}}
     <aside class="sidebar">
 
         {{-- BRAND --}}
         <div class="brand">
             <img src="{{ asset('assets/img/logo.png') }}" alt="Haoyou" class="logo">
-            {{-- <div class="brand-sub">Absensi &amp; Payroll</div> --}}
         </div>
 
         {{-- NAVIGATION --}}
@@ -80,29 +79,18 @@
                 Beranda
             </a>
 
-            <a href="#" class="nav-item" data-page="karyawan">
-                <i class="fa-solid fa-users nav-ico"></i>
-                Karyawan
-            </a>
-
             {{-- ===== KEHADIRAN (SUBMENU) ===== --}}
             <div class="nav-group open" id="navKehadiran">
                 <div class="nav-item" onclick="toggleGroup()">
                     <i class="fa-solid fa-clock nav-ico"></i>
                     Kehadiran
-                    <span class="nav-badge nav-badge-inline">2</span>
                     <i class="fa-solid fa-chevron-right nav-chevron"></i>
                 </div>
 
                 <div class="nav-sub">
-                    <a href="#" class="nav-sub-item active" data-page="approval">
+                    <a href="#" class="nav-sub-item active" data-page="presensi">
                         <span class="nav-sub-ico"><i class="fa-solid fa-clipboard-check"></i></span>
-                        <span class="nav-sub-label">Approval Presensi</span>
-                        <span class="nav-sub-badge">2</span>
-                    </a>
-                    <a href="#" class="nav-sub-item" data-page="jadwal">
-                        <span class="nav-sub-ico"><i class="fa-solid fa-calendar-days"></i></span>
-                        <span class="nav-sub-label">Jadwal Kerja</span>
+                        <span class="nav-sub-label">Presensi</span>
                     </a>
                     <a href="#" class="nav-sub-item" data-page="izin">
                         <span class="nav-sub-ico"><i class="fa-solid fa-plane-departure"></i></span>
@@ -115,14 +103,9 @@
                 </div>
             </div>
 
-            <a href="#" class="nav-item" data-page="payroll">
+            <a href="#" class="nav-item" data-page="gaji">
                 <i class="fa-solid fa-sack-dollar nav-ico"></i>
-                Payroll
-            </a>
-
-            <a href="#" class="nav-item" data-page="pengaturan">
-                <i class="fa-solid fa-gear nav-ico"></i>
-                Pengaturan
+                Gaji Saya
             </a>
 
             <a href="#" class="nav-item" data-page="faq">
@@ -136,7 +119,7 @@
         <div class="sidebar-foot">
             <div class="role-note">
                 <i class="fa-solid fa-circle-info role-note-ico"></i>
-                <span><b class="mono">Mode Owner</b> &mdash; akses penuh ke seluruh fitur: Karyawan, Approval, Jadwal Kerja, Payroll, dan Pengaturan.</span>
+                <span><b class="mono">Mode Karyawan</b> &mdash; akses presensi, izin/cuti, kunjungan klien, dan gaji milik Anda sendiri.</span>
             </div>
         </div>
 
@@ -147,7 +130,7 @@
     ====================================================== --}}
     <main class="main">
 
-        {{-- TOPBAR --}}
+        {{-- TOPBAR (sama seperti Owner) --}}
         <header class="topbar">
             <div class="org-select">
                 Haoyou Educator
@@ -157,9 +140,8 @@
             <div class="topbar-right">
                 <div class="tb-pill">ID <i class="fa-solid fa-chevron-down"></i></div>
 
-                <div class="tb-icon" title="Approval tertunda">
+                <div class="tb-icon" title="Notifikasi">
                     <i class="fa-solid fa-bell"></i>
-                    <div class="tb-badge">2</div>
                 </div>
 
                 <div class="tb-icon" title="Pengaturan cepat">

@@ -87,4 +87,12 @@ class Employee extends Model
     {
         return $this->hasMany(ThrRecord::class);
     }
+
+    public function initials(): string
+    {
+        $parts = explode(' ', trim($this->full_name));
+        $first = mb_substr($parts[0] ?? '', 0, 1);
+        $second = mb_substr($parts[1] ?? '', 0, 1);
+        return mb_strtoupper($first . $second);
+    }
 }

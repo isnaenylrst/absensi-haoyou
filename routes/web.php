@@ -1,7 +1,8 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Owner\DashboardController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -18,6 +19,19 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/logout', [LoginController::class, 'destroy'])
         ->name('logout');
+
+    // ===== Profil & Ganti Password (semua role) =====
+    Route::get('/profil', [ProfileController::class, 'edit'])
+        ->name('profil.edit');
+
+    Route::put('/profil/password', [ProfileController::class, 'updatePassword'])
+        ->name('profil.password');
+
+    // ===== Edit kontak profil — khusus Owner =====
+    Route::middleware('role:owner')->group(function () {
+        Route::put('/profil', [ProfileController::class, 'update'])
+            ->name('profil.update');
+    });
 });
 
 Route::get('/', fn () => redirect()->route('login'));
