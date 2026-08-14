@@ -36,13 +36,13 @@ class ShiftScheduleSeeder extends Seeder
             'EMP0001' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Owner
             'EMP0002' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Admin
             'EMP0003' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Admin
-            'EMP0009' => ['shift' => $shiftSiang, 'hari' => $hariKerja], // Cleaning Service
-            'EMP0010' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Teacher (tetap)
-            'EMP0011' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Course Consultant
+            'EMP0010' => ['shift' => $shiftSiang, 'hari' => $hariKerja], // Cleaning Service
+            'EMP0011' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Teacher (tetap)
             'EMP0012' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Course Consultant
             'EMP0013' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Course Consultant
-            'EMP0014' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Teacher (tetap)
-            'EMP0017' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Course Consultant
+            'EMP0014' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Course Consultant
+            'EMP0015' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Teacher (tetap)
+            'EMP0016' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Course Consultant
         ];
 
         foreach ($shiftScheduleData as $employeeCode => $data) {
@@ -65,4 +65,4 @@ class ShiftScheduleSeeder extends Seeder
             }
         }
     }
-} 
+}

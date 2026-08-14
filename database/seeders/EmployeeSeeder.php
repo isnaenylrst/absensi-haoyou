@@ -91,7 +91,7 @@ class EmployeeSeeder extends Seeder
                 'birth_date' => '2007-03-14',
                 'marital_status' => 'belum_menikah',
                 'last_education' => 'S1',
-                'phone' => null,
+                'phone' => '08816173529',
                 'email' => null,
                 'address' => 'Sigura Gura 4',
                 'position' => 'Teacher',
@@ -111,7 +111,7 @@ class EmployeeSeeder extends Seeder
                 'birth_date' => '2007-08-24',
                 'marital_status' => 'belum_menikah',
                 'last_education' => 'S1',
-                'phone' => null,
+                'phone' => '087816276207',
                 'email' => null,
                 'address' => 'Jl. Kerto Asri Dalam, No 122A',
                 'position' => 'Teacher',
@@ -131,7 +131,7 @@ class EmployeeSeeder extends Seeder
                 'birth_date' => '2007-12-18',
                 'marital_status' => 'belum_menikah',
                 'last_education' => 'S1',
-                'phone' => null,
+                'phone' => '082195354707',
                 'email' => null,
                 'address' => 'Sulawesi Tenggara',
                 'position' => 'Teacher',
@@ -151,7 +151,7 @@ class EmployeeSeeder extends Seeder
                 'birth_date' => '2005-12-02',
                 'marital_status' => 'belum_menikah',
                 'last_education' => 'S1',
-                'phone' => null,
+                'phone' => '081938798913',
                 'email' => null,
                 'address' => 'Jalan Taman Borobudur Kencana 1 No 26',
                 'position' => 'Teacher',
@@ -171,7 +171,7 @@ class EmployeeSeeder extends Seeder
                 'birth_date' => '2006-09-18',
                 'marital_status' => 'belum_menikah',
                 'last_education' => 'S1',
-                'phone' => null,
+                'phone' => '088805477868',
                 'email' => null,
                 'address' => 'Jl. MT. Haryono, Gg. 6c No. 858, Dinoyo',
                 'position' => 'Teacher',
@@ -181,6 +181,25 @@ class EmployeeSeeder extends Seeder
             ],
             [
                 'employee_code' => 'EMP0009',
+                'full_name' => 'Nathania Jovita',
+                'gender' => 'perempuan',
+                'nationality' => 'Indonesia',
+                'religion' => 'Buddha',
+                'blood_type' => null,
+                'birth_place' => 'Pekanbaru',
+                'birth_date' => '2007-05-05',
+                'marital_status' => 'belum_menikah',
+                'last_education' => null,
+                'phone' => '081275530745',
+                'email' => null,
+                'address' => 'Jl. Kerto Asri No. 122A',
+                'position' => 'Teacher',
+                'employee_type' => 'part_time',
+                'join_date' => '2026-06-12',
+                'nik' => '1471044505070022',
+            ],
+            [
+                'employee_code' => 'EMP0010',
                 'full_name' => 'Achmad Arif Deni',
                 'gender' => 'laki_laki',
                 'nationality' => 'Indonesia',
@@ -200,7 +219,7 @@ class EmployeeSeeder extends Seeder
             ], 
 
             [
-                'employee_code' => 'EMP0010',
+                'employee_code' => 'EMP0011',
                 'full_name' => 'Fitri Maulidah',
                 'gender' => 'perempuan',
                 'nationality' => 'Indonesia',
@@ -220,7 +239,7 @@ class EmployeeSeeder extends Seeder
             ],
 
             [
-                'employee_code' => 'EMP0011',
+                'employee_code' => 'EMP0012',
                 'full_name' => 'Deva Selviana',
                 'gender' => 'perempuan',
                 'nationality' => 'Indonesia',
@@ -240,7 +259,7 @@ class EmployeeSeeder extends Seeder
             ],
 
             [
-                'employee_code' => 'EMP0012',
+                'employee_code' => 'EMP0013',
                 'full_name' => 'Eka Putri Natalya Kabelen',
                 'gender' => 'perempuan',
                 'nationality' => 'Indonesia',
@@ -260,7 +279,7 @@ class EmployeeSeeder extends Seeder
             ],
 
             [
-                'employee_code' => 'EMP0013',
+                'employee_code' => 'EMP0014',
                 'full_name' => 'Isnaeny Tri Larassati',
                 'gender' => 'perempuan',
                 'nationality' => 'Indonesia',
@@ -280,7 +299,7 @@ class EmployeeSeeder extends Seeder
             ],
 
             [
-                'employee_code' => 'EMP0014',
+                'employee_code' => 'EMP0015',
                 'full_name' => 'Dwi Ayu Wulandari',
                 'gender' => 'perempuan',
                 'nationality' => 'Indonesia',
@@ -300,7 +319,7 @@ class EmployeeSeeder extends Seeder
             ],
 
             [
-                'employee_code' => 'EMP0017',
+                'employee_code' => 'EMP0016',
                 'full_name' => 'Febry Andrias',
                 'gender' => 'laki_laki',
                 'nationality' => 'Indonesia',
