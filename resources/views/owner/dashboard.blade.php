@@ -104,10 +104,11 @@
                         <span class="nav-sub-ico"><i class="fa-solid fa-calendar-days"></i></span>
                         <span class="nav-sub-label">Jadwal Kerja</span>
                     </a>
-                    <a href="#" class="nav-sub-item" data-page="izin">
-                        <span class="nav-sub-ico"><i class="fa-solid fa-plane-departure"></i></span>
-                        <span class="nav-sub-label">Izin &amp; Cuti</span>
+                    <a href="{{ route('leave-requests.index') }}" class="nav-sub-item {{ request()->routeIs('leave-requests.*') ? 'active' : '' }}">
+                    <span class="nav-sub-ico"><i class="fa-solid fa-plane-departure"></i></span>
+                    <span class="nav-sub-label">Izin &amp; Cuti</span>
                     </a>
+                    
                     <a href="#" class="nav-sub-item" data-page="kunjungan">
                         <span class="nav-sub-ico"><i class="fa-solid fa-map-location-dot"></i></span>
                         <span class="nav-sub-label">Kunjungan Klien</span>

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\LeaveRequestController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -35,3 +36,10 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::get('/', fn () => redirect()->route('login'));
+
+Route::middleware('auth')->group(function () {
+    Route::get('/izin', [LeaveRequestController::class, 'index'])->name('leave-requests.index');
+    Route::post('/izin', [LeaveRequestController::class, 'store'])->name('leave-requests.store');
+    Route::patch('/izin/{leaveRequest}/approve', [LeaveRequestController::class, 'approve'])->name('leave-requests.approve');
+    Route::patch('/izin/{leaveRequest}/reject', [LeaveRequestController::class, 'reject'])->name('leave-requests.reject');
+});
