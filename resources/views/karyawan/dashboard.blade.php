@@ -91,7 +91,7 @@
                     <a href="#" class="nav-sub-item active" data-page="presensi">
                         <span class="nav-sub-ico"><i class="fa-solid fa-clipboard-check"></i></span>
                         <span class="nav-sub-label">Presensi</span>
-                        
+
                     </a>
                     <a href="{{ route('leave-requests.index') }}" class="nav-sub-item {{ request()->routeIs('leave-requests.*') ? 'active' : '' }}">
                     <span class="nav-sub-ico"><i class="fa-solid fa-plane-departure"></i></span>
@@ -104,10 +104,10 @@
                     </a>
                 </div>
             </div>
-
-            <a href="#" class="nav-item" data-page="gaji">
-                <i class="fa-solid fa-sack-dollar nav-ico"></i>
-                Gaji Saya
+            
+            <a href="{{ route('payslips.index') }}" class="nav-item {{ request()->routeIs('payslips.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-sack-dollar nav-ico"></i>
+            Gaji Saya
             </a>
 
             <a href="#" class="nav-item" data-page="faq">

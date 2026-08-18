@@ -294,3 +294,25 @@ tr:hover td{ background:#FCFBF8; }
 .toast{ position:fixed; bottom:26px; right:26px; background:var(--text); color:#fff; padding:13px 18px; border-radius:12px; font-size:13px; font-weight:700; display:flex; align-items:center; gap:10px; box-shadow:0 12px 30px rgba(0,0,0,.25); transform:translateY(20px); opacity:0; pointer-events:none; transition:.25s; z-index:50; }
 .toast.show{ transform:translateY(0); opacity:1; }
 .toast-dot{ width:8px; height:8px; border-radius:50%; background:var(--gold); flex-shrink:0; }
+
+/* ============================================================
+   TAMBAHAN CSS UNTUK HALAMAN GAJI SAYA
+============================================================ */
+
+.pay-row{ display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--line-soft); }
+.pay-row:last-child{ border-bottom:none; }
+.pay-label{ font-size:13px; font-weight:600; }
+.pay-sub{ font-size:11px; color:var(--text-faint); margin-top:2px; }
+.pay-val{ font-family:'Poppins', sans-serif; font-size:13.5px; font-weight:700; }
+.pay-neg{ color:var(--rust); }
+.pay-pos{ color:var(--green); }
+.pay-total{ display:flex; align-items:center; justify-content:space-between; padding-top:16px; margin-top:6px; border-top:2px solid var(--text); }
+.pay-total .pay-label{ font-family:'Poppins', sans-serif; font-size:16px; font-weight:700; }
+.pay-total .pay-val{ font-family:'Poppins', sans-serif; font-size:20px; font-weight:800; color:var(--gold-deep); }
+
+.progress{ height:6px; border-radius:6px; background:var(--line-soft); overflow:hidden; margin-top:8px; }
+.progress-fill{ height:100%; background:var(--gold); border-radius:6px; }
+
+.locked-panel{ display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:60px 20px; color:var(--text-faint); }
+.locked-panel svg{ margin-bottom:12px; opacity:.5; }
+.locked-panel-title{ font-family:'Poppins', sans-serif; font-size:17px; font-weight:700; color:var(--text-dim); margin-bottom:4px; }
