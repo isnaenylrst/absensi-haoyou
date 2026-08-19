@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\PayslipController;
+use App\Http\Controllers\PayrollController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -38,6 +39,8 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/', fn () => redirect()->route('login'));
 
+ // ===== Fitur izin — khusus karwayan =====
+
 Route::middleware('auth')->group(function () {
     Route::get('/izin', [LeaveRequestController::class, 'index'])->name('leave-requests.index');
     Route::post('/izin', [LeaveRequestController::class, 'store'])->name('leave-requests.store');
@@ -45,6 +48,18 @@ Route::middleware('auth')->group(function () {
     Route::patch('/izin/{leaveRequest}/reject', [LeaveRequestController::class, 'reject'])->name('leave-requests.reject');
 });
  
+ // ===== Lihat gaji saya— khusus karyawan =====
+
 Route::middleware('auth')->group(function () {
     Route::get('/gaji-saya', [PayslipController::class, 'index'])->name('payslips.index');
+Route::get('/gaji-saya/unduh-pdf', [PayslipController::class, 'downloadPdf'])->name('payslips.download-pdf');
+});
+
+ // ===== Edit gaji — khusus Owner =====
+
+Route::middleware('auth')->group(function () {
+    Route::get('/payroll', [PayrollController::class, 'index'])->name('payroll.index');
+    Route::patch('/payroll/{employee}', [PayrollController::class, 'updateComponent'])->name('payroll.update');
+    Route::post('/payroll/publish', [PayrollController::class, 'publishAll'])->name('payroll.publish');
+    Route::get('/owner/payroll/riwayat', [PayrollController::class, 'history'])->name('payroll.history');
 });

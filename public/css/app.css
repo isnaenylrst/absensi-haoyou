@@ -316,3 +316,14 @@ tr:hover td{ background:#FCFBF8; }
 .locked-panel{ display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:60px 20px; color:var(--text-faint); }
 .locked-panel svg{ margin-bottom:12px; opacity:.5; }
 .locked-panel-title{ font-family:'Poppins', sans-serif; font-size:17px; font-weight:700; color:var(--text-dim); margin-bottom:4px; }
+
+/* ============================================================
+   TAMBAHAN CSS UNTUK HALAMAN PAYROLL
+============================================================ */
+
+.cell-input{ width:90px; padding:7px 8px; border:1px solid transparent; border-radius:7px; font-family:'Poppins', sans-serif; font-size:12px; background:var(--line-soft); color:var(--text); }
+.cell-input:focus{ outline:none; border-color:var(--gold); background:#fff; }
+.row-total{ font-weight:800; white-space:nowrap; }
+.row-updated{ font-size:10px; color:var(--text-faint); margin-top:3px; }
+.thr-check{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--text-dim); }
+.owner-panel-note{ background:var(--green-soft); border:1px solid #CDEBD9; border-radius:10px; padding:12px 14px; font-size:12px; color:#215A3D; display:flex; gap:9px; margin-bottom:18px; line-height:1.5; }

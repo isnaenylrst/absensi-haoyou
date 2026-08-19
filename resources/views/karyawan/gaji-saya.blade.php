@@ -19,7 +19,11 @@
                     {{ $employee->employee_type === 'tetap' ? 'Karyawan Tetap' : 'Karyawan Part Time' }}
                 </div>
             </div>
-            <button class="btn btn-line btn-sm" disabled title="Segera hadir">Unduh PDF</button>
+           @if ($payslip)
+                <a href="{{ route('payslips.download-pdf') }}" class="btn btn-line btn-sm">Unduh PDF</a>
+            @else
+                <button class="btn btn-line btn-sm" disabled title="Slip gaji belum diterbitkan">Unduh PDF</button>
+            @endif
         </div>
 
         @if ($payslip && $rincian)
@@ -77,7 +81,7 @@
 
             <div class="note-box" style="margin-top:16px;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8A6212" stroke-width="2" style="flex-shrink:0; margin-top:1px;"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
-                <div><strong>Tanggal merah / hari libur nasional:</strong> gaji pokok tetap dibayar penuh, namun uang makan &amp; uang bensin tidak diberikan karena tidak ada kehadiran.</div>
+                <div><strong>Tanggal merah / hari libur nasional:</strong> gaji pokok tetap dibayar penuh, namun uang makan &amp; uang bensin tidak diberikan karena tidak ada kehadiran. Slip gaji hanya bisa diunduh di periode bulanan setelah diterbitkan.</div>
             </div>
         @else
             <div class="field-hint" style="text-align:center; padding:40px 0;">

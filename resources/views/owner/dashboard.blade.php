@@ -116,9 +116,9 @@
                 </div>
             </div>
 
-            <a href="#" class="nav-item" data-page="payroll">
-                <i class="fa-solid fa-sack-dollar nav-ico"></i>
-                Payroll
+            <a href="{{ route('payroll.index') }}" class="nav-item {{ request()->routeIs('payroll.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-sack-dollar nav-ico"></i>
+            Payroll
             </a>
 
             <a href="#" class="nav-item" data-page="pengaturan">
