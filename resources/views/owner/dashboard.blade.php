@@ -8,7 +8,7 @@
     {{-- CSRF Token --}}
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Beranda') | Absenly</title>
+    <title>@yield('title', 'Beranda') | Presence</title>
 
     {{-- Google Fonts --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -69,23 +69,22 @@
         {{-- BRAND --}}
         <div class="brand">
             <img src="{{ asset('assets/img/logo.png') }}" alt="Haoyou" class="logo">
-            {{-- <div class="brand-sub">Absensi &amp; Payroll</div> --}}
         </div>
 
         {{-- NAVIGATION --}}
         <nav class="navlist">
 
-            <a href="#" class="nav-item active" data-page="beranda">
+            <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 <i class="fa-solid fa-house nav-ico"></i>
                 Beranda
             </a>
 
-            <a href="#" class="nav-item" data-page="karyawan">
+            <a href="{{ route('karyawan.index') }}" class="nav-item {{ request()->routeIs('karyawan.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-users nav-ico"></i>
                 Karyawan
             </a>
 
-            {{-- ===== KEHADIRAN (SUBMENU) ===== --}}
+            {{-- ===== KEHADIRAN (SUBMENU) — belum ada route, biarkan dulu ===== --}}
             <div class="nav-group open" id="navKehadiran">
                 <div class="nav-item" onclick="toggleGroup()">
                     <i class="fa-solid fa-clock nav-ico"></i>
@@ -95,37 +94,37 @@
                 </div>
 
                 <div class="nav-sub">
-                    <a href="#" class="nav-sub-item active" data-page="approval">
+                    <a href="#" class="nav-sub-item">
                         <span class="nav-sub-ico"><i class="fa-solid fa-clipboard-check"></i></span>
                         <span class="nav-sub-label">Approval Presensi</span>
                         <span class="nav-sub-badge">2</span>
                     </a>
-                    <a href="#" class="nav-sub-item" data-page="jadwal">
+                    <a href="#" class="nav-sub-item">
                         <span class="nav-sub-ico"><i class="fa-solid fa-calendar-days"></i></span>
                         <span class="nav-sub-label">Jadwal Kerja</span>
                     </a>
-                    <a href="#" class="nav-sub-item" data-page="izin">
+                    <a href="#" class="nav-sub-item">
                         <span class="nav-sub-ico"><i class="fa-solid fa-plane-departure"></i></span>
                         <span class="nav-sub-label">Izin &amp; Cuti</span>
                     </a>
-                    <a href="#" class="nav-sub-item" data-page="kunjungan">
+                    <a href="#" class="nav-sub-item">
                         <span class="nav-sub-ico"><i class="fa-solid fa-map-location-dot"></i></span>
                         <span class="nav-sub-label">Kunjungan Klien</span>
                     </a>
                 </div>
             </div>
 
-            <a href="#" class="nav-item" data-page="payroll">
+            <a href="#" class="nav-item">
                 <i class="fa-solid fa-sack-dollar nav-ico"></i>
                 Payroll
             </a>
 
-            <a href="#" class="nav-item" data-page="pengaturan">
+            <a href="#" class="nav-item">
                 <i class="fa-solid fa-gear nav-ico"></i>
                 Pengaturan
             </a>
 
-            <a href="#" class="nav-item" data-page="faq">
+            <a href="#" class="nav-item">
                 <i class="fa-solid fa-circle-question nav-ico"></i>
                 FAQ
             </a>
@@ -199,21 +198,11 @@
 
 </div>
 
-{{-- Toggle submenu Kehadiran + aktif-kan menu yang diklik + dropdown avatar --}}
+{{-- Toggle submenu Kehadiran + dropdown avatar (TIDAK ADA lagi e.preventDefault untuk nav-item) --}}
 <script>
     function toggleGroup() {
         document.getElementById('navKehadiran').classList.toggle('open');
     }
-
-    document.querySelectorAll('[data-page]').forEach(function (item) {
-        item.addEventListener('click', function (e) {
-            e.preventDefault();
-            document.querySelectorAll('[data-page]').forEach(function (n) {
-                n.classList.remove('active');
-            });
-            item.classList.add('active');
-        });
-    });
 
     // Dropdown avatar (Profil & Keluar)
     const avatarToggle = document.getElementById('avatarToggle');

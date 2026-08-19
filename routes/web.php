@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,17 +21,30 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])
         ->name('logout');
 
-    // ===== Profil & Ganti Password (semua role) =====
     Route::get('/profil', [ProfileController::class, 'edit'])
         ->name('profil.edit');
 
     Route::put('/profil/password', [ProfileController::class, 'updatePassword'])
         ->name('profil.password');
 
-    // ===== Edit kontak profil — khusus Owner =====
     Route::middleware('role:owner')->group(function () {
         Route::put('/profil', [ProfileController::class, 'update'])
             ->name('profil.update');
+
+        Route::get('karyawan-export', [EmployeeController::class, 'exportCsv'])
+            ->name('karyawan.export');
+        Route::get('karyawan-import', [EmployeeController::class, 'importForm'])
+            ->name('karyawan.import.form');
+        Route::post('karyawan-import', [EmployeeController::class, 'importStore'])
+            ->name('karyawan.import.store');
+        Route::get('karyawan-import/template', [EmployeeController::class, 'downloadTemplate'])
+            ->name('karyawan.import.template');
+
+        Route::resource('karyawan', EmployeeController::class);
+        Route::post('karyawan/{karyawan}/reset-password', [EmployeeController::class, 'resetPassword'])
+            ->name('karyawan.reset-password');
+        Route::post('karyawan/{karyawan}/toggle-status', [EmployeeController::class, 'toggleStatus'])
+            ->name('karyawan.toggle-status');
     });
 });
 
