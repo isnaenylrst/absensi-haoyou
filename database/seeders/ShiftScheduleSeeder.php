@@ -10,14 +10,6 @@ use RuntimeException;
 
 class ShiftScheduleSeeder extends Seeder
 {
-    /**
-     * PRASYARAT: ShiftSeeder & EmployeeSeeder harus sudah dijalankan.
-     *
-     * PENGAMAN: seeder ini akan GAGAL (throw exception) kalau employee_code
-     * yang didaftarkan di sini ternyata employee_type-nya bukan 'tetap' -
-     * supaya tidak kejadian lagi shift ke-assign ke karyawan yang salah
-     * (seperti kasus EMP0002 sebelumnya).
-     */
     public function run(): void
     {
         $shiftPagi = Shift::where('name', 'Shift Pagi')->firstOrFail();

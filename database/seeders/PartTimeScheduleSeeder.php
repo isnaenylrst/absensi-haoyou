@@ -9,23 +9,10 @@ use RuntimeException;
 
 class PartTimeScheduleSeeder extends Seeder
 {
-    /**
-     * PRASYARAT: EmployeeSeeder harus sudah dijalankan.
-     *
-     * PENGAMAN: seeder ini akan GAGAL (throw exception) kalau employee_code
-     * yang didaftarkan di sini ternyata employee_type-nya bukan 'part_time'.
-     *
-     * PEMBERSIHAN DATA LAMA: hapus dulu part_time_schedules yang salah
-     * sasaran (kemarin ke-assign ke EMP0002 yang sebenarnya 'tetap'),
-     * supaya tidak ada data nyangkut dari kesalahan sebelumnya.
-     */
     public function run(): void
     {
-        $employeeCodeYangBenar = array_keys($this->scheduleData());
-
-        // Hapus part_time_schedules milik karyawan yang TIDAK ada di daftar
-        // di bawah (mis. EMP0002 dari kesalahan sebelumnya) tapi HANYA
-        // kalau karyawan tersebut memang bukan part_time - supaya aman.
+        // Hapus dulu semua jadwal part-time milik karyawan yang statusnya
+        // BUKAN part_time (jaga-jaga kalau employee_type-nya berubah).
         PartTimeSchedule::whereHas('employee', function ($query) {
             $query->where('employee_type', '!=', 'part_time');
         })->delete();
@@ -42,7 +29,13 @@ class PartTimeScheduleSeeder extends Seeder
                 );
             }
 
+            // Kumpulkan kombinasi (hari, start_time) yang valid untuk employee ini,
+            // supaya sesi lama yang sudah tidak ada di data terbaru ikut terhapus.
+            $validKeys = [];
+
             foreach ($sessions as $session) {
+                $this->assertNoOverlap($employeeCode, $sessions, $session);
+
                 PartTimeSchedule::updateOrCreate(
                     [
                         'employee_id' => $employee->id,
@@ -55,21 +48,44 @@ class PartTimeScheduleSeeder extends Seeder
                         'hourly_rate' => $session['rate'],
                     ]
                 );
+
+                $validKeys[] = $session['day'].'|'.$session['start'];
+            }
+
+            // Bersihkan sesi lama employee ini yang sudah tidak ada di scheduleData()
+            $employee->partTimeSchedules()
+                ->get()
+                ->reject(fn ($row) => in_array($row->day_of_week.'|'.substr($row->start_time, 0, 5), $validKeys))
+                ->each->delete();
+        }
+    }
+    
+    private function assertNoOverlap(string $employeeCode, array $sessions, array $current): void
+    {
+        foreach ($sessions as $other) {
+            if ($other === $current || $other['day'] !== $current['day']) {
+                continue;
+            }
+
+            $overlap = $current['start'] < $other['end'] && $other['start'] < $current['end'];
+
+            if ($overlap) {
+                throw new RuntimeException(
+                    "PartTimeScheduleSeeder: {$employeeCode} punya jadwal tumpang tindih di hari ".
+                    "{$current['day']}: {$current['start']}-{$current['end']} vs {$other['start']}-{$other['end']}."
+                );
             }
         }
     }
 
-    /**
-     * TODO: ganti jadwal contoh di bawah dengan jadwal asli tiap guru.
-     * 5 karyawan part-time (posisi "Teacher") di data asli:
-     * EMP0004, EMP0005, EMP0006, EMP0007, EMP0008.
-     */
     private function scheduleData(): array
     {
         return [
             'EMP0004' => [ // Teresa Liaunardo Tju
                 ['day' => 'senin', 'start' => '15:00', 'end' => '17:00', 'activity' => 'Mengajar Kelas 5A', 'rate' => 30000],
-                ['day' => 'rabu', 'start' => '15:00', 'end' => '17:00', 'activity' => 'Mengajar Kelas 5A', 'rate' => 30000],
+                ['day' => 'rabu', 'start' => '09:00', 'end' => '10:00', 'activity' => 'Mengajar Kelas 5A', 'rate' => 30000], // TODO: contoh sesi pagi
+                ['day' => 'rabu', 'start' => '13:00', 'end' => '14:30', 'activity' => 'Les Privat', 'rate' => 30000],        // TODO: contoh sesi siang
+                ['day' => 'rabu', 'start' => '17:00', 'end' => '18:00', 'activity' => 'Mengajar Kelas 5A', 'rate' => 30000], // TODO: contoh sesi sore
             ],
             'EMP0005' => [ // Vanessa Tan
                 ['day' => 'selasa', 'start' => '13:00', 'end' => '15:00', 'activity' => 'Mengajar Kelas 3B', 'rate' => 30000],
