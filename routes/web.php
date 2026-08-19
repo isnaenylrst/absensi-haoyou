@@ -2,8 +2,9 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\Owner\EmployeeController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Owner\SettingController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -45,6 +46,11 @@ Route::middleware('auth')->group(function () {
             ->name('karyawan.reset-password');
         Route::post('karyawan/{karyawan}/toggle-status', [EmployeeController::class, 'toggleStatus'])
             ->name('karyawan.toggle-status');
+
+        Route::get('/pengaturan', [SettingController::class, 'edit'])->name('pengaturan.edit');
+        Route::put('/pengaturan/lokasi', [SettingController::class, 'updateLokasi'])->name('pengaturan.lokasi');
+        Route::put('/pengaturan/aturan', [SettingController::class, 'updateAturan'])->name('pengaturan.aturan');
+
     });
 });
 
