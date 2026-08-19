@@ -25,13 +25,6 @@ class ShiftScheduleSeeder extends Seeder
 
         $hariKerja = ['senin', 'selasa', 'rabu', 'kamis', 'jumat'];
 
-        // ============================================================
-        // Semua karyawan tetap (employee_type = 'tetap') di data asli.
-        // TODO: kalau ada yang jamnya beda (mis. Cleaning Service masuk
-        // siang), ganti $shiftPagi jadi $shiftSiang untuk employee_code
-        // tersebut, atau sesuaikan $hariKerja-nya kalau ada yang shift-nya
-        // tidak Senin-Jumat penuh.
-        // ============================================================
         $shiftScheduleData = [
             'EMP0001' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Owner
             'EMP0002' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Admin

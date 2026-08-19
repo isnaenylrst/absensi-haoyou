@@ -74,13 +74,12 @@
         {{-- NAVIGATION --}}
         <nav class="navlist">
 
-            <a href="#" class="nav-item active" data-page="beranda">
+            <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 <i class="fa-solid fa-house nav-ico"></i>
                 Beranda
             </a>
 
-            {{-- ===== KEHADIRAN (SUBMENU) ===== --}}
-            <div class="nav-group open" id="navKehadiran">
+            <div class="nav-group {{ request()->routeIs(['presensi', 'izin', 'kunjungan']) ? 'open' : '' }}" id="navKehadiran">
                 <div class="nav-item" onclick="toggleGroup()">
                     <i class="fa-solid fa-clock nav-ico"></i>
                     Kehadiran
@@ -88,27 +87,33 @@
                 </div>
 
                 <div class="nav-sub">
-                    <a href="#" class="nav-sub-item active" data-page="presensi">
+                    <a href="{{ route('presensi') }}" class="nav-sub-item {{ request()->routeIs('presensi') ? 'active' : '' }}">
                         <span class="nav-sub-ico"><i class="fa-solid fa-clipboard-check"></i></span>
                         <span class="nav-sub-label">Presensi</span>
                     </a>
-                    <a href="#" class="nav-sub-item" data-page="izin">
+
+                    {{-- TODO: buat route 'izin' lalu ganti href="#" di bawah ini --}}
+                    <a href="#" class="nav-sub-item {{ request()->routeIs('izin') ? 'active' : '' }}">
                         <span class="nav-sub-ico"><i class="fa-solid fa-plane-departure"></i></span>
                         <span class="nav-sub-label">Izin &amp; Cuti</span>
                     </a>
-                    <a href="#" class="nav-sub-item" data-page="kunjungan">
+
+                    {{-- TODO: buat route 'kunjungan' lalu ganti href="#" di bawah ini --}}
+                    <a href="#" class="nav-sub-item {{ request()->routeIs('kunjungan') ? 'active' : '' }}">
                         <span class="nav-sub-ico"><i class="fa-solid fa-map-location-dot"></i></span>
                         <span class="nav-sub-label">Kunjungan Klien</span>
                     </a>
                 </div>
             </div>
 
-            <a href="#" class="nav-item" data-page="gaji">
+            {{-- TODO: buat route 'gaji' lalu ganti href="#" di bawah ini --}}
+            <a href="#" class="nav-item">
                 <i class="fa-solid fa-sack-dollar nav-ico"></i>
                 Gaji Saya
             </a>
 
-            <a href="#" class="nav-item" data-page="faq">
+            {{-- TODO: buat route 'faq' lalu ganti href="#" di bawah ini --}}
+            <a href="#" class="nav-item">
                 <i class="fa-solid fa-circle-question nav-ico"></i>
                 FAQ
             </a>
@@ -181,21 +186,11 @@
 
 </div>
 
-{{-- Toggle submenu Kehadiran + aktif-kan menu yang diklik + dropdown avatar --}}
+{{-- Toggle submenu Kehadiran + dropdown avatar --}}
 <script>
     function toggleGroup() {
         document.getElementById('navKehadiran').classList.toggle('open');
     }
-
-    document.querySelectorAll('[data-page]').forEach(function (item) {
-        item.addEventListener('click', function (e) {
-            e.preventDefault();
-            document.querySelectorAll('[data-page]').forEach(function (n) {
-                n.classList.remove('active');
-            });
-            item.classList.add('active');
-        });
-    });
 
     // Dropdown avatar (Profil & Keluar)
     const avatarToggle = document.getElementById('avatarToggle');

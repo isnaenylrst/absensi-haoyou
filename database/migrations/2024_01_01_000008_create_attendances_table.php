@@ -13,13 +13,11 @@ return new class extends Migration
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete();
             $table->foreignId('shift_schedule_id')->nullable()
                 ->constrained('shift_schedules')->nullOnDelete();
+            $table->foreignId('shift_id')->nullable()
+                ->constrained('shifts')->nullOnDelete();
             $table->foreignId('part_time_schedule_id')->nullable()
                 ->constrained('part_time_schedules')->nullOnDelete();
 
-            // Kegiatan yang diketik manual saat submit presensi (khusus part
-            // time, karena tiap sesi bersifat freeform - jam & kegiatan bisa
-            // beda dari yang tersimpan di part_time_schedules). NULL untuk
-            // karyawan tetap.
             $table->string('activity', 150)->nullable();
 
             $table->foreignId('branch_id')->constrained('branches')->restrictOnDelete();
@@ -34,11 +32,6 @@ return new class extends Migration
             $table->integer('late_minutes')->default(0);
             $table->timestamp('created_at')->useCurrent();
 
-            // Sengaja TIDAK ada UNIQUE constraint di sini. Presensi karyawan
-            // part time bersifat freeform (bisa berkali-kali/hari, jam & sesi
-            // diisi manual, tidak selalu terikat 1 baris part_time_schedules).
-            // Validasi "1x presensi/hari" untuk karyawan tetap dilakukan di
-            // level aplikasi (controller/FormRequest), bukan di database.
             $table->index(['employee_id', 'tanggal']);
         });
     }

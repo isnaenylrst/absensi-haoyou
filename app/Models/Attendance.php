@@ -15,6 +15,7 @@ class Attendance extends Model
     protected $fillable = [
         'employee_id',
         'shift_schedule_id',
+        'shift_id',
         'part_time_schedule_id',
         'activity',
         'branch_id',
@@ -39,6 +40,10 @@ class Attendance extends Model
         'late_minutes' => 'integer',
         'created_at' => 'datetime',
     ];
+    public function shift(): BelongsTo
+    {
+        return $this->belongsTo(Shift::class);
+    }
 
     public function employee(): BelongsTo
     {
