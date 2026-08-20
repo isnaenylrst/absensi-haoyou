@@ -14,11 +14,10 @@ class ApprovalController extends Controller
         $filters = $request->only(['q', 'tanggal', 'branch_id', 'employee_type', 'status']);
 
         $attendances = Attendance::query()
-            ->with(['employee.branch', 'shiftSchedule.shift', 'partTimeSchedule'])
+            ->with(['employee.branch', 'shift', 'partTimeSchedule'])
             ->when($filters['tanggal'] ?? null, function ($query, $tanggal) {
                 $query->whereDate('tanggal', $tanggal);
             }, function ($query) {
-                // default: tampilkan hari ini kalau belum difilter
                 $query->whereDate('tanggal', now()->toDateString());
             })
             ->when($filters['branch_id'] ?? null, function ($query, $branchId) {

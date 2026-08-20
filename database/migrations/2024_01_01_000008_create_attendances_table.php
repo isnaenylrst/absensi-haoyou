@@ -27,7 +27,8 @@ return new class extends Migration
             $table->decimal('check_in_lat', 10, 7)->nullable();
             $table->decimal('check_in_lng', 10, 7)->nullable();
             $table->decimal('distance_m', 8, 2)->nullable();
-            $table->text('photo_url')->nullable();
+            $table->text('check_in_photo_url')->nullable();
+            $table->text('check_out_photo_url')->nullable();
             $table->enum('status', ['tepat_waktu', 'terlambat', 'alpa'])->nullable();
             $table->integer('late_minutes')->default(0);
             $table->timestamp('created_at')->useCurrent();

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Carbon\Carbon;
 
 class Shift extends Model
 {
@@ -50,6 +51,26 @@ class Shift extends Model
             ->sortBy(fn (self $shift) => abs(\Carbon\Carbon::parse($shift->start_time)->diffInMinutes($checkIn, false)))
             ->first();
     }
+
+    // Menghitung status keterlambatan
+    public function determineStatus(Carbon $checkIn): array
+    {
+        $shiftStart = Carbon::parse(
+            $checkIn->toDateString().' '.$this->start_time
+        );
+    
+        $diffMinutes = (int) round($shiftStart->diffInSeconds($checkIn, false) / 60);
+    
+        if ($diffMinutes <= 0) {
+            return ['status' => 'tepat_waktu', 'late_minutes' => 0];
+        }
+
+        if ($diffMinutes <= $this->tolerance_minutes) {
+            return ['status' => 'tepat_waktu', 'late_minutes' => 0];
+        }
+
+        return ['status' => 'terlambat', 'late_minutes' => $diffMinutes];
+    }    
     
     public function shiftSchedules(): HasMany
     {
