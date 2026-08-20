@@ -5,6 +5,7 @@
 @push('styles')
     <link rel="stylesheet" href="{{ asset('/css/owner/kunjungan-klien.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
         .addr-cell {
             max-width: 220px;
@@ -21,19 +22,19 @@
         <div class="crumb">Home <span>&rsaquo;</span> Kehadiran <span>&rsaquo;</span> <b>Kunjungan Klien</b></div>
         <div class="page-head"><div class="page-title">Kunjungan Klien</div></div>
 
-        <form method="GET" action="{{ route('kunjungan-klien') }}" class="toolbar">
+        <form method="GET" action="{{ route('kunjungan-klien') }}" class="toolbar" id="filterForm">
           <div class="toolbar-left">
             <div class="search-box">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9AA0A8" stroke-width="2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9AA0A8" stroke-width="2">
                 <circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>
               </svg>
-              <input type="text" name="q" placeholder="Cari nama klien / karyawan..." value="{{ $filters['q'] ?? '' }}">
+              <input type="text" name="q" id="filterSearch" placeholder="Cari nama klien / karyawan..." value="{{ $filters['q'] ?? '' }}">
             </div>
 
-            <input type="date" name="tanggal" class="field-input-inline"
+            <input type="date" name="tanggal" class="field-input-inline" onchange="this.form.submit()"
                    value="{{ $filters['tanggal'] ?? '' }}">
 
-            <select name="branch_id" class="field-input-inline">
+            <select name="branch_id" class="field-input-inline" onchange="this.form.submit()">
               <option value="">Semua Cabang</option>
               @foreach ($branches as $branch)
                 <option value="{{ $branch->id }}" @selected(($filters['branch_id'] ?? null) == $branch->id)>
@@ -42,7 +43,7 @@
               @endforeach
             </select>
 
-            <select name="visit_type" class="field-input-inline">
+            <select name="visit_type" class="field-input-inline" onchange="this.form.submit()">
               <option value="">Semua Jenis</option>
               @foreach ($visitTypes as $type)
                 <option value="{{ $type }}" @selected(($filters['visit_type'] ?? null) === $type)>
@@ -51,13 +52,12 @@
               @endforeach
             </select>
 
-            <select name="review_status" class="field-input-inline">
+            <select name="review_status" class="field-input-inline" onchange="this.form.submit()">
               <option value="">Semua Status</option>
               <option value="wajar" @selected(($filters['review_status'] ?? null) === 'wajar')>Wajar</option>
               <option value="perlu_ditinjau" @selected(($filters['review_status'] ?? null) === 'perlu_ditinjau')>Perlu Ditinjau</option>
             </select>
 
-            <button type="submit" class="btn btn-line btn-sm">Terapkan</button>
             @if(!empty(array_filter($filters ?? [])))
               <a href="{{ route('kunjungan-klien') }}" class="btn btn-ghost btn-sm">Reset</a>
             @endif
@@ -84,7 +84,6 @@
                 <th>Jenis</th>
                 <th>Tanggal</th>
                 <th>Alamat yang Dikunjungi</th>
-                {{-- <th>Foto</th> --}}
                 <th>Status</th>
                 <th>Aksi</th>
               </tr>
@@ -109,16 +108,6 @@
                   <td class="addr-cell" title="{{ $visit->address }}">
                     {{ \Illuminate\Support\Str::limit($visit->address, 40) }}
                   </td>
-                  {{-- <td>
-                    @if ($visit->photo_url)
-                      <div class="photo-thumb" onclick="openKunjunganModal({{ $visit->id }})">
-                        <img src="{{ $visit->photo_url }}" alt="Foto kunjungan {{ $visit->client_name }}"
-                             onerror="this.closest('.photo-thumb').classList.add('photo-error')">
-                      </div>
-                    @else
-                      <span class="badge badge-rust">Tidak Ada</span>
-                    @endif
-                  </td> --}}
                   <td>
                     @if ($isReview)
                       <span class="badge badge-rust">&#9888; Perlu Ditinjau</span>
@@ -127,25 +116,25 @@
                     @endif
                   </td>
                   <td>
-                    <button type="button" class="btn btn-ghost btn-sm" onclick="openKunjunganModal({{ $visit->id }})">
+                    <button type="button" class="btn btn-gold btn-xs" onclick="openKunjunganModal({{ $visit->id }})">
                       Detail
                     </button>
                   </td>
                 </tr>
 
                 <template id="modal-data-{{ $visit->id }}">
-                    <button type="button" class="modal-close-btn" onclick="closeKunjunganModal()">
-                        <i class="ti ti-x"></i>
+                    <button type="button" class="modal-close-btn" onclick="closeKunjunganModal()" aria-label="Tutup">
+                        <i class="fa-solid fa-xmark"></i>
                     </button>
 
                     <div class="modal-photo-panel">
                         @if ($visit->photo_url)
                         <img src="{{ $visit->photo_url }}" alt="Foto kunjungan"
-                            onerror="this.closest('.modal-photo-panel').innerHTML = '<div class=&quot;modal-photo-empty&quot;><div class=&quot;modal-photo-empty-inner&quot;><i class=&quot;ti ti-photo-off&quot; style=&quot;font-size:26px;&quot;></i>Foto gagal dimuat</div></div>' + this.closest('.modal-photo-panel').querySelector('.modal-photo-type').outerHTML">
+                            onerror="this.replaceWith(Object.assign(document.createElement('div'), {className:'modal-photo-empty', innerHTML:'<div class=&quot;modal-photo-empty-inner&quot;><i class=&quot;ti ti-photo-off&quot; style=&quot;font-size:22px;&quot;></i>Foto gagal dimuat</div>'}))">
                         @else
                         <div class="modal-photo-empty">
                             <div class="modal-photo-empty-inner">
-                            <i class="ti ti-photo" style="font-size:26px;"></i>
+                            <i class="ti ti-photo" style="font-size:22px;"></i>
                             Tidak ada foto
                             </div>
                         </div>
@@ -156,7 +145,7 @@
                     <div class="modal-content">
                         <div class="modal-content-head">
                         <div class="modal-employee-block">
-                            <div class="avatar-dot" style="background:{{ $avatarColor }}; width:44px; height:44px; font-size:14px; border-radius:12px;">{{ $initials }}</div>
+                            {{-- <div class="avatar-dot" style="background:{{ $avatarColor }}; width:42px; height:42px; font-size:13px; border-radius:10px;">{{ $initials }}</div> --}}
                             <div>
                             <div class="modal-employee-name">{{ $employee->full_name }}</div>
                             <div class="modal-employee-sub">{{ $employee->position ?? '-' }} &middot; {{ $employee->branch?->name ?? '-' }}</div>
@@ -164,17 +153,25 @@
                         </div>
                         </div>
 
-                        <div class="modal-status-row" data-visit-id="{{ $visit->id }}">
-                        @if ($isReview)
-                            <span class="modal-status-pill review"><span class="modal-status-dot"></span> Perlu Ditinjau</span>
-                        @else
-                            <span class="modal-status-pill wajar"><span class="modal-status-dot"></span> Wajar</span>
-                        @endif
-                        </div>
-
-                        <div class="modal-meta-row">
-                        <span class="modal-meta-chip">Akurasi {{ $visit->accuracy_m !== null ? number_format($visit->accuracy_m, 0) . ' m' : '—' }}</span>
-                        <span class="modal-meta-chip">{{ $visit->visited_at->translatedFormat('d M, H:i') }}</span>
+                        <div class="modal-info-list" data-visit-id="{{ $visit->id }}">
+                          <div class="modal-info-row" data-status-row>
+                            <span class="modal-info-label">Status</span>
+                            <span class="modal-info-value">
+                              @if ($isReview)
+                                <span class="modal-status-pill review"><span class="modal-status-dot"></span> Perlu Ditinjau</span>
+                              @else
+                                <span class="modal-status-pill wajar"><span class="modal-status-dot"></span> Wajar</span>
+                              @endif
+                            </span>
+                          </div>
+                          <div class="modal-info-row">
+                            <span class="modal-info-label">Waktu kunjungan</span>
+                            <span class="modal-info-value mono">{{ $visit->visited_at->translatedFormat('d M Y, H:i') }}</span>
+                          </div>
+                          <div class="modal-info-row">
+                            <span class="modal-info-label">Akurasi lokasi</span>
+                            <span class="modal-info-value">{{ $visit->accuracy_m !== null ? number_format($visit->accuracy_m, 0) . ' m' : '—' }}</span>
+                          </div>
                         </div>
 
                         <div class="modal-block">
@@ -214,7 +211,7 @@
                     </template>
               @empty
                 <tr>
-                  <td colspan="8" class="empty-state">Tidak ada data kunjungan klien untuk filter ini.</td>
+                  <td colspan="7" class="empty-state">Tidak ada data kunjungan klien untuk filter ini.</td>
                 </tr>
               @endforelse
             </table>
@@ -239,18 +236,22 @@
           @endif
         </div>
 
-        <!-- ===== MODAL DETAIL =====
-             PENTING: sebelumnya ada wrapper .modal-head + .modal-body di sini.
-             Itu bikin struktur .modal-box jadi 3 level (head + body) padahal
-             CSS mengharapkan .modal-box langsung berisi .modal-photo-panel +
-             .modal-content sebagai sibling (flex row). Makanya modal-box
-             langsung dijadikan target innerHTML di bawah ini. -->
+        <!-- ===== MODAL DETAIL ===== -->
         <div class="modal-overlay" id="kunjunganModalOverlay" onclick="closeKunjunganModal(event)">
           <div class="modal-box" id="kunjunganModalBody" onclick="event.stopPropagation()"></div>
         </div>
 
 
 <script>
+  // ===== Auto-submit filter search dengan debounce =====
+  let searchTimer;
+  document.getElementById('filterSearch').addEventListener('input', function () {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      document.getElementById('filterForm').submit();
+    }, 500);
+  });
+
   // ===== Modal detail kunjungan =====
   function openKunjunganModal(id) {
     const source = document.getElementById('modal-data-' + id);
@@ -285,7 +286,8 @@
     if (!btn) return;
 
     const modalRoot = document.getElementById('kunjunganModalBody');
-    const visitId = modalRoot.querySelector('.modal-status-row').dataset.visitId;
+    const infoList = modalRoot.querySelector('.modal-info-list');
+    const visitId = infoList.dataset.visitId;
     const current = btn.dataset.current;
     const newStatus = current === 'wajar' ? 'perlu_ditinjau' : 'wajar';
 
@@ -304,8 +306,8 @@
         btn.dataset.current = newStatus;
         btn.classList.remove('saving');
 
-        const pillWrap = modalRoot.querySelector('.modal-status-row');
-        pillWrap.innerHTML = newStatus === 'wajar'
+        const statusValue = infoList.querySelector('[data-status-row] .modal-info-value');
+        statusValue.innerHTML = newStatus === 'wajar'
           ? '<span class="modal-status-pill wajar"><span class="modal-status-dot"></span> Wajar</span>'
           : '<span class="modal-status-pill review"><span class="modal-status-dot"></span> Perlu Ditinjau</span>';
 
