@@ -36,6 +36,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/presensi', PresensiController::class)
         ->name('presensi');
 
+    Route::post('/presensi/check-in', [PresensiController::class, 'checkIn'])
+        ->name('presensi.check-in');
+
+    Route::post('/presensi/check-out', [PresensiController::class, 'checkOut'])
+        ->name('presensi.check-out');
+
     // ===== Kunjungan Klien — Karyawan =====
     Route::get('/kunjungan-klien-saya', [ClientVisitController::class, 'index'])
         ->name('kunjungan-klien-saya');
