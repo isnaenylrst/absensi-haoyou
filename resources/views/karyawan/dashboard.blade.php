@@ -99,7 +99,7 @@
                     </a>
 
                     {{-- TODO: buat route 'kunjungan' lalu ganti href="#" di bawah ini --}}
-                    <a href="#" class="nav-sub-item {{ request()->routeIs('kunjungan') ? 'active' : '' }}">
+                    <a href="{{ route('kunjungan-klien-saya') }}" class="nav-sub-item {{ request()->routeIs('kunjungan-klien-saya') ? 'active' : '' }}">
                         <span class="nav-sub-ico"><i class="fa-solid fa-map-location-dot"></i></span>
                         <span class="nav-sub-label">Kunjungan Klien</span>
                     </a>

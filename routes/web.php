@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Karyawan\PresensiController;
+use App\Http\Controllers\Karyawan\ClientVisitController;
 use App\Http\Controllers\Owner\JadwalKerjaController;
 use App\Http\Controllers\Owner\ApprovalController;
 use App\Http\Controllers\Owner\KunjunganController;
@@ -35,6 +36,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/presensi', PresensiController::class)
         ->name('presensi');
 
+    // ===== Kunjungan Klien — Karyawan =====
+    Route::get('/kunjungan-klien-saya', [ClientVisitController::class, 'index'])
+        ->name('kunjungan-klien-saya');
+    Route::post('/kunjungan-klien-saya', [ClientVisitController::class, 'store'])
+        ->name('kunjungan-klien-saya.store');
+
     // ===== Edit kontak profil — khusus Owner =====
     Route::middleware('role:owner')->group(function () {
         Route::put('/profil', [ProfileController::class, 'update'])
@@ -48,12 +55,11 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/approval', [ApprovalController::class, 'index'])
             ->name('approval');
-        
+
         Route::get('/kunjungan-klien', [KunjunganController::class, 'index'])
             ->name('kunjungan-klien');
         Route::patch('/kunjungan-klien/{visit}/status', [KunjunganController::class, 'updateStatus'])
             ->name('kunjungan-klien.update-status');
-
     });
 });
 
