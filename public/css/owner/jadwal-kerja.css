@@ -5,99 +5,575 @@
    di halaman Jadwal Kerja (Karyawan Tetap & Part Time).
    ========================================================= */
 
-:root{
-  --gold:#F5A623;
-  --gold-deep:#DE8C0F;
-  --gold-pale:#FFF4DE;
-  --gold-pale2:#FDECC8;
-  --paper:#FFFFFF;
-  --bg:#FBFBF9;
-  --line:#EDEEF0;
-  --line-soft:#F4F5F2;
-  --text:#22262B;
-  --text-dim:#6B7280;
-  --text-faint:#9AA0A8;
-  --blue:#2E6FDB;
-  --blue-soft:#E8EFFC;
-  --orange:#E8863A;
-  --orange-soft:#FCE9DA;
-  --shadow: 0 1px 2px rgba(20,20,20,.03), 0 10px 26px -16px rgba(20,20,20,.14);
+:root {
+    --gold: #f5a623;
+    --gold-deep: #de8c0f;
+    --gold-pale: #fff4de;
+    --gold-pale2: #fdecc8;
+    --paper: #ffffff;
+    --bg: #fbfbf9;
+    --line: #edeef0;
+    --line-soft: #f4f5f2;
+    --text: #22262b;
+    --text-dim: #6b7280;
+    --text-faint: #9aa0a8;
+    --blue: #2e6fdb;
+    --blue-soft: #e8effc;
+    --orange: #e8863a;
+    --orange-soft: #fce9da;
+    --shadow:
+        0 1px 2px rgba(20, 20, 20, 0.03),
+        0 10px 26px -16px rgba(20, 20, 20, 0.14);
 }
 
-.mono{ font-family:'Poppins', sans-serif; }
+.mono {
+    font-family: "Poppins", sans-serif;
+}
 
 /* ===== Breadcrumb & judul halaman ===== */
-.crumb{ font-size:12.5px; color:var(--text-faint); margin-bottom:14px; display:flex; align-items:center; gap:7px; }
-.crumb b{ color:var(--text-dim); font-weight:700; }
-.page-head{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
-.page-title{ font-family:'Poppins', sans-serif; font-size:28px; font-weight:700; }
-.page-actions{ display:flex; gap:9px; flex-wrap:wrap; }
+.crumb {
+    font-size: 12.5px;
+    color: var(--text-faint);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+.crumb b {
+    color: var(--text-dim);
+    font-weight: 700;
+}
+.page-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.page-title {
+    font-family: "Poppins", sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+}
+.page-actions {
+    display: flex;
+    gap: 9px;
+    flex-wrap: wrap;
+}
 
 /* ===== Tombol ===== */
-.btn{ font-family:'Poppins', sans-serif; font-weight:700; font-size:13px; padding:10px 16px; border-radius:9px; border:1px solid transparent; cursor:pointer; display:inline-flex; align-items:center; gap:7px; transition:.15s; white-space:nowrap; }
-.btn-gold{ background:var(--gold); color:#fff; box-shadow:0 6px 14px rgba(245,166,35,.28); }
-.btn-gold:hover{ background:var(--gold-deep); }
-.btn-line{ background:#fff; color:var(--text); border-color:var(--line); }
-.btn-line:hover{ background:var(--line-soft); }
-.btn-sm{ padding:7px 12px; font-size:11.5px; border-radius:8px; }
+.btn {
+    font-family: "Poppins", sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 10px 16px;
+    border-radius: 9px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: 0.15s;
+    white-space: nowrap;
+}
+.btn-gold {
+    background: var(--gold);
+    color: #fff;
+    box-shadow: 0 6px 14px rgba(245, 166, 35, 0.28);
+}
+.btn-gold:hover {
+    background: var(--gold-deep);
+}
+.btn-line {
+    background: #fff;
+    color: var(--text);
+    border-color: var(--line);
+}
+.btn-line:hover {
+    background: var(--line-soft);
+}
+.btn-sm {
+    padding: 7px 12px;
+    font-size: 11.5px;
+    border-radius: 8px;
+}
 
 /* ===== Card & grid layout ===== */
-.card{ background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:20px; box-shadow:var(--shadow); }
-.card-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:15px; gap:12px; flex-wrap:wrap; }
-.card-title{ font-family:'Poppins', sans-serif; font-size:16px; font-weight:700; }
-.card-sub{ font-size:12px; color:var(--text-dim); margin-top:2px; }
+.card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+}
+.card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.card-title {
+    font-family: "Poppins", sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+}
+.card-sub {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 2px;
+}
 
-.grid{ display:grid; gap:16px; }
-.grid-2-even{ grid-template-columns:1fr 1fr; }
-@media(max-width:900px){ .grid-2-even{ grid-template-columns:1fr; } }
+.grid {
+    display: grid;
+    gap: 16px;
+}
+.grid-2-even {
+    grid-template-columns: 1fr 1fr;
+}
+@media (max-width: 900px) {
+    .grid-2-even {
+        grid-template-columns: 1fr;
+    }
+}
 
 /* ===== Pill tabs (Karyawan Tetap / Part Time) ===== */
-.pilltabs{ display:flex; gap:4px; background:var(--line-soft); padding:4px; border-radius:11px; margin-bottom:18px; width:fit-content; flex-wrap:wrap; }
-.pilltab{ padding:9px 16px; font-size:12.5px; font-weight:700; color:var(--text-dim); border-radius:8px; cursor:pointer; }
-.pilltab.active{ background:#fff; color:var(--text); box-shadow:var(--shadow); }
-.subpage{ display:none; }
-.subpage.active{ display:block; }
+.pilltabs {
+    display: flex;
+    gap: 4px;
+    background: var(--line-soft);
+    padding: 4px;
+    border-radius: 11px;
+    margin-bottom: 18px;
+    width: fit-content;
+    flex-wrap: wrap;
+}
+.pilltab {
+    padding: 9px 16px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text-dim);
+    border-radius: 8px;
+    cursor: pointer;
+}
+.pilltab.active {
+    background: #fff;
+    color: var(--text);
+    box-shadow: var(--shadow);
+}
+.subpage {
+    display: none;
+}
+.subpage.active {
+    display: block;
+}
 
 /* ===== Key-value list (detail shift) ===== */
-.kv{ display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px dashed var(--line); font-size:12.5px; }
-.kv:last-child{ border-bottom:none; }
-.kv-lbl{ color:var(--text-dim); }
-.kv-val{ font-weight:700; }
+.kv {
+    display: flex;
+    justify-content: space-between;
+    padding: 9px 0;
+    border-bottom: 1px dashed var(--line);
+    font-size: 12.5px;
+}
+.kv:last-child {
+    border-bottom: none;
+}
+.kv-lbl {
+    color: var(--text-dim);
+}
+.kv-val {
+    font-weight: 700;
+}
 
 /* ===== Badge status shift ===== */
-.badge{ font-size:10.5px; font-weight:800; padding:3px 9px; border-radius:20px; display:inline-flex; align-items:center; gap:5px; }
-.badge-blue{ background:var(--blue-soft); color:var(--blue); }
-.badge-orange{ background:var(--orange-soft); color:var(--orange); }
-.badge-gray{ background:var(--line-soft); color:var(--text-dim); }
+.badge {
+    font-size: 10.5px;
+    font-weight: 800;
+    padding: 3px 9px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.badge-blue {
+    background: var(--blue-soft);
+    color: var(--blue);
+}
+.badge-orange {
+    background: var(--orange-soft);
+    color: var(--orange);
+}
+.badge-gray {
+    background: var(--line-soft);
+    color: var(--text-dim);
+}
 
 /* ===== Tabel penempatan shift mingguan ===== */
-.table-wrap{ overflow-x:auto; }
-table{ width:100%; border-collapse:collapse; min-width:760px; }
-th{ text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-faint); padding:11px 14px; border-bottom:1px solid var(--line); font-weight:800; background:var(--line-soft); white-space:nowrap; }
-th:first-child{ border-radius:9px 0 0 9px; }
-th:last-child{ border-radius:0 9px 9px 0; }
-td{ padding:13px 14px; font-size:13px; border-bottom:1px solid var(--line-soft); white-space:nowrap; }
-tr:last-child td{ border-bottom:none; }
-tr:hover td{ background:#FCFBF8; }
-.row-name{ display:flex; align-items:center; gap:10px; }
-.avatar-dot{ width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:11.5px; color:#fff; flex-shrink:0; }
+.table-wrap {
+    overflow-x: auto;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 760px;
+}
+th {
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-faint);
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--line);
+    font-weight: 800;
+    background: var(--line-soft);
+    white-space: nowrap;
+}
+th:first-child {
+    border-radius: 9px 0 0 9px;
+}
+th:last-child {
+    border-radius: 0 9px 9px 0;
+}
+td {
+    padding: 13px 14px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--line-soft);
+    white-space: nowrap;
+}
+tr:last-child td {
+    border-bottom: none;
+}
+tr:hover td {
+    background: #fcfbf8;
+}
+.row-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.avatar-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 11.5px;
+    color: #fff;
+    flex-shrink: 0;
+}
 
 /* ===== Catatan info (note box) ===== */
-.note-box{ background:var(--gold-pale); border:1px solid var(--gold-pale2); border-radius:10px; padding:12px 14px; font-size:12px; color:#8A6212; display:flex; gap:9px; margin-top:14px; line-height:1.5; }
+.note-box {
+    background: var(--gold-pale);
+    border: 1px solid var(--gold-pale2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 12px;
+    color: #8a6212;
+    display: flex;
+    gap: 9px;
+    margin-top: 14px;
+    line-height: 1.5;
+}
 
 /* ===== Jadwal mingguan per sesi (Karyawan Part Time) ===== */
-.week-grid{ display:grid; grid-template-columns:repeat(5, 1fr); gap:10px; margin-top:12px; }
-@media(max-width:900px){ .week-grid{ grid-template-columns:repeat(2,1fr); } }
-.week-day{ background:var(--bg); border:1px solid var(--line); border-radius:11px; padding:10px; min-height:78px; }
-.week-day-label{ font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--text-faint); margin-bottom:8px; }
-.session-chip{ background:var(--gold-pale); border:1px solid var(--gold-pale2); border-radius:8px; padding:6px 8px; margin-bottom:6px; }
-.session-chip:last-child{ margin-bottom:0; }
-.session-chip-time{ font-family:'Poppins', sans-serif; font-size:11px; font-weight:700; color:var(--gold-deep); }
-.session-chip-label{ font-size:10.5px; color:#6B5A2E; margin-top:1px; }
-.week-day-empty{ font-size:11px; color:var(--text-faint); padding:6px 0; }
-.field-hint{ font-size:11px; color:var(--text-faint); margin-top:4px; }
+.week-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-top: 12px;
+}
+@media (max-width: 900px) {
+    .week-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+.week-day {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    padding: 10px;
+    min-height: 78px;
+}
+.week-day-label {
+    font-size: 10.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-faint);
+    margin-bottom: 8px;
+}
+.session-chip {
+    background: var(--gold-pale);
+    border: 1px solid var(--gold-pale2);
+    border-radius: 8px;
+    padding: 6px 8px;
+    margin-bottom: 6px;
+}
+.session-chip:last-child {
+    margin-bottom: 0;
+}
+.session-chip-time {
+    font-family: "Poppins", sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gold-deep);
+}
+.session-chip-label {
+    font-size: 10.5px;
+    color: #6b5a2e;
+    margin-top: 1px;
+}
+.week-day-empty {
+    font-size: 11px;
+    color: var(--text-faint);
+    padding: 6px 0;
+}
+.field-hint {
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-top: 4px;
+}
 
 /* ===== Toast notifikasi (disiapkan untuk aksi Simpan/Edit ke depannya) ===== */
-.toast{ position:fixed; bottom:26px; right:26px; background:var(--text); color:#fff; padding:13px 18px; border-radius:12px; font-size:13px; font-weight:700; display:flex; align-items:center; gap:10px; box-shadow:0 12px 30px rgba(0,0,0,.25); transform:translateY(20px); opacity:0; pointer-events:none; transition:.25s; z-index:50; }
-.toast.show{ transform:translateY(0); opacity:1; }
-.toast-dot{ width:8px; height:8px; border-radius:50%; background:var(--gold); flex-shrink:0; }
+.toast {
+    position: fixed;
+    bottom: 26px;
+    right: 26px;
+    background: var(--text);
+    color: #fff;
+    padding: 13px 18px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+    transform: translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: 0.25s;
+    z-index: 50;
+}
+.toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+.toast-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+}
+
+/* ===== RESPONSIVE GLOBAL ===== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+main,
+.content,
+.page-content,
+.container,
+.card,
+.grid,
+.page-head,
+.toolbar {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.card {
+    overflow: hidden;
+}
+
+.grid-2,
+.grid-2-even,
+.grid-3,
+.grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+table {
+    width: 100%;
+    min-width: 0;
+}
+
+th,
+td {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.search-box {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.modal-box {
+    width: min(780px, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
+}
+
+@media (max-width: 900px) {
+    .grid-2,
+    .grid-2-even,
+    .grid-3,
+    .grid-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .page-head,
+    .toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .toolbar-left,
+    .page-actions {
+        width: 100%;
+    }
+
+    .field-input-inline,
+    .search-box,
+    .page-actions .btn {
+        width: 100%;
+    }
+
+    .page-actions .btn {
+        justify-content: center;
+    }
+
+    .modal-box {
+        flex-direction: column;
+        max-height: 92vh;
+    }
+
+    .modal-photo-panel {
+        width: 100%;
+        height: 220px;
+    }
+}
+
+@media (max-width: 600px) {
+    .card {
+        padding: 14px;
+        border-radius: 12px;
+    }
+
+    .page-title {
+        font-size: 22px;
+    }
+
+    .card-title {
+        font-size: 14px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .pilltabs,
+    .subtabs,
+    .shift-toggle {
+        width: 100%;
+    }
+
+    .pilltab,
+    .subtab {
+        flex: 1;
+        text-align: center;
+        padding: 8px 10px;
+        font-size: 11.5px;
+    }
+
+    .shift-toggle {
+        flex-direction: column;
+    }
+
+    .shift-opt {
+        width: 100%;
+    }
+
+    .radar {
+        width: 150px;
+        height: 150px;
+    }
+
+    .cam-frame {
+        width: 100%;
+        max-width: 100%;
+        aspect-ratio: 4 / 3;
+    }
+
+    .modal-overlay {
+        padding: 10px;
+    }
+
+    .modal-box {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .modal-content {
+        padding: 16px;
+    }
+
+    .modal-photo-panel {
+        height: 180px;
+    }
+
+    .modal-actions {
+        flex-direction: column;
+    }
+
+    .modal-action-btn {
+        width: 100%;
+    }
+
+    .pagination-bar {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 380px) {
+    .card {
+        padding: 12px;
+    }
+
+    .btn {
+        font-size: 12px;
+        padding: 8px 11px;
+    }
+
+    th,
+    td {
+        padding: 9px 8px;
+        font-size: 11px;
+    }
+}

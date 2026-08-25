@@ -57,7 +57,7 @@
                     </span>
                 </label>
                 <input type="text" name="address" id="addressInput" placeholder="Alamat lokasi kunjungan" value="{{ old('address') }}" required>
-                <div class="field-hint" id="addrStatus"></div>
+                <div class="field-hint" id="addrStatus">Deteksi otomatis menggunakan lokasi GPS perangkat.</div>
                 @error('address') <div class="field-error">{{ $message }}</div> @enderror
             </div>
 
@@ -121,7 +121,7 @@
                     <img src="{{ $visit->photo_url }}" alt="{{ $visit->client_name }}">
                     <div class="visit-pin">
                         <i class="ti ti-map-pin" style="font-size:11px;"></i>
-                        {{ $visit->accuracy_m ? round($visit->accuracy_m).' m akurasi' : 'Tanpa GPS' }}
+                        {{ $visit->accuracy_m ? 'Ketepatan lokasi ±' . round($visit->accuracy_m) . ' m': 'Lokasi manual' }}
                     </div>
                 </div>
                 <div class="visit-body">
@@ -162,6 +162,7 @@
 
 <script>
 (function () {
+    const form = document.getElementById('visitForm');
     const latInput = document.getElementById('latInput');
     const lngInput = document.getElementById('lngInput');
     const accInput = document.getElementById('accInput');
@@ -169,55 +170,6 @@
     const addrStatus = document.getElementById('addrStatus');
     const btnAddrAuto = document.getElementById('btnAddrAuto');
     const btnAddrManual = document.getElementById('btnAddrManual');
-
-    function detectLocation() {
-        addrStatus.textContent = 'Mendeteksi lokasi...';
-        addressInput.disabled = true;
-        btnAddrAuto.classList.add('btn-gold'); btnAddrAuto.classList.remove('btn-line');
-        btnAddrManual.classList.remove('btn-gold'); btnAddrManual.classList.add('btn-line');
-
-        if (!navigator.geolocation) {
-            addrStatus.textContent = 'Geolocation tidak didukung browser ini. Silakan input manual.';
-            enableManual();
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(async function (pos) {
-            latInput.value = pos.coords.latitude;
-            lngInput.value = pos.coords.longitude;
-            accInput.value = Math.round(pos.coords.accuracy);
-
-            try {
-                const res = await fetch(
-                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&zoom=18&addressdetails=0`,
-                    { headers: { 'Accept-Language': 'id' } }
-                );
-                const data = await res.json();
-                addressInput.value = data.display_name || `${pos.coords.latitude}, ${pos.coords.longitude}`;
-                addrStatus.textContent = `Akurasi ±${Math.round(pos.coords.accuracy)} m`;
-            } catch (e) {
-                addressInput.value = `${pos.coords.latitude}, ${pos.coords.longitude}`;
-                addrStatus.textContent = 'Alamat tidak bisa diambil otomatis, koordinat tersimpan.';
-            }
-        }, function () {
-            addrStatus.textContent = 'Gagal mengambil lokasi (izin ditolak / GPS mati). Silakan input manual.';
-            enableManual();
-        }, { enableHighAccuracy: true, timeout: 10000 });
-    }
-
-    function enableManual() {
-        addressInput.disabled = false;
-        addressInput.value = '';
-        addressInput.focus();
-        latInput.value = ''; lngInput.value = ''; accInput.value = '';
-        btnAddrManual.classList.add('btn-gold'); btnAddrManual.classList.remove('btn-line');
-        btnAddrAuto.classList.remove('btn-gold'); btnAddrAuto.classList.add('btn-line');
-        addrStatus.textContent = 'Mode input manual — kunjungan akan ditandai perlu ditinjau.';
-    }
-
-    btnAddrAuto.addEventListener('click', detectLocation);
-    btnAddrManual.addEventListener('click', enableManual);
-    detectLocation();
 
     const video = document.getElementById('camVideo');
     const preview = document.getElementById('camPreview');
@@ -230,13 +182,143 @@
 
     let stream = null;
 
+    function useManualAddress() {
+        addressInput.readOnly = false;
+        addressInput.value = '';
+        latInput.value = '';
+        lngInput.value = '';
+        accInput.value = '';
+
+        btnAddrManual.classList.add('btn-gold');
+        btnAddrManual.classList.remove('btn-line');
+
+        btnAddrAuto.classList.remove('btn-gold');
+        btnAddrAuto.classList.add('btn-line');
+
+        addrStatus.textContent =
+            'Mode manual aktif. Masukkan alamat lokasi kunjungan.';
+        addressInput.focus();
+    }
+
+    function setAutoMode() {
+        addressInput.readOnly = true;
+
+        btnAddrAuto.classList.add('btn-gold');
+        btnAddrAuto.classList.remove('btn-line');
+
+        btnAddrManual.classList.remove('btn-gold');
+        btnAddrManual.classList.add('btn-line');
+    }
+
+    function detectLocation() {
+        setAutoMode();
+        btnAddrAuto.disabled = true;
+        addrStatus.textContent = 'Mendeteksi lokasi GPS...';
+
+        if (!navigator.geolocation) {
+            btnAddrAuto.disabled = false;
+            useManualAddress();
+            addrStatus.textContent = 'GPS tidak tersedia. Gunakan input manual.';
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            async function (position) {
+                const { latitude, longitude, accuracy } = position.coords;
+
+                latInput.value = latitude;
+                lngInput.value = longitude;
+                accInput.value = Math.round(accuracy);
+
+                addressInput.value = 'Mengambil alamat jalan...';
+
+                try {
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
+                        {
+                            headers: {
+                                'Accept-Language': 'id',
+                            },
+                        }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error('Alamat tidak ditemukan');
+                    }
+
+                    const data = await response.json();
+                    const address = data.address || {};
+
+                    const street = [
+                        address.road,
+                        address.house_number,
+                    ].filter(Boolean).join(' ');
+
+                    const area = [
+                        address.village ||
+                        address.suburb ||
+                        address.neighbourhood,
+                        address.town ||
+                        address.city ||
+                        address.municipality,
+                        address.state,
+                    ].filter(Boolean).join(', ');
+
+                    addressInput.value =
+                        street || area
+                            ? [street, area].filter(Boolean).join(', ')
+                            : data.display_name;
+
+                    addrStatus.textContent =
+                        `Alamat terdeteksi. Ketepatan GPS ±${Math.round(accuracy)} m`;
+                } catch (error) {
+                    addressInput.value =
+                        `Koordinat: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+
+                    addrStatus.textContent =
+                        'Alamat jalan tidak ditemukan. Silakan lengkapi manual.';
+                }
+
+                btnAddrAuto.disabled = false;
+            },
+            function (error) {
+                btnAddrAuto.disabled = false;
+                useManualAddress();
+
+                const messages = {
+                    1: 'Izin lokasi ditolak. Izinkan lokasi pada browser.',
+                    2: 'Lokasi tidak tersedia. Gunakan input manual.',
+                    3: 'Waktu deteksi habis. Coba lagi atau gunakan manual.',
+                };
+
+                addrStatus.textContent =
+                    messages[error.code] || 'Lokasi gagal dideteksi.';
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0,
+            }
+        );
+    }
+
+    btnAddrAuto.addEventListener('click', detectLocation);
+    btnAddrManual.addEventListener('click', useManualAddress);
+
     async function startCamera() {
         try {
-            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: { ideal: 'environment' },
+                },
+                audio: false,
+            });
+
             video.srcObject = stream;
             video.style.display = 'block';
             placeholder.style.display = 'none';
-        } catch (e) {
+            btnCapture.disabled = false;
+        } catch (error) {
             video.style.display = 'none';
             placeholder.style.display = 'flex';
             btnCapture.disabled = true;
@@ -244,15 +326,29 @@
     }
 
     btnCapture.addEventListener('click', function () {
+        if (!video.videoWidth || !video.videoHeight) return;
+
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0);
+
+        canvas.getContext('2d').drawImage(
+            video,
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
 
         canvas.toBlob(function (blob) {
-            const file = new File([blob], `kunjungan-${Date.now()}.jpg`, { type: 'image/jpeg' });
-            const dt = new DataTransfer();
-            dt.items.add(file);
-            photoInput.files = dt.files;
+            const file = new File(
+                [blob],
+                `kunjungan-${Date.now()}.jpg`,
+                { type: 'image/jpeg' }
+            );
+
+            const transfer = new DataTransfer();
+            transfer.items.add(file);
+            photoInput.files = transfer.files;
 
             preview.src = URL.createObjectURL(blob);
             preview.style.display = 'block';
@@ -261,19 +357,39 @@
             btnRetake.style.display = 'inline-flex';
             btnSubmit.disabled = false;
 
-            if (stream) stream.getTracks().forEach(t => t.stop());
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
         }, 'image/jpeg', 0.85);
     });
 
     btnRetake.addEventListener('click', function () {
+        preview.src = '';
         preview.style.display = 'none';
         btnRetake.style.display = 'none';
         btnCapture.style.display = 'inline-flex';
         btnSubmit.disabled = true;
         photoInput.value = '';
+
         startCamera();
     });
 
+    form.addEventListener('submit', function (event) {
+        if (!addressInput.value.trim()) {
+            event.preventDefault();
+            alert('Alamat wajib diisi.');
+            addressInput.focus();
+            return;
+        }
+
+        if (!photoInput.files.length) {
+            event.preventDefault();
+            alert('Foto lokasi wajib diambil.');
+        }
+    });
+
+    useManualAddress();
     startCamera();
 })();
 </script>

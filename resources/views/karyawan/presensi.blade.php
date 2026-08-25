@@ -29,14 +29,22 @@
         </div>
     @enderror
 
+    @if ($errors->any() && ! $errors->has('attendance'))
+        <div style="background:var(--rust-soft); color:var(--rust); border-radius:10px; padding:11px 14px; font-size:12.5px; font-weight:600; margin-bottom:14px;">
+            {{ $errors->first() }}
+        </div>
+    @endif
+
     <div class="pilltabs">
         <div class="pilltab {{ $employee->employee_type !== 'part_time' ? 'active' : '' }}" data-sub="ps-tetap">
             Karyawan Tetap
         </div>
 
-        <div class="pilltab {{ $employee->employee_type === 'part_time' ? 'active' : '' }}" data-sub="ps-parttime">
-            Karyawan Part Time
-        </div>
+        @if ($canSubmitTeachingSessions)
+            <div class="pilltab {{ $employee->employee_type === 'part_time' ? 'active' : '' }}" data-sub="ps-parttime">
+                Sesi Mengajar
+            </div>
+        @endif
     </div>
 
     <!-- Presensi: Karyawan Tetap (shift + radius + kamera) -->
@@ -74,6 +82,7 @@
                     {{-- ===== Belum absen masuk hari ini ===== --}}
                     <form action="{{ route('presensi.check-in') }}" method="POST" enctype="multipart/form-data" id="camForm">
                         @csrf
+                        <input type="hidden" name="attendance_mode" value="fixed">
 
                         <div class="cam-frame" id="camFrame">
                             <video id="camVideo" autoplay playsinline style="display:none;"></video>
@@ -242,7 +251,24 @@
                                     @if ($a->status === 'tepat_waktu')
                                         <span class="badge badge-green">Tepat waktu</span>
                                     @elseif ($a->status === 'terlambat')
-                                        <span class="badge badge-rust">Terlambat {{ $a->late_minutes }}m</span>
+                                        @php
+                                            $lateMinutes = (int) ($a->late_minutes ?? 0);
+                                            $lateHours = intdiv($lateMinutes, 60);
+                                            $remainingMinutes = $lateMinutes % 60;
+                                            $lateText = [];
+
+                                            if ($lateHours > 0) {
+                                                $lateText[] = $lateHours . ' jam';
+                                            }
+
+                                            if ($remainingMinutes > 0) {
+                                                $lateText[] = $remainingMinutes . ' menit';
+                                            }
+                                        @endphp
+
+                                        <span class="badge badge-rust">
+                                            Terlambat {{ implode(' ', $lateText) }}
+                                        </span>
                                     @else
                                         <span class="badge badge-gray">—</span>
                                     @endif
@@ -259,6 +285,7 @@
     </div>
 
     <!-- Presensi: Karyawan Part Time (hari+jam + upload foto) -->
+    @if ($canSubmitTeachingSessions)
     <div class="subpage {{ $employee->employee_type === 'part_time' ? 'active' : '' }}" id="ps-parttime">
 
         <div class="card" style="margin-bottom:16px;">
@@ -278,10 +305,10 @@
                 <div class="session-status-row">
                     <div>
                         <div class="session-status-time">
-                            {{ $a->check_in->format('H:i') }} – {{ $a->check_out->format('H:i') }} · {{ $a->activity }}
+                            {{ $a->check_in?->format('H:i') ?? '—' }} – {{ $a->check_out?->format('H:i') ?? '—' }} · {{ $a->activity }}
                         </div>
                         <div class="session-status-label">
-                            Presensi terkirim {{ $a->check_in->format('H:i') }}
+                            Presensi terkirim {{ $a->check_in?->format('H:i') ?? '—' }}
                         </div>
                     </div>
                     <span class="badge badge-green">✓ Selesai</span>
@@ -302,8 +329,8 @@
             <div class="card">
                 <div class="card-head">
                     <div>
-                        <div class="card-title">Presensi Sesuai Jadwal</div>
-                        <div class="card-sub">Berlaku untuk Guru &amp; karyawan per jam lainnya</div>
+                        <div class="card-title">Tambah Presensi</div>
+                        <div class="card-sub">Tambahkan beberapa sesi sekaligus</div>
                     </div>
                 </div>
 
@@ -313,38 +340,43 @@
                         <path d="M12 8v5M12 16h.01"/>
                     </svg>
                     <div>
-                        Isi sendiri jam mulai &amp; jam selesai sesuai kegiatan yang kamu jalani. Kamu bisa mengirim presensi lebih dari satu kali dalam sehari untuk sesi yang berbeda.
+                        Isi jam dan keterangan untuk setiap sesi yang kamu jalani hari ini.
                     </div>
                 </div>
 
-                <form action="{{ route('presensi.check-in') }}" method="POST">
+                <form action="{{ route('presensi.check-in') }}" method="POST" id="partTimeForm">
                     @csrf
-                    <div class="form-row" style="margin-top:16px;">
-                        <div class="field">
-                            <label>Jam Mulai</label>
-                            <input type="time" name="start_time" value="{{ old('start_time') }}" required>
-                            @error('start_time') <div class="field-error">{{ $message }}</div> @enderror
-                        </div>
-
-                        <div class="field">
-                            <label>Jam Selesai</label>
-                            <input type="time" name="end_time" value="{{ old('end_time') }}" required>
-                            @error('end_time') <div class="field-error">{{ $message }}</div> @enderror
-                        </div>
+                    <input type="hidden" name="attendance_mode" value="teaching">
+                    <div id="sessionRows" class="session-rows">
+                        @php($oldSessions = old('sessions', [['start_time' => '', 'end_time' => '', 'activity' => '']]))
+                        @foreach ($oldSessions as $index => $session)
+                            <div class="session-input-row">
+                                <div class="field">
+                                    <label>Jam Mulai</label>
+                                    <input type="time" name="sessions[{{ $index }}][start_time]" value="{{ $session['start_time'] ?? '' }}" required>
+                                </div>
+                                <div class="field">
+                                    <label>Jam Selesai</label>
+                                    <input type="time" name="sessions[{{ $index }}][end_time]" value="{{ $session['end_time'] ?? '' }}" required>
+                                </div>
+                                <div class="field session-activity-field">
+                                    <label>Keterangan</label>
+                                    <input type="text" name="sessions[{{ $index }}][activity]" placeholder="cth. Mengajar Kelas 6B" value="{{ $session['activity'] ?? '' }}" required>
+                                </div>
+                                <button type="button" class="remove-session btn btn-line" title="Hapus sesi" aria-label="Hapus sesi">-</button>
+                            </div>
+                        @endforeach
                     </div>
 
-                    <div class="field">
-                        <label>Kegiatan / Keterangan</label>
-                        <input type="text" name="activity" placeholder="cth. Mengajar Kelas 6B" value="{{ old('activity') }}" required>
-                        @error('activity') <div class="field-error">{{ $message }}</div> @enderror
-                    </div>
-
-                    <button type="submit" class="btn btn-gold btn-block" style="margin-top:8px; padding:14px;">
+                    <div class="session-form-actions">
+                        <button type="button" id="addSession" class="btn btn-line add-session">+ Tambah Sesi</button>
+                        <button type="submit" class="btn btn-gold" style="padding:14px;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M20 6 9 17l-5-5"/>
                         </svg>
-                        Kirim Presensi Sesi Ini
-                    </button>
+                            Kirim Semua Presensi
+                        </button>
+                    </div>
                 </form>
             </div>
 
@@ -384,8 +416,8 @@
                         @forelse ($recentAttendances as $a)
                             <tr>
                                 <td>{{ \Carbon\Carbon::parse($a->tanggal)->translatedFormat('d M') }}</td>
-                                <td class="mono">{{ $a->check_in->format('H:i') }}–{{ $a->check_out->format('H:i') }}</td>
-                                <td class="mono">{{ $a->check_in->format('H:i') }}</td>
+                                <td class="mono">{{ $a->check_in?->format('H:i') ?? '—' }}–{{ $a->check_out?->format('H:i') ?? '—' }}</td>
+                                <td class="mono">{{ $a->check_in?->format('H:i') ?? '—' }}</td>
                                 <td><span class="badge badge-green">Tercatat</span></td>
                             </tr>
                         @empty
@@ -397,6 +429,7 @@
 
         </div>
     </div>
+    @endif
 
     <script>
         // ===== Ganti tab Karyawan Tetap / Part Time =====
@@ -418,6 +451,40 @@
                 if (shiftInput) shiftInput.value = opt.dataset.shiftId;
             });
         });
+
+        // ===== Tambah beberapa sesi part-time =====
+        (function () {
+            const rows = document.getElementById('sessionRows');
+            const addButton = document.getElementById('addSession');
+
+            if (!rows || !addButton) return;
+
+            function renumberRows() {
+                rows.querySelectorAll('.session-input-row').forEach((row, index) => {
+                    row.querySelectorAll('input').forEach(input => {
+                        input.name = input.name.replace(/sessions\[\d+\]/, `sessions[${index}]`);
+                    });
+                    row.querySelector('.remove-session').disabled = rows.children.length === 1;
+                });
+            }
+
+            addButton.addEventListener('click', () => {
+                if (rows.children.length >= 20) return;
+                const row = rows.querySelector('.session-input-row').cloneNode(true);
+                row.querySelectorAll('input').forEach(input => input.value = '');
+                rows.appendChild(row);
+                renumberRows();
+            });
+
+            rows.addEventListener('click', event => {
+                if (event.target.closest('.remove-session')) {
+                    event.target.closest('.session-input-row').remove();
+                    renumberRows();
+                }
+            });
+
+            renumberRows();
+        })();
 
         // ===== Kamera + GPS + Radar (Karyawan Tetap) =====
         (function () {
@@ -518,37 +585,98 @@
                 });
             }
 
+            let locationWatchId = null;
+            let bestAccuracy = Infinity;
+
             function watchLocation() {
                 if (!navigator.geolocation) {
-                    if (geoStatusTitle) geoStatusTitle.textContent = 'Geolocation tidak didukung';
+                    if (geoStatusTitle) {
+                        geoStatusTitle.textContent = 'GPS tidak didukung';
+                    }
                     return;
                 }
 
-                navigator.geolocation.watchPosition(function (pos) {
-                    const { latitude, longitude, accuracy } = pos.coords;
+                if (geoStatusTitle) {
+                    geoStatusTitle.textContent = 'Mencari lokasi terbaik...';
+                }
 
-                    if (latInput) { latInput.value = latitude; lngInput.value = longitude; hasLocation = true; }
-                    if (camGeoLabel) camGeoLabel.textContent = `📍 ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
-                    if (geoMetaAccuracy) geoMetaAccuracy.textContent = `±${Math.round(accuracy)}m`;
+                locationWatchId = navigator.geolocation.watchPosition(
+                    function (pos) {
+                        const { latitude, longitude, accuracy } = pos.coords;
 
-                    if (branchLat !== null && branchLng !== null) {
-                        const d = distanceMeters(branchLat, branchLng, latitude, longitude);
-                        if (geoMetaDistance) geoMetaDistance.textContent = `${d} m`;
+                        if (accuracy >= bestAccuracy) return;
 
-                        if (branchRadius !== null && d <= branchRadius) {
-                            if (geoStatusTitle) geoStatusTitle.textContent = 'Dalam radius kerja';
-                            if (geoStatusSub) geoStatusSub.textContent = `Kamu berada ${d} m dari titik kantor (batas ${branchRadius} m)`;
-                        } else {
-                            if (geoStatusTitle) geoStatusTitle.textContent = 'Di luar radius kerja';
-                            if (geoStatusSub) geoStatusSub.textContent = `Kamu berada ${d} m dari titik kantor (batas ${branchRadius ?? '—'} m)`;
+                        bestAccuracy = accuracy;
+
+                        if (latInput) {
+                            latInput.value = latitude;
+                            lngInput.value = longitude;
+                            hasLocation = true;
                         }
-                    }
 
-                    updateSubmitState();
-                }, function () {
-                    if (geoStatusTitle) geoStatusTitle.textContent = 'Gagal mendeteksi lokasi';
-                    if (geoStatusSub) geoStatusSub.textContent = 'Aktifkan GPS / izinkan akses lokasi browser.';
-                }, { enableHighAccuracy: true, maximumAge: 5000 });
+                        if (camGeoLabel) {
+                            camGeoLabel.textContent =
+                                `📍 ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+                        }
+
+                        if (geoMetaAccuracy) {
+                            geoMetaAccuracy.textContent =
+                                `±${Math.round(accuracy)} m`;
+                        }
+
+                        if (branchLat !== null && branchLng !== null) {
+                            const d = distanceMeters(
+                                branchLat,
+                                branchLng,
+                                latitude,
+                                longitude
+                            );
+
+                            if (geoMetaDistance) {
+                                geoMetaDistance.textContent = `${d} m`;
+                            }
+
+                            if (branchRadius !== null && d <= branchRadius) {
+                                geoStatusTitle.textContent = 'Dalam radius kerja';
+                                geoStatusSub.textContent =
+                                    `Kamu berada ${d} m dari titik kantor`;
+                            } else {
+                                geoStatusTitle.textContent = 'Di luar radius kerja';
+                                geoStatusSub.textContent =
+                                    `Kamu berada ${d} m dari titik kantor`;
+                            }
+                        }
+
+                        if (accuracy <= 30 && locationWatchId !== null) {
+                            navigator.geolocation.clearWatch(locationWatchId);
+                            locationWatchId = null;
+                        }
+
+                        updateSubmitState();
+                    },
+                    function () {
+                        if (geoStatusTitle) {
+                            geoStatusTitle.textContent = 'Gagal mendeteksi lokasi';
+                        }
+
+                        if (geoStatusSub) {
+                            geoStatusSub.textContent =
+                                'Aktifkan GPS atau izinkan akses lokasi browser.';
+                        }
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 8000,
+                        maximumAge: 0,
+                    }
+                );
+
+                setTimeout(function () {
+                    if (locationWatchId !== null) {
+                        navigator.geolocation.clearWatch(locationWatchId);
+                        locationWatchId = null;
+                    }
+                }, 8000);
             }
 
             startCamera();

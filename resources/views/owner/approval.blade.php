@@ -97,12 +97,61 @@
                   $distance = $attendance->distance_m;
                   $isOutOfRadius = $distance !== null && $distance > 100;
 
+                  $lateLabel = 'Terlambat';
+
+                  $startTime = $isTetap
+                      ? $attendance->shift?->start_time
+                      : $attendance->partTimeSchedule?->start_time;
+
+                  if ($attendance->status === 'terlambat' && $attendance->check_in && $startTime) {
+                      $tanggal = $attendance->tanggal->format('Y-m-d');
+
+                      $scheduledTime = \Carbon\Carbon::parse(
+                          $tanggal . ' ' . $startTime
+                      );
+
+                      // check_in sudah berisi tanggal dan waktu lengkap
+                      $checkInTime = \Carbon\Carbon::parse($attendance->check_in);
+
+                      $lateMinutes = $scheduledTime->diffInMinutes($checkInTime);
+
+                      $hours = intdiv($lateMinutes, 60);
+                      $minutes = $lateMinutes % 60;
+
+                      $lateParts = [];
+
+                      if ($hours > 0) {
+                          $lateParts[] = $hours . ' jam';
+                      }
+
+                      if ($minutes > 0) {
+                          $lateParts[] = $minutes . ' menit';
+                      }
+
+                      if (!empty($lateParts)) {
+                          $lateLabel .= ' ' . implode(' ', $lateParts);
+                      }
+                  }
+
                   $statusMap = [
-                      'tepat_waktu' => ['label' => 'Tepat Waktu', 'class' => 'badge-green'],
-                      'terlambat'   => ['label' => 'Terlambat' . ($attendance->late_minutes ? ' ' . $attendance->late_minutes . 'm' : ''), 'class' => 'badge-rust'],
-                      'alpa'        => ['label' => 'Alpa', 'class' => 'badge-rust'],
+                      'tepat_waktu' => [
+                          'label' => 'Tepat Waktu',
+                          'class' => 'badge-green',
+                      ],
+                      'terlambat' => [
+                          'label' => $lateLabel,
+                          'class' => 'badge-rust',
+                      ],
+                      'alpa' => [
+                          'label' => 'Alpa',
+                          'class' => 'badge-rust',
+                      ],
                   ];
-                  $statusInfo = $statusMap[$attendance->status] ?? ['label' => ucfirst(str_replace('_', ' ', $attendance->status ?? '-')), 'class' => 'badge-gray'];
+
+                  $statusInfo = $statusMap[$attendance->status] ?? [
+                      'label' => ucfirst(str_replace('_', ' ', $attendance->status ?? '-')),
+                      'class' => 'badge-gray',
+                  ];
 
                   $initials = $employee->initials();
                   $avatarColors = ['#8B5CF6', '#2E6FDB', '#E8863A', '#D34D9C', '#2F8A5B', '#D34D3C'];

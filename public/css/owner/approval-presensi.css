@@ -7,35 +7,34 @@
    ======================================================== */
 
 :root {
-    --gold: #F5A623;
-    --gold-deep: #DE8C0F;
-    --gold-pale: #FFF4DE;
-    --gold-pale2: #FDECC8;
+    --gold: #f5a623;
+    --gold-deep: #de8c0f;
+    --gold-pale: #fff4de;
+    --gold-pale2: #fdecc8;
 
-    --paper: #FFFFFF;
-    --bg: #FBFBF9;
+    --paper: #ffffff;
+    --bg: #fbfbf9;
 
-    --line: #EDEEF0;
-    --line-soft: #F4F5F2;
+    --line: #edeef0;
+    --line-soft: #f4f5f2;
 
-    --text: #22262B;
-    --text-dim: #6B7280;
-    --text-faint: #9AA0A8;
+    --text: #22262b;
+    --text-dim: #6b7280;
+    --text-faint: #9aa0a8;
 
-    --green: #2F8A5B;
-    --green-soft: #E7F5EC;
+    --green: #2f8a5b;
+    --green-soft: #e7f5ec;
 
-    --rust: #D34D3C;
-    --rust-soft: #FCEAE7;
+    --rust: #d34d3c;
+    --rust-soft: #fceae7;
 
-    --blue: #2E6FDB;
-    --blue-soft: #E8EFFC;
+    --blue: #2e6fdb;
+    --blue-soft: #e8effc;
 
     --shadow:
-        0 1px 2px rgba(20, 20, 20, .03),
-        0 10px 26px -16px rgba(20, 20, 20, .14);
+        0 1px 2px rgba(20, 20, 20, 0.03),
+        0 10px 26px -16px rgba(20, 20, 20, 0.14);
 }
-
 
 /* ========================================================
    2. BREADCRUMB & PAGE HEADER
@@ -69,7 +68,7 @@
 }
 
 .page-title {
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins", sans-serif;
     font-size: 28px;
     font-weight: 700;
 }
@@ -79,7 +78,6 @@
     gap: 9px;
     flex-wrap: wrap;
 }
-
 
 /* ========================================================
    3. BUTTONS
@@ -95,21 +93,21 @@
     border: 1px solid transparent;
     border-radius: 9px;
 
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins", sans-serif;
     font-size: 13px;
     font-weight: 700;
 
     cursor: pointer;
     white-space: nowrap;
 
-    transition: .15s ease;
+    transition: 0.15s ease;
 }
 
 .btn-gold {
     background: var(--gold);
     color: #fff;
 
-    box-shadow: 0 6px 14px rgba(245, 166, 35, .28);
+    box-shadow: 0 6px 14px rgba(245, 166, 35, 0.28);
 }
 
 .btn-gold:hover {
@@ -149,15 +147,14 @@
 }
 
 .btn:disabled {
-    opacity: .4;
+    opacity: 0.4;
     cursor: not-allowed;
 }
 
 .btn-disabled {
-    opacity: .4;
+    opacity: 0.4;
     pointer-events: none;
 }
-
 
 /* ========================================================
    4. CARD
@@ -186,7 +183,7 @@
 }
 
 .card-title {
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins", sans-serif;
     font-size: 16px;
     font-weight: 700;
 }
@@ -197,7 +194,6 @@
     font-size: 12px;
     color: var(--text-dim);
 }
-
 
 /* ========================================================
    5. BADGE
@@ -241,7 +237,6 @@
     color: var(--blue);
 }
 
-
 /* ========================================================
    6. TABLE
    ======================================================== */
@@ -272,7 +267,7 @@ th {
     text-align: left;
     text-transform: uppercase;
 
-    letter-spacing: .04em;
+    letter-spacing: 0.04em;
 
     white-space: nowrap;
 }
@@ -300,7 +295,7 @@ tr:last-child td {
 }
 
 tr:hover td {
-    background: #FCFBF8;
+    background: #fcfbf8;
 }
 
 .row-name {
@@ -323,7 +318,6 @@ tr:hover td {
     font-variant-numeric: tabular-nums;
 }
 
-
 /* ========================================================
    7. AVATAR
    ======================================================== */
@@ -345,7 +339,6 @@ tr:hover td {
     font-size: 11.5px;
     font-weight: 800;
 }
-
 
 /* ========================================================
    8. TOOLBAR & FILTER
@@ -400,7 +393,7 @@ tr:hover td {
 
     color: var(--text);
 
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins", sans-serif;
     font-size: 12.5px;
 
     cursor: pointer;
@@ -421,7 +414,6 @@ tr:hover td {
     color: var(--gold-deep);
 }
 
-
 /* ========================================================
    9. FORM
    ======================================================== */
@@ -433,14 +425,14 @@ tr:hover td {
 
     padding: 10px 13px;
 
-    background: #FCFCFB;
+    background: #fcfcfb;
 
     border: 1px solid var(--line);
     border-radius: 9px;
 
     color: var(--text);
 
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins", sans-serif;
     font-size: 13.5px;
 }
 
@@ -453,7 +445,6 @@ tr:hover td {
 
     background: #fff;
 }
-
 
 /* ========================================================
    10. NOTE BOX
@@ -471,12 +462,11 @@ tr:hover td {
     border: 1px solid var(--gold-pale2);
     border-radius: 10px;
 
-    color: #8A6212;
+    color: #8a6212;
 
     font-size: 12px;
     line-height: 1.5;
 }
-
 
 /* ========================================================
    11. EMPTY STATE
@@ -494,7 +484,6 @@ tr:hover td {
     white-space: normal !important;
 }
 
-
 /* ========================================================
    12. PHOTO THUMBNAIL
    ======================================================== */
@@ -511,7 +500,7 @@ tr:hover td {
     cursor: pointer;
     flex-shrink: 0;
 
-    transition: border-color .15s ease;
+    transition: border-color 0.15s ease;
 }
 
 .photo-thumb img {
@@ -527,7 +516,6 @@ tr:hover td {
     border-color: var(--gold);
 }
 
-
 /* ========================================================
    13. TEXT STATUS
    ======================================================== */
@@ -536,7 +524,6 @@ tr:hover td {
     color: var(--rust);
     font-weight: 700;
 }
-
 
 /* ========================================================
    14. PAGINATION
@@ -560,7 +547,6 @@ tr:hover td {
     font-size: 12px;
 }
 
-
 /* ========================================================
    15. MODAL OVERLAY
    ======================================================== */
@@ -576,19 +562,18 @@ tr:hover td {
 
     padding: 20px;
 
-    background: rgba(20, 20, 20, .5);
+    background: rgba(20, 20, 20, 0.5);
 
     opacity: 0;
     pointer-events: none;
 
-    transition: opacity .18s ease;
+    transition: opacity 0.18s ease;
 }
 
 .modal-overlay.show {
     opacity: 1;
     pointer-events: auto;
 }
-
 
 /* ========================================================
    16. MODAL BOX
@@ -609,18 +594,16 @@ tr:hover td {
 
     border-radius: 18px;
 
-    box-shadow:
-        0 20px 60px -20px rgba(0, 0, 0, .35);
+    box-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.35);
 
     transform: translateY(10px);
 
-    transition: transform .18s ease;
+    transition: transform 0.18s ease;
 }
 
 .modal-overlay.show .modal-box {
     transform: translateY(0);
 }
-
 
 /* ========================================================
    17. MODAL PHOTO PANEL
@@ -691,16 +674,15 @@ tr:hover td {
     transform: translateX(-50%);
     z-index: 2;
     padding: 4px 9px;
-    background: rgba(255, 255, 255, .94);
+    background: rgba(255, 255, 255, 0.94);
     border-radius: 6px;
     color: var(--text-dim);
     font-size: 10px;
     font-weight: 700;
-    letter-spacing: .02em;
+    letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
 }
-
 
 /* ========================================================
    18. MODAL CONTENT
@@ -739,7 +721,7 @@ tr:hover td {
 .modal-employee-name {
     color: var(--text);
 
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins", sans-serif;
     font-size: 16px;
     font-weight: 600;
 
@@ -753,7 +735,6 @@ tr:hover td {
 
     font-size: 12px;
 }
-
 
 /* ========================================================
    19. MODAL CLOSE BUTTON
@@ -778,19 +759,19 @@ tr:hover td {
 
     background: #fff;
 
-    border: 1px solid #EDEEF1;
+    border: 1px solid #edeef1;
     border-radius: 9px;
 
-    color: #6B7280;
+    color: #6b7280;
 
     cursor: pointer;
 
     transition:
-        background-color .2s ease,
-        border-color .2s ease,
-        color .2s ease,
-        transform .15s ease,
-        box-shadow .2s ease;
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.15s ease,
+        box-shadow 0.2s ease;
 }
 
 .modal-close i {
@@ -803,29 +784,26 @@ tr:hover td {
 }
 
 .modal-close:hover {
-    background: #FEF2F2;
+    background: #fef2f2;
 
-    border-color: #FECACA;
+    border-color: #fecaca;
 
-    color: #DC2626;
+    color: #dc2626;
 
     transform: rotate(90deg);
 
-    box-shadow:
-        0 4px 12px rgba(220, 38, 38, .12);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.12);
 }
 
 .modal-close:active {
-    transform: rotate(90deg) scale(.94);
+    transform: rotate(90deg) scale(0.94);
 }
 
 .modal-close:focus-visible {
     outline: none;
 
-    box-shadow:
-        0 0 0 3px rgba(220, 38, 38, .18);
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.18);
 }
-
 
 /* ========================================================
    20. MODAL STATUS
@@ -834,7 +812,6 @@ tr:hover td {
 .modal-status-row {
     flex-shrink: 0;
 }
-
 
 /* ========================================================
    21. MODAL INFO LIST
@@ -853,7 +830,7 @@ tr:hover td {
 
     padding: 9px 0;
 
-    border-top: 1px solid #F8F8F6;
+    border-top: 1px solid #f8f8f6;
 
     font-size: 13px;
 }
@@ -880,7 +857,6 @@ tr:hover td {
     font-variant-numeric: tabular-nums;
 }
 
-
 /* ========================================================
    22. MODAL NOTES BLOCK
    ======================================================== */
@@ -900,7 +876,7 @@ tr:hover td {
     font-size: 10px;
     font-weight: 700;
 
-    letter-spacing: .04em;
+    letter-spacing: 0.04em;
 
     text-transform: uppercase;
 }
@@ -915,7 +891,6 @@ tr:hover td {
 
     word-break: break-word;
 }
-
 
 /* ========================================================
    23. MODAL ACTIONS
@@ -948,7 +923,7 @@ tr:hover td {
 
     border-radius: 9px;
 
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins", sans-serif;
     font-size: 12.5px;
     font-weight: 600;
 
@@ -970,10 +945,9 @@ tr:hover td {
 }
 
 .modal-action-btn[disabled] {
-    opacity: .5;
+    opacity: 0.5;
     cursor: not-allowed;
 }
-
 
 /* ========================================================
    24. TOAST
@@ -1001,14 +975,14 @@ tr:hover td {
     font-size: 13px;
     font-weight: 700;
 
-    box-shadow: 0 12px 30px rgba(0, 0, 0, .25);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
 
     transform: translateY(20px);
     opacity: 0;
 
     pointer-events: none;
 
-    transition: .25s ease;
+    transition: 0.25s ease;
 }
 
 .toast.show {
@@ -1027,13 +1001,11 @@ tr:hover td {
     border-radius: 50%;
 }
 
-
 /* ========================================================
    25. RESPONSIVE
    ======================================================== */
 
 @media (max-width: 640px) {
-
     /* Toolbar */
     .toolbar {
         flex-direction: column;
@@ -1049,7 +1021,6 @@ tr:hover td {
     .search-box {
         width: 100%;
     }
-
 
     /* Modal */
     .modal-box {
@@ -1083,5 +1054,209 @@ tr:hover td {
     .modal-close {
         top: 10px;
         right: 10px;
+    }
+}
+
+/* ===== RESPONSIVE GLOBAL ===== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+main,
+.content,
+.page-content,
+.container,
+.card,
+.grid,
+.page-head,
+.toolbar {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.card {
+    overflow: hidden;
+}
+
+.grid-2,
+.grid-2-even,
+.grid-3,
+.grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+table {
+    width: 100%;
+    min-width: 0;
+}
+
+th,
+td {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.search-box {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.modal-box {
+    width: min(780px, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
+}
+
+@media (max-width: 900px) {
+    .grid-2,
+    .grid-2-even,
+    .grid-3,
+    .grid-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .page-head,
+    .toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .toolbar-left,
+    .page-actions {
+        width: 100%;
+    }
+
+    .field-input-inline,
+    .search-box,
+    .page-actions .btn {
+        width: 100%;
+    }
+
+    .page-actions .btn {
+        justify-content: center;
+    }
+
+    .modal-box {
+        flex-direction: column;
+        max-height: 92vh;
+    }
+
+    .modal-photo-panel {
+        width: 100%;
+        height: 220px;
+    }
+}
+
+@media (max-width: 600px) {
+    .card {
+        padding: 14px;
+        border-radius: 12px;
+    }
+
+    .page-title {
+        font-size: 22px;
+    }
+
+    .card-title {
+        font-size: 14px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .pilltabs,
+    .subtabs,
+    .shift-toggle {
+        width: 100%;
+    }
+
+    .pilltab,
+    .subtab {
+        flex: 1;
+        text-align: center;
+        padding: 8px 10px;
+        font-size: 11.5px;
+    }
+
+    .shift-toggle {
+        flex-direction: column;
+    }
+
+    .shift-opt {
+        width: 100%;
+    }
+
+    .radar {
+        width: 150px;
+        height: 150px;
+    }
+
+    .cam-frame {
+        width: 100%;
+        max-width: 100%;
+        aspect-ratio: 4 / 3;
+    }
+
+    .modal-overlay {
+        padding: 10px;
+    }
+
+    .modal-box {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .modal-content {
+        padding: 16px;
+    }
+
+    .modal-photo-panel {
+        height: 180px;
+    }
+
+    .modal-actions {
+        flex-direction: column;
+    }
+
+    .modal-action-btn {
+        width: 100%;
+    }
+
+    .pagination-bar {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 380px) {
+    .card {
+        padding: 12px;
+    }
+
+    .btn {
+        font-size: 12px;
+        padding: 8px 11px;
+    }
+
+    th,
+    td {
+        padding: 9px 8px;
+        font-size: 11px;
     }
 }

@@ -129,39 +129,53 @@ class AttendanceService
      * Presensi karyawan PART TIME: input manual jam mulai/selesai + keterangan.
      * Tanpa foto, tidak dicocokkan ke PartTimeSchedule, boleh lebih dari 1 sesi per hari.
      */
-    public function submitSesiPartTime(Employee $employee, string $startTime, string $endTime, string $activity): Attendance
+    public function submitSesiPartTimeBatch(Employee $employee, array $sessions): int
     {
         $tanggal = Carbon::now()->toDateString();
 
-        $checkIn = Carbon::parse("{$tanggal} {$startTime}");
-        $checkOut = Carbon::parse("{$tanggal} {$endTime}");
+        return DB::transaction(function () use ($employee, $sessions, $tanggal) {
+            $ranges = [];
 
-        if ($checkOut->lessThanOrEqualTo($checkIn)) {
-            throw new AttendanceException('Jam selesai harus setelah jam mulai.');
-        }
+            foreach ($sessions as $session) {
+                $checkIn = Carbon::parse("{$tanggal} {$session['start_time']}");
+                $checkOut = Carbon::parse("{$tanggal} {$session['end_time']}");
 
-        $overlap = Attendance::where('employee_id', $employee->id)
-            ->where('tanggal', $tanggal)
-            ->where('check_in', '<', $checkOut)
-            ->where('check_out', '>', $checkIn)
-            ->exists();
+                foreach ($ranges as [$existingCheckIn, $existingCheckOut]) {
+                    if ($checkIn->lessThan($existingCheckOut) && $checkOut->greaterThan($existingCheckIn)) {
+                        throw new AttendanceException('Sesi yang dikirim tumpang tindih satu sama lain.');
+                    }
+                }
 
-        if ($overlap) {
-            throw new AttendanceException('Sesi ini tumpang tindih dengan sesi yang sudah Anda kirim hari ini.');
-        }
+                $overlap = Attendance::where('employee_id', $employee->id)
+                    ->where('tanggal', $tanggal)
+                    ->where('check_in', '<', $checkOut)
+                    ->where('check_out', '>', $checkIn)
+                    ->exists();
 
-        return Attendance::create([
-            'employee_id' => $employee->id,
-            'branch_id' => $employee->branch_id,
-            'shift_id' => null,
-            'part_time_schedule_id' => null,
-            'activity' => $activity,
-            'tanggal' => $tanggal,
-            'check_in' => $checkIn,
-            'check_out' => $checkOut,
-            'status' => null,
-            'late_minutes' => 0,
-        ]);
+                if ($overlap) {
+                    throw new AttendanceException('Salah satu sesi tumpang tindih dengan sesi yang sudah Anda kirim hari ini.');
+                }
+
+                $ranges[] = [$checkIn, $checkOut];
+            }
+
+            foreach ($sessions as $index => $session) {
+                Attendance::create([
+                    'employee_id' => $employee->id,
+                    'branch_id' => $employee->branch_id,
+                    'shift_id' => null,
+                    'part_time_schedule_id' => null,
+                    'activity' => $session['activity'],
+                    'tanggal' => $tanggal,
+                    'check_in' => $ranges[$index][0],
+                    'check_out' => $ranges[$index][1],
+                    'status' => null,
+                    'late_minutes' => 0,
+                ]);
+            }
+
+            return count($sessions);
+        });
     }
 
     private function storePhoto(UploadedFile $photo, string $prefix): string

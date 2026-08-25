@@ -4,36 +4,35 @@
 
 :root {
     /* Color */
-    --gold: #F5A623;
-    --gold-deep: #DE8C0F;
-    --gold-pale: #FFF4DE;
-    --gold-pale2: #FDECC8;
+    --gold: #f5a623;
+    --gold-deep: #de8c0f;
+    --gold-pale: #fff4de;
+    --gold-pale2: #fdecc8;
 
-    --paper: #FFFFFF;
-    --bg: #FBFBF9;
+    --paper: #ffffff;
+    --bg: #fbfbf9;
 
-    --line: #EDEEF0;
-    --line-soft: #F4F5F2;
+    --line: #edeef0;
+    --line-soft: #f4f5f2;
 
-    --text: #22262B;
-    --text-dim: #6B7280;
-    --text-faint: #9AA0A8;
+    --text: #22262b;
+    --text-dim: #6b7280;
+    --text-faint: #9aa0a8;
 
-    --green: #2F8A5B;
-    --green-soft: #E7F5EC;
+    --green: #2f8a5b;
+    --green-soft: #e7f5ec;
 
-    --rust: #D34D3C;
-    --rust-soft: #FCEAE7;
+    --rust: #d34d3c;
+    --rust-soft: #fceae7;
 
-    --blue: #2E6FDB;
-    --blue-soft: #E8EFFC;
+    --blue: #2e6fdb;
+    --blue-soft: #e8effc;
 
     /* Shadow */
     --shadow:
         0 1px 2px rgba(20, 20, 20, 0.03),
         0 10px 26px -16px rgba(20, 20, 20, 0.14);
 }
-
 
 /* ========================================================
    BREADCRUMB
@@ -55,7 +54,6 @@
     font-weight: 700;
 }
 
-
 /* ========================================================
    PAGE HEADER
    ======================================================== */
@@ -71,7 +69,7 @@
 }
 
 .page-title {
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins", sans-serif;
     font-size: 28px;
     font-weight: 700;
 }
@@ -81,7 +79,6 @@
     flex-wrap: wrap;
     gap: 9px;
 }
-
 
 /* ========================================================
    BUTTON
@@ -97,7 +94,7 @@
     border: 1px solid transparent;
     border-radius: 9px;
 
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins", sans-serif;
     font-size: 13px;
     font-weight: 700;
 
@@ -154,7 +151,6 @@
     cursor: not-allowed;
 }
 
-
 /* ========================================================
    CARD
    ======================================================== */
@@ -180,7 +176,7 @@
 }
 
 .card-title {
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins", sans-serif;
     font-size: 16px;
     font-weight: 700;
 }
@@ -191,7 +187,6 @@
     font-size: 12px;
     color: var(--text-dim);
 }
-
 
 /* ========================================================
    BADGE
@@ -234,7 +229,6 @@
     background: var(--blue-soft);
     color: var(--blue);
 }
-
 
 /* ========================================================
    TABLE
@@ -291,7 +285,7 @@ tr:last-child td {
 }
 
 tr:hover td {
-    background: #FCFBF8;
+    background: #fcfbf8;
 }
 
 .row-name {
@@ -314,7 +308,6 @@ tr:hover td {
     font-variant-numeric: tabular-nums;
 }
 
-
 /* ========================================================
    AVATAR
    ======================================================== */
@@ -334,7 +327,6 @@ tr:hover td {
     font-size: 11.5px;
     font-weight: 800;
 }
-
 
 /* ========================================================
    TOOLBAR
@@ -389,7 +381,6 @@ tr:hover td {
     color: var(--gold-deep);
 }
 
-
 /* ========================================================
    KEY - VALUE
    ======================================================== */
@@ -419,7 +410,6 @@ tr:hover td {
 .kv-val {
     font-weight: 700;
 }
-
 
 /* ========================================================
    TOAST
@@ -468,11 +458,9 @@ tr:hover td {
     border-radius: 50%;
 }
 
-
 /* ========================================================
    BAGIAN 2 — Khusus Halaman Kunjungan Klien
    ======================================================== */
-
 
 /* Input inline */
 
@@ -484,7 +472,7 @@ tr:hover td {
     border-radius: 9px;
 
     color: var(--text);
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins", sans-serif;
     font-size: 12.5px;
 
     cursor: pointer;
@@ -495,14 +483,12 @@ tr:hover td {
     border-color: var(--gold);
 }
 
-
 /* Text */
 
 .text-rust {
     color: var(--rust);
     font-weight: 700;
 }
-
 
 /* Empty state */
 
@@ -515,7 +501,6 @@ tr:hover td {
     text-align: center;
     white-space: normal !important;
 }
-
 
 /* ========================================================
    PHOTO THUMBNAIL
@@ -561,7 +546,6 @@ tr:hover td {
     display: none;
 }
 
-
 /* ========================================================
    PAGINATION
    ======================================================== */
@@ -588,11 +572,9 @@ tr:hover td {
     pointer-events: none;
 }
 
-
 /* ========================================================
    BAGIAN 3 — Modal Detail Kunjungan
    ======================================================== */
-
 
 /* ========================================================
    MODAL OVERLAY
@@ -622,7 +604,6 @@ tr:hover td {
     pointer-events: auto;
 }
 
-
 /* ========================================================
    MODAL BOX
    ======================================================== */
@@ -649,7 +630,6 @@ tr:hover td {
 .modal-overlay.show .modal-box {
     transform: translateY(0);
 }
-
 
 /* ========================================================
    MODAL — PHOTO PANEL
@@ -715,7 +695,6 @@ tr:hover td {
     transform: translateX(-50%);
 }
 
-
 /* ========================================================
    MODAL — CONTENT
    ======================================================== */
@@ -730,7 +709,6 @@ tr:hover td {
 
     overflow-y: auto;
 }
-
 
 /* Modal header */
 
@@ -751,7 +729,7 @@ tr:hover td {
 }
 
 .modal-employee-name {
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins", sans-serif;
     font-size: 16px;
     font-weight: 600;
     line-height: 1.3;
@@ -765,7 +743,6 @@ tr:hover td {
     color: var(--text-faint);
     font-size: 12px;
 }
-
 
 /* ========================================================
    MODAL — CLOSE BUTTON
@@ -787,10 +764,10 @@ tr:hover td {
     padding: 0;
 
     background: #fff;
-    border: 1px solid #EDEEF1;
+    border: 1px solid #edeef1;
     border-radius: 9px;
 
-    color: #6B7280;
+    color: #6b7280;
     cursor: pointer;
 
     transition:
@@ -811,10 +788,10 @@ tr:hover td {
 }
 
 .modal-close-btn:hover {
-    background: #FEF2F2;
-    border-color: #FECACA;
+    background: #fef2f2;
+    border-color: #fecaca;
 
-    color: #DC2626;
+    color: #dc2626;
 
     transform: rotate(90deg);
 
@@ -829,7 +806,6 @@ tr:hover td {
     outline: none;
     box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.18);
 }
-
 
 /* ========================================================
    MODAL — INFO LIST
@@ -847,7 +823,7 @@ tr:hover td {
 
     padding: 9px 0;
 
-    border-top: 1px solid #F8F8F6;
+    border-top: 1px solid #f8f8f6;
 }
 
 .modal-info-row:first-child {
@@ -885,7 +861,7 @@ tr:hover td {
 
 .modal-block {
     padding: 14px 0;
-    border-top: 1px solid #F8F8F6;
+    border-top: 1px solid #f8f8f6;
 }
 
 .modal-block-label {
@@ -913,7 +889,6 @@ tr:hover td {
 .modal-block.notes p {
     color: var(--text-muted, var(--text));
 }
-
 
 /* ========================================================
    MODAL — STATUS
@@ -956,7 +931,6 @@ tr:hover td {
     background: var(--rust);
 }
 
-
 /* ========================================================
    MODAL — CONTENT BLOCK
    ======================================================== */
@@ -979,7 +953,6 @@ tr:hover td {
 .modal-block.notes p {
     color: var(--text);
 }
-
 
 /* ========================================================
    MODAL — ACTIONS
@@ -1010,7 +983,7 @@ tr:hover td {
 
     border-radius: 9px;
 
-    font-family: 'Poppins', sans-serif;
+    font-family: "Poppins", sans-serif;
     font-size: 12.5px;
     font-weight: 600;
 
@@ -1048,13 +1021,11 @@ tr:hover td {
     cursor: not-allowed;
 }
 
-
 /* ========================================================
    RESPONSIVE
    ======================================================== */
 
 @media (max-width: 640px) {
-
     /* Toolbar */
     .toolbar {
         flex-direction: column;
@@ -1070,7 +1041,6 @@ tr:hover td {
     .search-box {
         width: 100%;
     }
-
 
     /* Modal */
     .modal-box {

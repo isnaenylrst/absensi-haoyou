@@ -29,6 +29,7 @@ class Employee extends Model
         'address',
         'position',
         'employee_type',
+        'can_submit_teaching_sessions',
         'join_date',
         'nik',
     ];
@@ -36,6 +37,7 @@ class Employee extends Model
     protected $casts = [
         'birth_date' => 'date',
         'join_date' => 'date',
+        'can_submit_teaching_sessions' => 'boolean',
     ];
 
     public function branch(): BelongsTo

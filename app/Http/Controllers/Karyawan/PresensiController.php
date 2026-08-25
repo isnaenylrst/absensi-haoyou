@@ -39,10 +39,12 @@ class PresensiController extends Controller
         $todayAttendances = collect(); // part-time: bisa banyak sesi
         $weekSchedules = collect();
         $recentAttendances = collect();
+        $canSubmitTeachingSessions = (bool) $employee->can_submit_teaching_sessions;
 
-        if ($employee->employee_type === 'part_time') {
+        if ($employee->employee_type === 'part_time' || $canSubmitTeachingSessions) {
             $todayAttendances = Attendance::where('employee_id', $employee->id)
                 ->where('tanggal', $tanggal)
+            ->whereNull('shift_id')
                 ->orderBy('check_in')
                 ->get();
 
@@ -51,11 +53,14 @@ class PresensiController extends Controller
                 ->sortBy(fn ($s) => sprintf('%d-%s', self::DAY_ORDER[$s->day_of_week] ?? 9, $s->start_time));
 
             $recentAttendances = Attendance::where('employee_id', $employee->id)
+                ->whereNull('shift_id')
                 ->orderByDesc('tanggal')
                 ->orderByDesc('check_in')
                 ->limit(10)
                 ->get();
-        } else {
+        }
+
+        if ($employee->employee_type !== 'part_time') {
             // Hanya tampilkan shift yang berlaku untuk hari ini (mis. Sabtu -> hanya shift *Sabtu)
             $shifts = Shift::orderBy('start_time')
                 ->get()
@@ -64,6 +69,7 @@ class PresensiController extends Controller
 
             $todayAttendance = Attendance::where('employee_id', $employee->id)
                 ->where('tanggal', $tanggal)
+                ->whereNotNull('shift_id')
                 ->first();
 
             $weekAttendances = Attendance::where('employee_id', $employee->id)
@@ -71,6 +77,7 @@ class PresensiController extends Controller
                     $now->copy()->startOfWeek()->toDateString(),
                     $now->copy()->endOfWeek()->toDateString(),
                 ])
+                ->whereNotNull('shift_id')
                 ->orderByDesc('tanggal')
                 ->get();
         }
@@ -83,29 +90,33 @@ class PresensiController extends Controller
             'todayAttendances' => $todayAttendances,
             'weekSchedules' => $weekSchedules,
             'recentAttendances' => $recentAttendances,
+            'canSubmitTeachingSessions' => $canSubmitTeachingSessions,
         ]);
     }
 
     public function checkIn(Request $request): RedirectResponse
     {
         $employee = Employee::findOrFail(Auth::user()->employee_id);
+        $attendanceMode = $request->input('attendance_mode');
+        $isTeachingSession = $employee->employee_type === 'part_time'
+            || ($attendanceMode === 'teaching' && $employee->can_submit_teaching_sessions);
 
         try {
-            if ($employee->employee_type === 'part_time') {
+            if ($isTeachingSession) {
                 $data = $request->validate([
-                    'start_time' => ['required', 'date_format:H:i'],
-                    'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
-                    'activity' => ['required', 'string', 'max:150'],
+                    'sessions' => ['required', 'array', 'min:1', 'max:20'],
+                    'sessions.*.start_time' => ['required', 'date_format:H:i'],
+                    'sessions.*.end_time' => ['required', 'date_format:H:i', 'after:sessions.*.start_time'],
+                    'sessions.*.activity' => ['required', 'string', 'max:150'],
                 ], [
-                    'end_time.after' => 'Jam selesai harus setelah jam mulai.',
-                    'activity.required' => 'Kegiatan/keterangan wajib diisi.',
+                    'sessions.required' => 'Tambahkan minimal satu sesi presensi.',
+                    'sessions.*.end_time.after' => 'Jam selesai harus setelah jam mulai.',
+                    'sessions.*.activity.required' => 'Kegiatan/keterangan wajib diisi.',
                 ]);
 
-                $this->service->submitSesiPartTime(
-                    $employee, $data['start_time'], $data['end_time'], $data['activity']
-                );
+                $this->service->submitSesiPartTimeBatch($employee, $data['sessions']);
 
-                $message = 'Presensi sesi berhasil dikirim.';
+                $message = count($data['sessions']) . ' sesi presensi berhasil dikirim.';
             } else {
                 $data = $request->validate([
                     'shift_id' => ['required', 'integer', 'exists:shifts,id'],

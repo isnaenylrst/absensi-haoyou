@@ -177,7 +177,7 @@ class JadwalKerjaController extends Controller
     private function getJadwalPartTime(): Collection
     {
         $employees = Employee::query()
-            ->where('employee_type', 'part_time')
+            ->where('can_submit_teaching_sessions', true)
             ->with('partTimeSchedules')
             ->orderBy('full_name')
             ->get();
