@@ -42,20 +42,22 @@ class PresensiController extends Controller
         $canSubmitTeachingSessions = (bool) $employee->can_submit_teaching_sessions;
 
         if ($employee->employee_type === 'part_time' || $canSubmitTeachingSessions) {
-            $todayAttendances = Attendance::where('employee_id', $employee->id)
-                ->where('tanggal', $tanggal)
-            ->whereNull('shift_id')
-                ->orderBy('check_in')
+            $weekSchedules = PartTimeSchedule::where('employee_id', $employee->id)
+                ->whereBetween('tanggal', [
+                    $now->copy()->startOfWeek()->toDateString(),
+                    $now->copy()->endOfWeek()->toDateString(),
+                ])
+                ->get()
+                ->sortBy(fn ($s) => $s->tanggal->format('Y-m-d').' '.$s->start_time);
+
+            $todayAttendances = PartTimeSchedule::where('employee_id', $employee->id)
+                ->whereDate('tanggal', $tanggal)
+                ->orderBy('start_time')
                 ->get();
 
-            $weekSchedules = PartTimeSchedule::where('employee_id', $employee->id)
-                ->get()
-                ->sortBy(fn ($s) => sprintf('%d-%s', self::DAY_ORDER[$s->day_of_week] ?? 9, $s->start_time));
-
-            $recentAttendances = Attendance::where('employee_id', $employee->id)
-                ->whereNull('shift_id')
+            $recentAttendances = PartTimeSchedule::where('employee_id', $employee->id)
                 ->orderByDesc('tanggal')
-                ->orderByDesc('check_in')
+                ->orderByDesc('start_time')
                 ->limit(10)
                 ->get();
         }
@@ -107,6 +109,7 @@ class PresensiController extends Controller
                     'sessions' => ['required', 'array', 'min:1', 'max:20'],
                     'sessions.*.start_time' => ['required', 'date_format:H:i'],
                     'sessions.*.end_time' => ['required', 'date_format:H:i', 'after:sessions.*.start_time'],
+                    'tanggal' => ['required', 'date', 'before_or_equal:today'],
                     'sessions.*.activity' => ['required', 'string', 'max:150'],
                 ], [
                     'sessions.required' => 'Tambahkan minimal satu sesi presensi.',
@@ -114,7 +117,7 @@ class PresensiController extends Controller
                     'sessions.*.activity.required' => 'Kegiatan/keterangan wajib diisi.',
                 ]);
 
-                $this->service->submitSesiPartTimeBatch($employee, $data['sessions']);
+                $this->service->submitSesiPartTimeBatch($employee, $data['sessions'], $data['tanggal']);
 
                 $message = count($data['sessions']) . ' sesi presensi berhasil dikirim.';
             } else {

@@ -292,7 +292,7 @@
             <div class="card-head">
                 <div>
                     <div class="card-title">
-                        Sesi Hari Ini — {{ \Carbon\Carbon::now()->translatedFormat('l, d F') }}
+                        Presensi Sesi Mengajar
                     </div>
 
                     <div class="card-sub">
@@ -305,10 +305,10 @@
                 <div class="session-status-row">
                     <div>
                         <div class="session-status-time">
-                            {{ $a->check_in?->format('H:i') ?? '—' }} – {{ $a->check_out?->format('H:i') ?? '—' }} · {{ $a->activity }}
+                            {{ substr($a->start_time, 0, 5) }} – {{ substr($a->end_time, 0, 5) }} · {{ $a->activity }}
                         </div>
                         <div class="session-status-label">
-                            Presensi terkirim {{ $a->check_in?->format('H:i') ?? '—' }}
+                            Presensi terkirim pada {{ $a->tanggal->format('d/m/Y') }}
                         </div>
                     </div>
                     <span class="badge badge-green">✓ Selesai</span>
@@ -340,13 +340,17 @@
                         <path d="M12 8v5M12 16h.01"/>
                     </svg>
                     <div>
-                        Isi jam dan keterangan untuk setiap sesi yang kamu jalani hari ini.
+                        Pilih tanggal dan isi jam serta keterangan untuk setiap sesi yang kamu jalani.
                     </div>
                 </div>
 
                 <form action="{{ route('presensi.check-in') }}" method="POST" id="partTimeForm">
                     @csrf
                     <input type="hidden" name="attendance_mode" value="teaching">
+                    <div class="field" style="margin-bottom:14px;">
+                        <label for="sessionDate">Tanggal Mengajar</label>
+                        <input type="date" id="sessionDate" name="tanggal" value="{{ old('tanggal', now()->toDateString()) }}" max="{{ now()->toDateString() }}" required>
+                    </div>
                     <div id="sessionRows" class="session-rows">
                         @php($oldSessions = old('sessions', [['start_time' => '', 'end_time' => '', 'activity' => '']]))
                         @foreach ($oldSessions as $index => $session)
@@ -380,11 +384,11 @@
                 </form>
             </div>
 
-            <!-- Jadwal Minggu Ini -->
+            <!-- Presensi Mengajar Minggu Ini -->
             <div class="card">
                 <div class="card-head">
                     <div>
-                        <div class="card-title">Jadwal Minggu Ini</div>
+                        <div class="card-title">Presensi Mengajar Minggu Ini</div>
                         <div class="card-sub">{{ $employee->full_name }}</div>
                     </div>
                 </div>
@@ -394,7 +398,7 @@
                         <tr><th>Hari</th><th>Jam</th><th>Kegiatan</th></tr>
                         @forelse ($weekSchedules as $s)
                             <tr>
-                                <td style="text-transform:capitalize;">{{ $s->day_of_week }}</td>
+                                <td>{{ $s->tanggal?->translatedFormat('l, d M Y') ?? $s->day_of_week }}</td>
                                 <td class="mono">{{ substr($s->start_time, 0, 5) }}–{{ substr($s->end_time, 0, 5) }}</td>
                                 <td>{{ $s->activity }}</td>
                             </tr>
@@ -405,7 +409,7 @@
                 </div>
 
                 <div class="field-hint" style="margin-top:8px;">
-                    Jadwal di atas hanya referensi. Jam presensi aktual tetap diisi manual sesuai kegiatan sebenarnya — bisa punya beberapa sesi terpisah dalam sehari.
+                    Presensi di atas berasal dari tanggal dan jam yang kamu isi manual. Tidak ada jadwal tetap, dan kamu bisa mencatat beberapa sesi dalam satu hari.
                 </div>
 
                 <div class="divider-label">Riwayat Presensi Terakhir</div>
@@ -415,9 +419,9 @@
                         <tr><th>Tanggal</th><th>Sesi</th><th>Kirim</th><th>Status</th></tr>
                         @forelse ($recentAttendances as $a)
                             <tr>
-                                <td>{{ \Carbon\Carbon::parse($a->tanggal)->translatedFormat('d M') }}</td>
-                                <td class="mono">{{ $a->check_in?->format('H:i') ?? '—' }}–{{ $a->check_out?->format('H:i') ?? '—' }}</td>
-                                <td class="mono">{{ $a->check_in?->format('H:i') ?? '—' }}</td>
+                                <td>{{ $a->tanggal?->translatedFormat('d M Y') ?? '—' }}</td>
+                                <td class="mono">{{ substr($a->start_time, 0, 5) }}–{{ substr($a->end_time, 0, 5) }}</td>
+                                <td class="mono">{{ substr($a->start_time, 0, 5) }}</td>
                                 <td><span class="badge badge-green">Tercatat</span></td>
                             </tr>
                         @empty

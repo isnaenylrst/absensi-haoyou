@@ -6,6 +6,7 @@ use App\Exceptions\AttendanceException;
 use App\Models\Attendance;
 use App\Models\AttendanceSetting;
 use App\Models\Employee;
+use App\Models\PartTimeSchedule;
 use App\Models\Shift;
 use App\Support\Geo;
 use Carbon\Carbon;
@@ -126,13 +127,10 @@ class AttendanceService
     }
 
     /**
-     * Presensi karyawan PART TIME: input manual jam mulai/selesai + keterangan.
-     * Tanpa foto, tidak dicocokkan ke PartTimeSchedule, boleh lebih dari 1 sesi per hari.
+    * Presensi karyawan PART TIME: tanggal, jam mulai/selesai, dan keterangan diisi manual.
      */
-    public function submitSesiPartTimeBatch(Employee $employee, array $sessions): int
+    public function submitSesiPartTimeBatch(Employee $employee, array $sessions, string $tanggal): int
     {
-        $tanggal = Carbon::now()->toDateString();
-
         return DB::transaction(function () use ($employee, $sessions, $tanggal) {
             $ranges = [];
 
@@ -146,10 +144,10 @@ class AttendanceService
                     }
                 }
 
-                $overlap = Attendance::where('employee_id', $employee->id)
+                $overlap = PartTimeSchedule::where('employee_id', $employee->id)
                     ->where('tanggal', $tanggal)
-                    ->where('check_in', '<', $checkOut)
-                    ->where('check_out', '>', $checkIn)
+                    ->where('start_time', '<', $session['end_time'])
+                    ->where('end_time', '>', $session['start_time'])
                     ->exists();
 
                 if ($overlap) {
@@ -159,18 +157,14 @@ class AttendanceService
                 $ranges[] = [$checkIn, $checkOut];
             }
 
-            foreach ($sessions as $index => $session) {
-                Attendance::create([
+            foreach ($sessions as $session) {
+                PartTimeSchedule::create([
                     'employee_id' => $employee->id,
-                    'branch_id' => $employee->branch_id,
-                    'shift_id' => null,
-                    'part_time_schedule_id' => null,
-                    'activity' => $session['activity'],
                     'tanggal' => $tanggal,
-                    'check_in' => $ranges[$index][0],
-                    'check_out' => $ranges[$index][1],
-                    'status' => null,
-                    'late_minutes' => 0,
+                    'start_time' => $session['start_time'],
+                    'end_time' => $session['end_time'],
+                    'activity' => $session['activity'],
+                    'hourly_rate' => 0,
                 ]);
             }
 

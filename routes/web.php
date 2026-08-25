@@ -55,6 +55,12 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/jadwal-kerja', JadwalKerjaController::class)
             ->name('jadwal-kerja');
+            
+        Route::get('/jadwal-kerja/presensi-bulanan/{employee}', [JadwalKerjaController::class, 'presensiBulanan'])
+            ->name('jadwal-kerja.presensi-bulanan');    
+
+        Route::get('/jadwal-kerja/guru/{employee}/jadwal-bulanan', [JadwalKerjaController::class, 'jadwalGuruBulanan'])
+            ->name('jadwal-kerja.guru-bulanan');
 
         Route::post('/jadwal-kerja/shift', [JadwalKerjaController::class, 'storeShift'])
             ->name('owner.shift.store');
@@ -64,6 +70,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/kunjungan-klien', [KunjunganController::class, 'index'])
             ->name('kunjungan-klien');
+
         Route::patch('/kunjungan-klien/{visit}/status', [KunjunganController::class, 'updateStatus'])
             ->name('kunjungan-klien.update-status');
     });

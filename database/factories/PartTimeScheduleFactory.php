@@ -17,7 +17,8 @@ class PartTimeScheduleFactory extends Factory
     {
         return [
             'employee_id' => Employee::factory(),
-            'day_of_week' => fake()->randomElement(['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu']),
+            'tanggal' => fake()->dateTimeBetween('-1 month', 'today')->format('Y-m-d'),
+            'day_of_week' => null,
             'start_time' => '15:00:00',
             'end_time' => '17:00:00',
             'activity' => fake()->randomElement(['Mengajar Kelas 5A', 'Les Privat', 'Bimbingan Belajar']),
