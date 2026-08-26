@@ -106,7 +106,7 @@
                 {{ __('nav.karyawan') }}
             </a>
 
-            <div class="nav-group {{ request()->routeIs(['approval', 'jadwal-kerja', 'izin', 'kunjungan']) ? 'open' : '' }}" id="navKehadiran">
+            <div class="nav-group {{ request()->routeIs(['approval', 'jadwal-kerja', 'izin', 'kunjungan-klien']) ? 'open' : '' }}" id="navKehadiran">
                 <div class="nav-item" onclick="toggleGroup()">
                     <i class="fa-solid fa-clock nav-ico"></i>
                     Kehadiran
@@ -115,23 +115,23 @@
                 </div>
 
                 <div class="nav-sub">
-                    <a href="{{ route('approval') }}" class="nav-sub-item {{ request()->routeIs('approval') ? 'active' : '' }}">
+                    {{-- <a href="{{ route('approval') }}" class="nav-sub-item {{ request()->routeIs('approval') ? 'active' : '' }}">
                         <span class="nav-sub-ico"><i class="fa-solid fa-clipboard-check"></i></span>
                         <span class="nav-sub-label">Approval Presensi</span>
                         <span class="nav-sub-badge">2</span>
-                    </a>
+                    </a> --}}
 
                     <a href="{{ route('jadwal-kerja') }}" class="nav-sub-item {{ request()->routeIs('jadwal-kerja') ? 'active' : '' }}">
                         <span class="nav-sub-ico"><i class="fa-solid fa-calendar-days"></i></span>
                         <span class="nav-sub-label">Jadwal Kerja</span>
                     </a>
 
-                    <a href="#" class="nav-sub-item {{ request()->routeIs('izin') ? 'active' : '' }}">
+                    {{-- Route 'izin' belum ada di web.php --}}
+                    <a href="#" class="nav-sub-item">
                         <span class="nav-sub-ico"><i class="fa-solid fa-plane-departure"></i></span>
                         <span class="nav-sub-label">Izin &amp; Cuti</span>
                     </a>
 
-                    {{-- TODO: buat route 'kunjungan' lalu ganti href="#" di bawah ini --}}
                     <a href="{{ route('kunjungan-klien') }}" class="nav-sub-item {{ request()->routeIs('kunjungan-klien') ? 'active' : '' }}">
                         <span class="nav-sub-ico"><i class="fa-solid fa-map-location-dot"></i></span>
                         <span class="nav-sub-label">Kunjungan Klien</span>
@@ -139,6 +139,7 @@
                 </div>
             </div>
 
+            {{-- Route 'payroll' belum ada di web.php --}}
             <a href="#" class="nav-item">
                 <i class="fa-solid fa-sack-dollar nav-ico"></i>
                 Payroll
@@ -240,9 +241,22 @@
         document.getElementById('navKehadiran').classList.toggle('open');
     }
 
-    // Dropdown avatar (Profil & Keluar)
-    const avatarToggle = document.getElementById('avatarToggle');
-    const avatarMenu = document.getElementById('avatarMenu');
+    function setupDropdown(toggleId, menuId) {
+        const toggle = document.getElementById(toggleId);
+        const menu = document.getElementById(menuId);
+        if (!toggle || !menu) return;
+        toggle.addEventListener('click', function (e) {
+            e.stopPropagation();
+            document.querySelectorAll('.tb-avatar-menu.open').forEach(function (m) {
+                if (m !== menu) m.classList.remove('open');
+            });
+            menu.classList.toggle('open');
+        });
+        menu.addEventListener('click', function (e) { e.stopPropagation(); });
+    }
+
+    setupDropdown('notifToggle', 'notifMenu');
+    setupDropdown('avatarToggle', 'avatarMenu');
 
     document.addEventListener('click', function () {
         document.querySelectorAll('.tb-avatar-menu.open').forEach(function (m) {

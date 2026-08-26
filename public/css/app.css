@@ -35,8 +35,11 @@ body{
   width:246px; flex-shrink:0; background:var(--paper);
   border-right:1px solid var(--line);
   display:flex; flex-direction:column;
-  position:sticky; top:0; height:100vh;
+  position:fixed; top:0; left:0; height:100vh;
+  overflow-y:auto;
+  z-index:20;
 }
+
 .brand {
     display: flex;
     flex-direction: column;
@@ -136,7 +139,10 @@ body{
 .role-note-ico{ font-size:13px; flex-shrink:0; margin-top:1px; color:#8A6212; }
 
 /* ===== MAIN ===== */
-.main{ flex:1; min-width:0; display:flex; flex-direction:column; }
+.main{
+  flex:1; min-width:0; display:flex; flex-direction:column;
+  margin-left:246px; /* harus sama dengan width .sidebar */
+}
 
 /* ===== TOPBAR ===== */
 .topbar{
@@ -165,5 +171,7 @@ body{
 ::-webkit-scrollbar-thumb{ background:#E3D8C2; border-radius:20px; }
 
 @media(max-width:900px){
-  .sidebar{ position:fixed; z-index:20; left:0; }
+  .sidebar{ transform:translateX(-100%); transition:transform .2s ease; }
+  .sidebar.open{ transform:translateX(0); }
+  .main{ margin-left:0; }
 }

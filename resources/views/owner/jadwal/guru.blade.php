@@ -1,11 +1,11 @@
 {{-- Jadwal: Karyawan Part Time / Guru --}}
 <div class="subpage" id="jdw-parttime">
 
-    <div class="page-actions" style="margin-bottom:14px;">
+    {{-- <div class="page-actions" style="margin-bottom:14px;">
         <button type="button" class="btn btn-gold btn-sm">
             + Tambah Sesi Jadwal
         </button>
-    </div>
+    </div> --}}
 
     <div class="note-box" style="margin-top:0; margin-bottom:16px;">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
@@ -14,8 +14,7 @@
             <path d="M12 8v5M12 16h.01"/>
         </svg>
         <div>
-            Jadwal Guru dibuat berdasarkan sesi mengajar.
-            Dalam satu hari guru dapat memiliki lebih dari satu sesi.
+            Menampilkan jadwal minggu ini.
         </div>
     </div>
 
@@ -33,10 +32,10 @@
                     </div>
                 </div>
 
-                <a href="{{ route('jadwal-kerja.guru-bulanan', $pegawai->employee_id) }}"
+                {{-- <a href="{{ route('jadwal-kerja.guru-bulanan', $pegawai->employee_id) }}"
                    class="btn btn-line btn-sm">
                     Lihat Jadwal
-                </a>
+                </a> --}}
             </div>
 
             {{-- JADWAL MINGGUAN (rekuren, tanpa tanggal) --}}
