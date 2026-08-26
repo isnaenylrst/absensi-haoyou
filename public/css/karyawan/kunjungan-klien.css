@@ -1,0 +1,583 @@
+/* ===== VARIABEL WARNA (fallback, aman didefinisikan ulang) ===== */
+:root {
+    --gold: #f5a623;
+    --gold-deep: #de8c0f;
+    --gold-pale: #fff4de;
+    --gold-pale2: #fdecc8;
+    --paper: #ffffff;
+    --bg: #fbfbf9;
+    --line: #edeef0;
+    --line-soft: #f4f5f2;
+    --text: #22262b;
+    --text-dim: #6b7280;
+    --text-faint: #9aa0a8;
+    --green: #2f8a5b;
+    --green-soft: #e7f5ec;
+    --rust: #d34d3c;
+    --rust-soft: #fceae7;
+    --blue: #2e6fdb;
+    --blue-soft: #e8effc;
+    --shadow:
+        0 1px 2px rgba(20, 20, 20, 0.03),
+        0 10px 26px -16px rgba(20, 20, 20, 0.14);
+}
+
+/* ===== BREADCRUMB & PAGE TITLE ===== */
+.crumb {
+    font-size: 12.5px;
+    color: var(--text-faint);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+.crumb b {
+    color: var(--text-dim);
+    font-weight: 700;
+}
+.page-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.page-title {
+    font-family: "Poppins", sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+    font-family: "Poppins", sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 10px 16px;
+    border-radius: 9px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: 0.15s;
+    white-space: nowrap;
+}
+.btn-gold {
+    background: var(--gold);
+    color: #fff;
+    box-shadow: 0 6px 14px rgba(245, 166, 35, 0.28);
+}
+.btn-gold:hover {
+    background: var(--gold-deep);
+}
+.btn-line {
+    background: #fff;
+    color: var(--text);
+    border-color: var(--line);
+}
+.btn-line:hover {
+    background: var(--line-soft);
+}
+.btn-ghost {
+    background: transparent;
+    color: var(--text-dim);
+    border-color: transparent;
+}
+.btn-ghost:hover {
+    background: var(--line-soft);
+}
+.btn-sm {
+    padding: 7px 12px;
+    font-size: 11.5px;
+    border-radius: 8px;
+}
+.btn-block {
+    width: 100%;
+    justify-content: center;
+}
+.btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+.btn-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ===== CARD ===== */
+.card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+}
+.card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.card-title {
+    font-family: "Poppins", sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+}
+.card-sub {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 2px;
+}
+
+/* ===== GRID ===== */
+.grid {
+    display: grid;
+    gap: 16px;
+}
+.grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+@media (max-width: 1100px) {
+    .grid-3 {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+@media (max-width: 700px) {
+    .grid-3 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===== BADGE ===== */
+.badge {
+    font-size: 10.5px;
+    font-weight: 800;
+    padding: 3px 9px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.badge-green {
+    background: var(--green-soft);
+    color: var(--green);
+}
+.badge-rust {
+    background: var(--rust-soft);
+    color: var(--rust);
+}
+.badge-gold {
+    background: var(--gold-pale);
+    color: var(--gold-deep);
+}
+.badge-gray {
+    background: var(--line-soft);
+    color: var(--text-dim);
+}
+.badge-blue {
+    background: var(--blue-soft);
+    color: var(--blue);
+}
+
+/* ===== FORM ===== */
+.field {
+    margin-bottom: 15px;
+}
+.field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+}
+.field input,
+.field select,
+.field textarea {
+    width: 100%;
+    padding: 10px 13px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    font-family: "Poppins", sans-serif;
+    font-size: 13.5px;
+    color: var(--text);
+    background: #fcfcfb;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+    background: #fff;
+}
+.field input:disabled {
+    background: var(--line-soft);
+    color: var(--text-faint);
+}
+.field-hint {
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-top: 4px;
+}
+.field-error {
+    font-size: 11px;
+    color: var(--rust);
+    margin-top: 4px;
+}
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+@media (max-width: 700px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===== KAMERA ===== */
+.cam-frame {
+    max-width: 320px;
+    aspect-ratio: 4/3;
+    border-radius: 14px;
+    background: linear-gradient(160deg, #2b2115, #1a140c);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--line);
+}
+.cam-frame::before {
+    content: "";
+    position: absolute;
+    inset: 14px;
+    border: 1.5px dashed rgba(255, 255, 255, 0.22);
+    border-radius: 10px;
+    pointer-events: none;
+}
+.cam-frame video,
+.cam-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.cam-placeholder {
+    position: absolute;
+    inset: 0;
+    color: #b9a98a;
+    text-align: center;
+    font-size: 12.5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.cam-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+/* ===== VISIT CARD (riwayat kunjungan) ===== */
+.visit-card {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+}
+.visit-photo {
+    height: 126px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(140deg, #fce7bd, #f5c877);
+}
+.visit-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.visit-pin {
+    position: absolute;
+    bottom: 9px;
+    left: 10px;
+    background: rgba(34, 38, 43, 0.72);
+    color: #fff;
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.visit-body {
+    padding: 14px;
+}
+.visit-name {
+    font-weight: 700;
+    font-size: 13.5px;
+}
+.visit-meta {
+    font-size: 11.5px;
+    color: var(--text-dim);
+    margin-top: 3px;
+}
+
+/* ===== NOTE BOX ===== */
+.note-box {
+    background: var(--gold-pale);
+    border: 1px solid var(--gold-pale2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 12px;
+    color: #8a6212;
+    display: flex;
+    gap: 9px;
+    margin-top: 14px;
+    line-height: 1.5;
+}
+.note-box-green {
+    background: var(--green-soft);
+    border-color: #cdebd9;
+    color: #215a3d;
+}
+
+/* ===== TOOLBAR / QUOTA CHIP (dipakai di card-head riwayat) ===== */
+.quota-chip {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 600;
+}
+.quota-chip b {
+    color: var(--gold-deep);
+}
+
+/* ===== PAGINATION ===== */
+.pagination-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 20px;
+}
+.pagination-info {
+    font-size: 12px;
+    color: var(--text-dim);
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+    text-align: center;
+    padding: 30px 0;
+    color: var(--text-faint);
+    font-size: 13px;
+}
+
+/* ===== RESPONSIVE GLOBAL ===== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+main,
+.content,
+.page-content,
+.container,
+.card,
+.grid,
+.page-head,
+.toolbar {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.card {
+    overflow: hidden;
+}
+
+.grid-2,
+.grid-2-even,
+.grid-3,
+.grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+table {
+    width: 100%;
+    min-width: 0;
+}
+
+th,
+td {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.search-box {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.modal-box {
+    width: min(780px, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
+}
+
+@media (max-width: 900px) {
+    .grid-2,
+    .grid-2-even,
+    .grid-3,
+    .grid-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .page-head,
+    .toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .toolbar-left,
+    .page-actions {
+        width: 100%;
+    }
+
+    .field-input-inline,
+    .search-box,
+    .page-actions .btn {
+        width: 100%;
+    }
+
+    .page-actions .btn {
+        justify-content: center;
+    }
+
+    .modal-box {
+        flex-direction: column;
+        max-height: 92vh;
+    }
+
+    .modal-photo-panel {
+        width: 100%;
+        height: 220px;
+    }
+}
+
+@media (max-width: 600px) {
+    .card {
+        padding: 14px;
+        border-radius: 12px;
+    }
+
+    .page-title {
+        font-size: 22px;
+    }
+
+    .card-title {
+        font-size: 14px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .pilltabs,
+    .subtabs,
+    .shift-toggle {
+        width: 100%;
+    }
+
+    .pilltab,
+    .subtab {
+        flex: 1;
+        text-align: center;
+        padding: 8px 10px;
+        font-size: 11.5px;
+    }
+
+    .shift-toggle {
+        flex-direction: column;
+    }
+
+    .shift-opt {
+        width: 100%;
+    }
+
+    .radar {
+        width: 150px;
+        height: 150px;
+    }
+
+    .cam-frame {
+        width: 100%;
+        max-width: 100%;
+        aspect-ratio: 4 / 3;
+    }
+
+    .modal-overlay {
+        padding: 10px;
+    }
+
+    .modal-box {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .modal-content {
+        padding: 16px;
+    }
+
+    .modal-photo-panel {
+        height: 180px;
+    }
+
+    .modal-actions {
+        flex-direction: column;
+    }
+
+    .modal-action-btn {
+        width: 100%;
+    }
+
+    .pagination-bar {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 380px) {
+    .card {
+        padding: 12px;
+    }
+
+    .btn {
+        font-size: 12px;
+        padding: 8px 11px;
+    }
+
+    th,
+    td {
+        padding: 9px 8px;
+        font-size: 11px;
+    }
+}

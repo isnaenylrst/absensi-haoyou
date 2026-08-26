@@ -343,7 +343,11 @@ class EmployeeSeeder extends Seeder
         foreach ($employees as $data) {
             Employee::updateOrCreate(
                 ['employee_code' => $data['employee_code']],
-                array_merge($data, ['branch_id' => $branch->id])
+                array_merge($data, [
+                    'branch_id' => $branch->id,
+                    'can_submit_teaching_sessions' => $data['employee_type'] === 'part_time'
+                        || in_array(strtolower($data['position'] ?? ''), ['teacher', 'guru'], true),
+                ])
             );
         }
     }

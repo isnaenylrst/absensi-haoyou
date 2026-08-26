@@ -16,6 +16,7 @@ return new class extends Migration
             $table->time('end_time');
             $table->string('activity', 150)->nullable();
             $table->decimal('hourly_rate', 12, 2)->default(0);
+            $table->unique(['employee_id', 'day_of_week', 'start_time']);
         });
     }
 
