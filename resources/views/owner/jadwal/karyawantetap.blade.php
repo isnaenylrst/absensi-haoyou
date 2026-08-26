@@ -300,12 +300,12 @@
       </table>
     </div>
 
-    <div class="note-box">
+    {{-- <div class="note-box">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8A6212" stroke-width="2" style="flex-shrink:0; margin-top:1px;">
         <circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/>
       </svg>
       <div>Status ditentukan otomatis oleh sistem berdasarkan jam masuk vs jadwal. Karyawan yang belum melakukan absen ditandai "-" dan perlu ditinjau manual (belum tentu alpa). Absensi dengan jarak &gt;100 m dari titik kantor tetap tercatat dan perlu ditinjau manual.</div>
-    </div>
+    </div> --}}
 
     @if ($attendances->hasPages())
       <div class="pagination-bar">

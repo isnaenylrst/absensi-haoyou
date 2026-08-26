@@ -106,7 +106,7 @@
                 {{ __('nav.karyawan') }}
             </a>
 
-            <div class="nav-group open" id="navKehadiran">
+            <div class="nav-group {{ request()->routeIs(['approval', 'jadwal-kerja', 'izin', 'kunjungan-klien']) ? 'open' : '' }}" id="navKehadiran">
                 <div class="nav-item" onclick="toggleGroup()">
                     <i class="fa-solid fa-clock nav-ico"></i>
                     Kehadiran
@@ -115,26 +115,31 @@
                 </div>
 
                 <div class="nav-sub">
-                    <a href="#" class="nav-sub-item">
+                    {{-- <a href="{{ route('approval') }}" class="nav-sub-item {{ request()->routeIs('approval') ? 'active' : '' }}">
                         <span class="nav-sub-ico"><i class="fa-solid fa-clipboard-check"></i></span>
                         <span class="nav-sub-label">Approval Presensi</span>
                         <span class="nav-sub-badge">2</span>
-                    </a>
-                    <a href="#" class="nav-sub-item">
+                    </a> --}}
+
+                    <a href="{{ route('jadwal-kerja') }}" class="nav-sub-item {{ request()->routeIs('jadwal-kerja') ? 'active' : '' }}">
                         <span class="nav-sub-ico"><i class="fa-solid fa-calendar-days"></i></span>
                         <span class="nav-sub-label">Jadwal Kerja</span>
                     </a>
+
+                    {{-- Route 'izin' belum ada di web.php --}}
                     <a href="#" class="nav-sub-item">
                         <span class="nav-sub-ico"><i class="fa-solid fa-plane-departure"></i></span>
                         <span class="nav-sub-label">Izin &amp; Cuti</span>
                     </a>
-                    <a href="#" class="nav-sub-item">
+
+                    <a href="{{ route('kunjungan-klien') }}" class="nav-sub-item {{ request()->routeIs('kunjungan-klien') ? 'active' : '' }}">
                         <span class="nav-sub-ico"><i class="fa-solid fa-map-location-dot"></i></span>
                         <span class="nav-sub-label">Kunjungan Klien</span>
                     </a>
                 </div>
             </div>
 
+            {{-- Route 'payroll' belum ada di web.php --}}
             <a href="#" class="nav-item">
                 <i class="fa-solid fa-sack-dollar nav-ico"></i>
                 Payroll
@@ -250,7 +255,6 @@
         menu.addEventListener('click', function (e) { e.stopPropagation(); });
     }
 
-    //setupDropdown('langToggle', 'langMenu');
     setupDropdown('notifToggle', 'notifMenu');
     setupDropdown('avatarToggle', 'avatarMenu');
 

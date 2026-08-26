@@ -80,7 +80,7 @@
             </a>
 
             {{-- ===== KEHADIRAN (SUBMENU) ===== --}}
-            <div class="nav-group open" id="navKehadiran">
+            <div class="nav-group {{ request()->routeIs(['presensi', 'kunjungan-klien-saya']) ? 'open' : '' }}" id="navKehadiran">
                 <div class="nav-item" onclick="toggleGroup()">
                     <i class="fa-solid fa-clock nav-ico"></i>
                     Kehadiran
@@ -88,7 +88,7 @@
                 </div>
 
                 <div class="nav-sub">
-                    <a href="#" class="nav-sub-item active" data-page="presensi">
+                    <a href="{{ route('presensi') }}" class="nav-sub-item {{ request()->routeIs('presensi') ? 'active' : '' }}">
                         <span class="nav-sub-ico"><i class="fa-solid fa-clipboard-check"></i></span>
                         <span class="nav-sub-label">Presensi</span>
                     </a>
@@ -96,7 +96,7 @@
                         <span class="nav-sub-ico"><i class="fa-solid fa-plane-departure"></i></span>
                         <span class="nav-sub-label">Izin &amp; Cuti</span>
                     </a>
-                    <a href="#" class="nav-sub-item" data-page="kunjungan">
+                    <a href="{{ route('kunjungan-klien-saya') }}" class="nav-sub-item {{ request()->routeIs('kunjungan-klien-saya') ? 'active' : '' }}">
                         <span class="nav-sub-ico"><i class="fa-solid fa-map-location-dot"></i></span>
                         <span class="nav-sub-label">Kunjungan Klien</span>
                     </a>
