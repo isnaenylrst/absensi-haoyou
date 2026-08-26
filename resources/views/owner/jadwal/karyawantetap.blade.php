@@ -55,6 +55,7 @@
         <option value="tepat_waktu" @selected(($filters['status'] ?? null) === 'tepat_waktu')>Tepat Waktu</option>
         <option value="terlambat" @selected(($filters['status'] ?? null) === 'terlambat')>Terlambat</option>
         <option value="alpa" @selected(($filters['status'] ?? null) === 'alpa')>Alpa</option>
+        <option value="belum_absen" @selected(($filters['status'] ?? null) === 'belum_absen')>Belum Absen</option>
         <option value="luar_radius" @selected(($filters['status'] ?? null) === 'luar_radius')>Di Luar Radius</option>
       </select>
     </div>
@@ -83,6 +84,7 @@
           @php
             $employee = $attendance->employee;
             $isTetap = $employee->employee_type === 'tetap';
+            $sudahAbsen = $attendance->sudah_absen ?? true;
 
             $jadwalLabel = $isTetap
                 ? ($attendance->shift?->name ?? '—')
@@ -132,10 +134,14 @@
                 'alpa' => ['label' => 'Alpa', 'class' => 'badge-rust'],
             ];
 
-            $statusInfo = $statusMap[$attendance->status] ?? [
-                'label' => ucfirst(str_replace('_', ' ', $attendance->status ?? '-')),
-                'class' => 'badge-gray',
-            ];
+            // Karyawan yang belum absen: status null -> tampil "-" (badge-gray),
+            // bukan dianggap "alpa" secara otomatis oleh sistem.
+            $statusInfo = $sudahAbsen
+                ? ($statusMap[$attendance->status] ?? [
+                    'label' => ucfirst(str_replace('_', ' ', $attendance->status ?? '-')),
+                    'class' => 'badge-gray',
+                ])
+                : ['label' => '-', 'class' => 'badge-gray'];
 
             $initials = $employee->initials();
             $avatarColors = ['#8B5CF6', '#2E6FDB', '#E8863A', '#D34D9C', '#2F8A5B', '#D34D3C'];
@@ -170,10 +176,16 @@
             </td>
             <td class="jadwal-action-cell">
               <div class="jadwal-action-buttons">
-              <button type="button" class="btn btn-gold btn-xs" onclick="openApprovalModal({{ $attendance->id }})">
-                Detail
-              </button>
-            
+              @if ($sudahAbsen)
+                <button type="button" class="btn btn-gold btn-xs" onclick="openApprovalModal({{ $attendance->id }})">
+                  Detail
+                </button>
+              @else
+                <button type="button" class="btn btn-gold btn-xs" disabled title="Karyawan belum absen">
+                  Detail
+                </button>
+              @endif
+
               <a href="{{ route('jadwal-kerja.presensi-bulanan', ['employee' => $employee->id, 'bulan' => $attendance->tanggal->month, 'tahun' => $attendance->tanggal->year]) }}"
                 class="btn btn-line btn-xs" title="Lihat presensi bulanan {{ $employee->full_name }}">
                 Presensi Bulanan
@@ -182,6 +194,8 @@
             </td>
           </tr>
 
+          {{-- Template modal detail hanya dibuat kalau karyawan sudah absen --}}
+          @if ($sudahAbsen)
           <template id="modal-data-{{ $attendance->id }}">
             <button type="button" class="modal-close" onclick="closeApprovalModal()" aria-label="Tutup">
                 <i class="fa-solid fa-xmark"></i>
@@ -277,6 +291,7 @@
                   </div>
               </div>
           </template>
+          @endif
         @empty
           <tr>
             <td colspan="9" class="empty-state">Tidak ada data presensi untuk filter ini.</td>
@@ -289,7 +304,7 @@
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8A6212" stroke-width="2" style="flex-shrink:0; margin-top:1px;">
         <circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/>
       </svg>
-      <div>Status ditentukan otomatis oleh sistem berdasarkan jam masuk vs jadwal. Absensi dengan jarak &gt;100 m dari titik kantor tetap tercatat dan perlu ditinjau manual.</div>
+      <div>Status ditentukan otomatis oleh sistem berdasarkan jam masuk vs jadwal. Karyawan yang belum melakukan absen ditandai "-" dan perlu ditinjau manual (belum tentu alpa). Absensi dengan jarak &gt;100 m dari titik kantor tetap tercatat dan perlu ditinjau manual.</div>
     </div>
 
     @if ($attendances->hasPages())

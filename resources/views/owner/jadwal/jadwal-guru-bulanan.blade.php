@@ -60,19 +60,25 @@
 </div>
 
 @foreach ($mingguan as $mingguKe => $hariList)
-  <div class="pb-week pb-week-page jadwal-guru-week">
-    <div class="pb-week-head">
-      <div class="pb-week-title">Minggu {{ $mingguKe }}</div>
-      <div class="pb-week-range">
+  <div class="card pb-week-page jadwal-guru-week guru-month-week">
+    <div class="guru-week-title">
+      <div>Minggu {{ $mingguKe }}</div>
+      <span>
         {{ $hariList->first()->tanggal->translatedFormat('d M') }} &ndash; {{ $hariList->last()->tanggal->translatedFormat('d M Y') }}
-      </div>
+      </span>
     </div>
 
-    <div class="week-grid jadwal-guru-week-grid">
+    <div class="week-grid guru-week-grid jadwal-guru-week-grid">
       @foreach ($hariList as $hari)
         <div class="week-day">
           <div class="week-day-label">{{ $namaHari[$hari->tanggal->format('l')] ?? $hari->tanggal->format('l') }}</div>
           <div class="field-hint">{{ $hari->tanggal->format('d M Y') }}</div>
+          @if ($hari->absence)
+            <div class="session-chip session-chip-absence">
+              <div class="session-chip-label">Tidak hadir</div>
+              <div class="session-chip-label">{{ $hari->absence->reason }}</div>
+            </div>
+          @endif
           @forelse ($hari->sesi as $sesi)
             <div class="session-chip">
               <div class="session-chip-time">{{ $sesi->jam_mulai }}–{{ $sesi->jam_selesai }}</div>

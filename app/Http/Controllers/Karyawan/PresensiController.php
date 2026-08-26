@@ -22,6 +22,11 @@ class PresensiController extends Controller
         'jumat' => 5, 'sabtu' => 6, 'minggu' => 7,
     ];
 
+    private const HARI_LABEL = [
+        'senin' => 'Senin', 'selasa' => 'Selasa', 'rabu' => 'Rabu',
+        'kamis' => 'Kamis', 'jumat' => 'Jumat', 'sabtu' => 'Sabtu', 'minggu' => 'Minggu',
+    ];
+
     public function __construct(private readonly AttendanceService $service)
     {
     }
@@ -31,39 +36,74 @@ class PresensiController extends Controller
         $employee = Employee::with('branch')->findOrFail(Auth::user()->employee_id);
         $now = Carbon::now();
         $tanggal = $now->toDateString();
-        $todayKey = array_flip(self::DAY_ORDER)[$now->dayOfWeekIso];
+        $todayKey = array_flip(self::DAY_ORDER)[$now->dayOfWeekIso] ?? null;
 
         $shifts = collect();
-        $todayAttendance = null;   // karyawan tetap: 1 record atau null
-        $weekAttendances = collect();
-        $todayAttendances = collect(); // part-time: bisa banyak sesi
-        $weekSchedules = collect();
-        $recentAttendances = collect();
+        $todayAttendance = null;       // karyawan tetap: 1 record absen kamera+GPS hari ini, atau null
+        $weekAttendances = collect();  // karyawan tetap: riwayat absen kamera+GPS minggu ini
+        $todayAttendances = collect(); // guru (part-time ATAU tetap yg can_submit_teaching_sessions): sesi mengajar hari ini
+        $weekSchedules = collect();    // guru: jadwal REFERENSI mingguan (rekuren, bukan log kehadiran)
+        $weekSchedulesByDay = collect(); // guru: $weekSchedules yang sudah dikelompokkan per day_of_week, siap dirender
+        $recentAttendances = collect(); // guru: riwayat sesi mengajar yang sudah disubmit
         $canSubmitTeachingSessions = (bool) $employee->can_submit_teaching_sessions;
 
+        // ====================================================================
+        // BLOK GURU: berlaku untuk part-time MAUPUN karyawan tetap berposisi
+        // guru (mis. Fitri Maulidah / Dwi Ayu Wulandari -> employee_type
+        // 'tetap' tapi can_submit_teaching_sessions = true karena position
+        // = 'Teacher'). Dua kondisi ini SENGAJA tidak eksklusif terhadap
+        // blok "karyawan tetap" di bawah -- guru tetap bisa punya keduanya.
+        // ====================================================================
         if ($employee->employee_type === 'part_time' || $canSubmitTeachingSessions) {
-            $weekSchedules = PartTimeSchedule::where('employee_id', $employee->id)
-                ->whereBetween('tanggal', [
-                    $now->copy()->startOfWeek()->toDateString(),
-                    $now->copy()->endOfWeek()->toDateString(),
-                ])
-                ->get()
-                ->sortBy(fn ($s) => $s->tanggal->format('Y-m-d').' '.$s->start_time);
 
-            $todayAttendances = PartTimeSchedule::where('employee_id', $employee->id)
+            // FIX: part_time_schedules TIDAK punya kolom `tanggal` -- ini
+            // jadwal rekuren per day_of_week (berulang tiap minggu), bukan
+            // log presensi per tanggal kalender. Jadi diambil semua &
+            // diurutkan berdasar hari + jam mulai, tanpa filter tanggal.
+            $weekSchedules = PartTimeSchedule::where('employee_id', $employee->id)
+                ->get()
+                ->sortBy(fn ($s) => sprintf('%02d %s', self::DAY_ORDER[$s->day_of_week] ?? 99, $s->start_time))
+                ->map(fn ($s) => (object) [
+                    'day_of_week' => $s->day_of_week,
+                    'hari_label' => self::HARI_LABEL[$s->day_of_week] ?? ucfirst($s->day_of_week),
+                    'start_time' => $s->start_time,
+                    'end_time' => $s->end_time,
+                    'activity' => $s->activity,
+                ])
+                ->values();
+
+            // Dikelompokkan per hari di sini (bukan di Blade via @php) supaya
+            // view tinggal render tanpa logic tambahan.
+            $weekSchedulesByDay = $weekSchedules->groupBy('day_of_week');
+
+            // FIX: presensi/kehadiran AKTUAL (hasil submit) ada di tabel
+            // attendances, bukan part_time_schedules. shift_id NULL dipakai
+            // untuk memisahkan "sesi mengajar" dari "absen kamera+GPS
+            // kantor" -- penting khusus utk guru TETAP yang bisa punya
+            // kedua jenis presensi di tanggal yang sama. Guru bisa >1 sesi
+            // sehari, jadi ambil semua baris (jangan keyBy tanggal).
+            $todayAttendances = Attendance::where('employee_id', $employee->id)
                 ->whereDate('tanggal', $tanggal)
-                ->orderBy('start_time')
+                ->whereNull('shift_id')
+                ->orderBy('check_in')
                 ->get();
 
-            $recentAttendances = PartTimeSchedule::where('employee_id', $employee->id)
+            $recentAttendances = Attendance::where('employee_id', $employee->id)
+                ->whereNull('shift_id')
                 ->orderByDesc('tanggal')
-                ->orderByDesc('start_time')
+                ->orderByDesc('check_in')
                 ->limit(10)
                 ->get();
         }
 
+        // ====================================================================
+        // BLOK KARYAWAN TETAP: absen kamera + GPS berdasarkan shift.
+        // Berlaku untuk semua employee_type != 'part_time', termasuk guru
+        // tetap (mis. Fitri) yang tetap wajib absen kantor selain sesi
+        // mengajarnya.
+        // ====================================================================
         if ($employee->employee_type !== 'part_time') {
-            // Hanya tampilkan shift yang berlaku untuk hari ini (mis. Sabtu -> hanya shift *Sabtu)
+            // Hanya shift yang berlaku untuk hari ini.
             $shifts = Shift::orderBy('start_time')
                 ->get()
                 ->filter(fn ($s) => in_array($todayKey, $s->applicable_days ?? [], true))
@@ -91,6 +131,7 @@ class PresensiController extends Controller
             'weekAttendances' => $weekAttendances,
             'todayAttendances' => $todayAttendances,
             'weekSchedules' => $weekSchedules,
+            'weekSchedulesByDay' => $weekSchedulesByDay,
             'recentAttendances' => $recentAttendances,
             'canSubmitTeachingSessions' => $canSubmitTeachingSessions,
         ]);
@@ -100,6 +141,11 @@ class PresensiController extends Controller
     {
         $employee = Employee::findOrFail(Auth::user()->employee_id);
         $attendanceMode = $request->input('attendance_mode');
+
+        // Sesi mengajar dipakai kalau: karyawan part-time (selalu lewat
+        // jalur ini), ATAU karyawan tetap yang eksplisit submit lewat form
+        // "Sesi Mengajar" (attendance_mode = teaching) dan memang punya
+        // hak can_submit_teaching_sessions (mis. guru tetap).
         $isTeachingSession = $employee->employee_type === 'part_time'
             || ($attendanceMode === 'teaching' && $employee->can_submit_teaching_sessions);
 
@@ -117,6 +163,10 @@ class PresensiController extends Controller
                     'sessions.*.activity.required' => 'Kegiatan/keterangan wajib diisi.',
                 ]);
 
+                // NB: submitSesiPartTimeBatch() harus menulis ke tabel
+                // `attendances` (dengan shift_id = null), BUKAN ke
+                // part_time_schedules -- karena part_time_schedules cuma
+                // jadwal referensi rekuren, bukan log presensi harian.
                 $this->service->submitSesiPartTimeBatch($employee, $data['sessions'], $data['tanggal']);
 
                 $message = count($data['sessions']) . ' sesi presensi berhasil dikirim.';

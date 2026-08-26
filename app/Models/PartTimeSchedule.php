@@ -15,7 +15,7 @@ class PartTimeSchedule extends Model
 
     protected $fillable = [
         'employee_id',
-        'tanggal',
+        // 'tanggal',
         'day_of_week',
         'start_time',
         'end_time',
@@ -24,7 +24,7 @@ class PartTimeSchedule extends Model
     ];
 
     protected $casts = [
-        'tanggal' => 'date',
+        // 'tanggal' => 'date',
         'hourly_rate' => 'decimal:2',
     ];
 

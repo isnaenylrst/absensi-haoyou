@@ -146,6 +146,12 @@
     border-radius: 7px;
 }
 
+.approval-action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .btn:disabled {
     opacity: 0.4;
     cursor: not-allowed;

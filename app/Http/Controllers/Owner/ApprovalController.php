@@ -16,7 +16,6 @@ class ApprovalController extends Controller
 
         $attendances = Attendance::query()
             ->with(['employee.branch', 'shift', 'partTimeSchedule'])
-            ->whereHas('employee', fn ($query) => $query->where('employee_type', 'tetap'))
             ->when($filters['tanggal'] ?? null, function ($query, $tanggal) {
                 $query->whereDate('tanggal', $tanggal);
             }, function ($query) {

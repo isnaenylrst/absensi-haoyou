@@ -347,6 +347,11 @@ tr:hover td {
     color: #6b5a2e;
     margin-top: 1px;
 }
+
+.session-chip-absence {
+    background: var(--rust-soft, #fceae7);
+    border-color: #f4c6c0;
+}
 .week-day-empty {
     font-size: 11px;
     color: var(--text-faint);
@@ -644,6 +649,14 @@ tr:hover td {
 .guru-week-grid {
     grid-template-columns: repeat(6, minmax(0, 1fr));
     margin-top: 0;
+}
+
+.guru-month-week {
+    margin-bottom: 18px;
+}
+
+.guru-month-week .guru-week-title {
+    margin-bottom: 14px;
 }
 
 /* ===== Modal detail presensi ===== */

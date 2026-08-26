@@ -47,7 +47,13 @@
         @endif
     </div>
 
-    <!-- Presensi: Karyawan Tetap (shift + radius + kamera) -->
+    {{-- ============================================================
+         Presensi: Karyawan Tetap (shift + radius + kamera)
+         Tab ini tampil untuk semua employee_type != 'part_time',
+         termasuk guru tetap (mis. Fitri Maulidah) yang tetap wajib
+         absen kantor selain sesi mengajarnya.
+    ============================================================ --}}
+    @if ($employee->employee_type !== 'part_time')
     <div class="subpage {{ $employee->employee_type !== 'part_time' ? 'active' : '' }}" id="ps-tetap">
 
         <div class="grid grid-2">
@@ -283,8 +289,13 @@
 
         </div>
     </div>
+    @endif
 
-    <!-- Presensi: Karyawan Part Time (hari+jam + upload foto) -->
+    {{-- ============================================================
+         Presensi: Sesi Mengajar (jam+aktivitas, input manual)
+         Tab ini tampil untuk part-time DAN karyawan tetap yang
+         can_submit_teaching_sessions = true (guru tetap).
+    ============================================================ --}}
     @if ($canSubmitTeachingSessions)
     <div class="subpage {{ $employee->employee_type === 'part_time' ? 'active' : '' }}" id="ps-parttime">
 
@@ -301,14 +312,17 @@
                 </div>
             </div>
 
+            {{-- $todayAttendances di sini berasal dari tabel `attendances`
+                 (shift_id NULL), bukan part_time_schedules -- ini catatan
+                 sesi yang SUDAH disubmit hari ini. --}}
             @forelse ($todayAttendances as $a)
                 <div class="session-status-row">
                     <div>
                         <div class="session-status-time">
-                            {{ substr($a->start_time, 0, 5) }} – {{ substr($a->end_time, 0, 5) }} · {{ $a->activity }}
+                            {{ $a->check_in?->format('H:i') }} – {{ $a->check_out?->format('H:i') }} · {{ $a->activity }}
                         </div>
                         <div class="session-status-label">
-                            Presensi terkirim pada {{ $a->tanggal->format('d/m/Y') }}
+                            Presensi terkirim pada {{ \Carbon\Carbon::parse($a->tanggal)->format('d/m/Y') }}
                         </div>
                     </div>
                     <span class="badge badge-green">✓ Selesai</span>
@@ -323,9 +337,9 @@
             @endforelse
         </div>
 
-        <div class="grid grid-2">
+        <div class="grid" style="grid-template-columns: 1fr; gap:16px;">
 
-            <!-- Presensi Sesuai Jadwal -->
+            <!-- Tambah Presensi -->
             <div class="card">
                 <div class="card-head">
                     <div>
@@ -384,44 +398,69 @@
                 </form>
             </div>
 
-            <!-- Presensi Mengajar Minggu Ini -->
+            <!-- Jadwal Referensi Mingguan + Riwayat Presensi -->
             <div class="card">
                 <div class="card-head">
                     <div>
-                        <div class="card-title">Presensi Mengajar Minggu Ini</div>
+                        <div class="card-title">Jadwal Mengajar Mingguan</div>
                         <div class="card-sub">{{ $employee->full_name }}</div>
                     </div>
                 </div>
 
-                <div class="table-wrap">
-                    <table>
-                        <tr><th>Hari</th><th>Jam</th><th>Kegiatan</th></tr>
-                        @forelse ($weekSchedules as $s)
-                            <tr>
-                                <td>{{ $s->tanggal?->translatedFormat('l, d M Y') ?? $s->day_of_week }}</td>
-                                <td class="mono">{{ substr($s->start_time, 0, 5) }}–{{ substr($s->end_time, 0, 5) }}</td>
-                                <td>{{ $s->activity }}</td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="3">Belum ada jadwal referensi.</td></tr>
-                        @endforelse
-                    </table>
-                </div>
+                {{-- $weekSchedulesByDay = $weekSchedules yg sudah dikelompokkan
+                     per day_of_week DI CONTROLLER (bukan di blade), jadi view
+                     ini tinggal render grid kartu tanpa logic tambahan. --}}
+                @if ($weekSchedulesByDay->isNotEmpty())
+
+                    <div class="week-grid guru-week-grid">
+
+                        @foreach (['senin' => 'Senin', 'selasa' => 'Selasa', 'rabu' => 'Rabu', 'kamis' => 'Kamis', 'jumat' => 'Jumat', 'sabtu' => 'Sabtu'] as $hariKey => $hariLabel)
+
+                            @continue(! $weekSchedulesByDay->has($hariKey))
+
+                            <div class="week-day">
+
+                                <div class="week-day-label">{{ $hariLabel }}</div>
+
+                                @foreach ($weekSchedulesByDay->get($hariKey) as $s)
+                                    <div class="session-chip">
+                                        <div class="session-chip-time">
+                                            {{ substr($s->start_time, 0, 5) }} – {{ substr($s->end_time, 0, 5) }}
+                                        </div>
+                                        <div class="session-chip-label">
+                                            {{ $s->activity ?: 'Mengajar Kelas' }}
+                                        </div>
+                                    </div>
+                                @endforeach
+
+                            </div>
+
+                        @endforeach
+
+                    </div>
+
+                @else
+
+                    <div class="empty-state">Belum ada jadwal referensi.</div>
+
+                @endif
 
                 <div class="field-hint" style="margin-top:8px;">
-                    Presensi di atas berasal dari tanggal dan jam yang kamu isi manual. Tidak ada jadwal tetap, dan kamu bisa mencatat beberapa sesi dalam satu hari.
+                    Jadwal di atas berulang tiap minggu berdasarkan hari. Presensi aktual tetap kamu isi manual lewat form di samping, dan kamu bisa mencatat beberapa sesi dalam satu hari.
                 </div>
 
                 <div class="divider-label">Riwayat Presensi Terakhir</div>
 
+                {{-- $recentAttendances = catatan AKTUAL dari tabel
+                     attendances (shift_id NULL), bukan part_time_schedules. --}}
                 <div class="table-wrap">
                     <table>
-                        <tr><th>Tanggal</th><th>Sesi</th><th>Kirim</th><th>Status</th></tr>
+                        <tr><th>Tanggal</th><th>Jam Sesi</th><th>Kegiatan</th><th>Status</th></tr>
                         @forelse ($recentAttendances as $a)
                             <tr>
-                                <td>{{ $a->tanggal?->translatedFormat('d M Y') ?? '—' }}</td>
-                                <td class="mono">{{ substr($a->start_time, 0, 5) }}–{{ substr($a->end_time, 0, 5) }}</td>
-                                <td class="mono">{{ substr($a->start_time, 0, 5) }}</td>
+                                <td>{{ \Carbon\Carbon::parse($a->tanggal)->translatedFormat('d M Y') }}</td>
+                                <td class="mono">{{ $a->check_in?->format('H:i') }}–{{ $a->check_out?->format('H:i') }}</td>
+                                <td>{{ $a->activity ?? '—' }}</td>
                                 <td><span class="badge badge-green">Tercatat</span></td>
                             </tr>
                         @empty
