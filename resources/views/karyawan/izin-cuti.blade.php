@@ -54,7 +54,7 @@
                 <label>Keterangan</label>
                 <textarea name="reason" rows="3" placeholder="Jelaskan alasan izin...">{{ old('reason') }}</textarea>
                 @error('reason') <div class="field-hint" style="color:#D34D3C;">{{ $message }}</div> @enderror
-            </div>
+            </div> 
 
             <div class="field">
                 <label>Lampiran (opsional)</label>

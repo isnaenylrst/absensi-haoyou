@@ -74,10 +74,10 @@
         {{-- NAVIGATION --}}
         <nav class="navlist">
 
-            <a href="#" class="nav-item active" data-page="beranda">
-                <i class="fa-solid fa-house nav-ico"></i>
-                Beranda
-            </a>
+            <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <i class="fa-solid fa-house nav-ico"></i>
+            Beranda
+        </a>
 
             {{-- ===== KEHADIRAN (SUBMENU) ===== --}}
             <div class="nav-group open" id="navKehadiran">

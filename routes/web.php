@@ -8,7 +8,7 @@ use App\Http\Controllers\PayslipController;
 use App\Http\Controllers\PayrollController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('guest')->group(function () {
+    Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])
         ->name('login');
 
@@ -16,12 +16,13 @@ Route::middleware('guest')->group(function () {
         ->name('login.store');
 });
 
-Route::middleware('auth')->group(function () {
-    Route::get('/beranda', DashboardController::class)
-        ->name('dashboard');
+    Route::middleware('auth')->group(function () {
+    Route::get('/beranda', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::post('/logout', [LoginController::class, 'destroy'])
         ->name('logout');
+
+
 
     // ===== Profil & Ganti Password (semua role) =====
     Route::get('/profil', [ProfileController::class, 'edit'])

@@ -75,10 +75,10 @@
         {{-- NAVIGATION --}}
         <nav class="navlist">
 
-            <a href="#" class="nav-item active" data-page="beranda">
-                <i class="fa-solid fa-house nav-ico"></i>
-                Beranda
-            </a>
+            <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <i class="fa-solid fa-house nav-ico"></i>
+            Beranda
+        </a>
 
             <a href="#" class="nav-item" data-page="karyawan">
                 <i class="fa-solid fa-users nav-ico"></i>
