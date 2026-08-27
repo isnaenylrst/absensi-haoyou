@@ -45,6 +45,10 @@
         .tb-avatar-menu-item:hover { background: #F7F8FA; }
         .tb-avatar-menu-danger { color: #D34D3C; }
 
+        /* ===== Ikon Mode Gelap/Terang — tanpa background, cuma beda warna dari ikon lain ===== */
+        #themeIconSun { color: #FFD24C; }  /* kuning emas, beda dari putih polos gear/lonceng */
+        #themeIconMoon { color: #C9B8FF; } /* ungu muda */
+
         /* ===== Mode Gelap ===== */
         :root {
             --bg-page: #f7f8fa;
@@ -192,7 +196,7 @@
                     </div>
                 </div>
 
-                {{-- ===== Mode Gelap/Terang ===== --}}
+                {{-- ===== Mode Gelap/Terang — polos tanpa background, dibedakan lewat warna ikon ===== --}}
                 <button type="button" class="tb-icon" id="themeToggle" title="Mode Gelap/Terang" style="border:none; cursor:pointer;">
                     <i class="fa-solid fa-sun" id="themeIconSun"></i>
                     <i class="fa-solid fa-moon" id="themeIconMoon" style="display:none;"></i>
