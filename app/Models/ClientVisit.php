@@ -39,18 +39,7 @@ class ClientVisit extends Model
     {
         return $this->belongsTo(Employee::class);
     }
-
-    /**
-     * Kolom photo_url di database menyimpan PATH relatif di disk 'public'
-     * (misal: "seed-photos/dummy-client-visit.jpg" atau
-     * "client-visit-photos/5/2026-08-19_143530_x9y8z7.jpg").
-     *
-     * Accessor ini otomatis mengubahnya jadi URL publik lengkap
-     * (misal: "https://domainmu.com/storage/seed-photos/dummy-client-visit.jpg")
-     * setiap kali diakses lewat $visit->photo_url — baik di blade, JSON,
-     * maupun tempat lain. Kalau di masa depan ada data lama yang sudah
-     * berupa URL penuh (http/https), accessor ini membiarkannya apa adanya.
-     */
+    
     protected function photoUrl(): Attribute
     {
         return Attribute::make(

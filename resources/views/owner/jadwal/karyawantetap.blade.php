@@ -44,12 +44,6 @@
         @endforeach
       </select>
 
-      <select name="employee_type" class="field-input-inline" onchange="this.form.submit()">
-        <option value="">Semua Tipe</option>
-        <option value="tetap" @selected(($filters['employee_type'] ?? null) === 'tetap')>Karyawan Tetap</option>
-        <option value="part_time" @selected(($filters['employee_type'] ?? null) === 'part_time')>Part Time</option>
-      </select>
-
       <select name="status" class="field-input-inline" onchange="this.form.submit()">
         <option value="">Semua Status</option>
         <option value="tepat_waktu" @selected(($filters['status'] ?? null) === 'tepat_waktu')>Tepat Waktu</option>

@@ -7,7 +7,6 @@ use App\Http\Controllers\Karyawan\PresensiController;
 use App\Http\Controllers\Karyawan\ClientVisitController;
 use App\Http\Controllers\Owner\EmployeeController;
 use App\Http\Controllers\Owner\JadwalKerjaController;
-use App\Http\Controllers\Owner\ApprovalController;
 use App\Http\Controllers\Owner\KunjunganController;
 use App\Http\Controllers\Owner\SettingController;
 use Illuminate\Support\Facades\Route;
@@ -98,8 +97,6 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('karyawan', EmployeeController::class);
 
-
-
         Route::post('karyawan/{karyawan}/reset-password', [EmployeeController::class, 'resetPassword'])
             ->name('karyawan.reset-password');
 
@@ -110,43 +107,27 @@ Route::middleware('auth')->group(function () {
         // ----------------------------------------------
         // Jadwal Kerja
         // ----------------------------------------------
-
         Route::get('/jadwal-kerja', JadwalKerjaController::class)
             ->name('jadwal-kerja');
 
         Route::get('/jadwal-kerja/presensi-bulanan/{employee}', [JadwalKerjaController::class, 'presensiBulanan'])
             ->name('jadwal-kerja.presensi-bulanan');
 
-        Route::get('/jadwal-kerja/guru/{employee}/jadwal-bulanan', [JadwalKerjaController::class, 'jadwalGuruBulanan'])
-            ->name('jadwal-kerja.guru-bulanan');
-
         Route::post('/jadwal-kerja/shift', [JadwalKerjaController::class, 'storeShift'])
             ->name('owner.shift.store');
-
-
-        // ----------------------------------------------
-        // Approval Presensi
-        // ----------------------------------------------
-
-        Route::get('/approval', [ApprovalController::class, 'index'])
-            ->name('approval');
-
 
         // ----------------------------------------------
         // Kunjungan Klien - Owner
         // ----------------------------------------------
-
         Route::get('/kunjungan-klien', [KunjunganController::class, 'index'])
             ->name('kunjungan-klien');
 
         Route::patch('/kunjungan-klien/{visit}/status', [KunjunganController::class, 'updateStatus'])
             ->name('kunjungan-klien.update-status');
 
-
         // ----------------------------------------------
         // Pengaturan
         // ----------------------------------------------
-
         Route::get('/pengaturan', [SettingController::class, 'edit'])
             ->name('pengaturan.edit');
 

@@ -55,11 +55,6 @@ class Employee extends Model
         return $this->hasMany(ShiftSchedule::class);
     }
 
-    public function partTimeSchedules(): HasMany
-    {
-        return $this->hasMany(PartTimeSchedule::class);
-    }
-
     public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);

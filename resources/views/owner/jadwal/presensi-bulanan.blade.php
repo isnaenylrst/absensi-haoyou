@@ -30,7 +30,7 @@
     <div>
       <div class="pb-name">{{ $employee->full_name }}</div>
       <div class="pb-sub">
-        {{ $isTetap ? 'Karyawan Tetap' : 'Part Time' }} &middot; {{ $employee->branch->name ?? '—' }}
+        Karyawan Tetap &middot; {{ $employee->branch->name ?? '—' }}
       </div>
     </div>
   </div>
@@ -158,7 +158,7 @@
                   <div class="modal-employee-block">
                     <div>
                       <div class="modal-employee-name">{{ $employee->full_name }}</div>
-                      <div class="modal-employee-sub">{{ $employee->position ?? '-' }} &middot; {{ $isTetap ? 'Tetap' : 'Part Time' }}</div>
+                      <div class="modal-employee-sub">{{ $employee->position ?? '-' }} &middot; Tetap</div>
                     </div>
                   </div>
                 </div>
@@ -190,13 +190,6 @@
                     <span class="modal-info-value {{ $hari->is_out_of_radius ? 'text-rust' : '' }}">{{ $hari->distance !== null ? number_format($hari->distance, 0) . ' m' : '—' }}</span>
                   </div>
                 </div>
-
-                @if ($attendance->activity)
-                  <div class="modal-block notes">
-                    <div class="modal-block-label">Aktivitas</div>
-                    <p>{{ $attendance->activity }}</p>
-                  </div>
-                @endif
 
                 <div class="modal-actions">
                   @if ($attendance->check_in_lat && $attendance->check_in_lng)

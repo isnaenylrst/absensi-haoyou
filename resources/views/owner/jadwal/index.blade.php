@@ -122,16 +122,8 @@
     <div class="crumb">Home <span>›</span> Kehadiran <span>›</span> <b>Jadwal Kerja</b></div>
     <div class="page-head"><div class="page-title">Jadwal Kerja</div></div>
 
-    <div class="pilltabs">
-        <div class="pilltab active" data-sub="jdw-tetap">Karyawan Tetap (Shift)</div>
-        <div class="pilltab" data-sub="jdw-parttime">Karyawan Part Time (Per Jam)</div>
-    </div>
-
     {{-- Jadwal & approval presensi karyawan tetap (shift) --}}
     @include('owner.jadwal.karyawantetap')
-
-    {{-- Jadwal per sesi karyawan part time / guru --}}
-    @include('owner.jadwal.guru')
 
     <!-- ============ MODAL: TAMBAH SHIFT ============ -->
     <div class="modal-overlay @if($errors->any() && old('_form') === 'tambah_shift') show @endif" id="modalTambahShift">
@@ -191,16 +183,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
 <script>
-  // ===== Ganti tab Karyawan Tetap / Part Time =====
-  document.querySelectorAll('.pilltab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.pilltab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      document.querySelectorAll('.subpage').forEach(s => s.classList.remove('active'));
-      document.getElementById(tab.dataset.sub).classList.add('active');
-    });
-  });
-
   // ===== Toast notifikasi =====
   let toastTimer;
   function showToast(msg){
@@ -253,14 +235,6 @@
   }
   function closeRiwayatModal(e) {
     document.getElementById('riwayatModalOverlay').classList.remove('show');
-  }
-
-  // ===== Pertahankan tab aktif setelah filter bulan/tahun/tanggal submit (reload halaman) =====
-  const urlParams = new URLSearchParams(window.location.search);
-  const activeTabParam = urlParams.get('tab');
-  if (activeTabParam) {
-    const targetTab = document.querySelector('.pilltab[data-sub="jdw-' + activeTabParam + '"]');
-    if (targetTab) targetTab.click();
   }
 
   // ===== Auto-submit filter search dengan debounce =====

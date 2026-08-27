@@ -110,7 +110,6 @@
                 <div class="nav-item" onclick="toggleGroup()">
                     <i class="fa-solid fa-clock nav-ico"></i>
                     Kehadiran
-                    <span class="nav-badge nav-badge-inline">2</span>
                     <i class="fa-solid fa-chevron-right nav-chevron"></i>
                 </div>
 

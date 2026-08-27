@@ -61,9 +61,4 @@ class Attendance extends Model
     {
         return $this->belongsTo(Shift::class);
     }
-
-    public function partTimeSchedule(): BelongsTo
-    {
-        return $this->belongsTo(PartTimeSchedule::class);
-    }
 }

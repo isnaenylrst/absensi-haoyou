@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\Branch;
 use App\Models\Employee;
-use App\Models\PartTimeSchedule;
 use App\Models\Shift;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -49,7 +48,6 @@ class JadwalKerjaController extends Controller
         return view('owner.jadwal.index', [
             'hariKerja'   => array_values(self::HARI_KERJA),
             'shifts'      => $this->getShifts(),
-            'jadwalPartTime' => $this->getJadwalPartTime(),
             'attendances' => $this->getAttendances($filters),
             'branches'    => Branch::orderBy('name')->get(),
             'filters'     => $filters,
@@ -166,99 +164,8 @@ class JadwalKerjaController extends Controller
 
     /**
      * ================================================================
-     * JADWAL GURU / PART-TIME (mingguan, untuk kartu ringkasan)
-     * ================================================================
-     */
-    private function getJadwalPartTime(): Collection
-    {
-        $employees = Employee::query()
-            ->where('can_submit_teaching_sessions', true)
-            ->with('partTimeSchedules')
-            ->orderBy('full_name')
-            ->get();
-
-        // Urutan hari senin -> sabtu, dipakai untuk mengurutkan &
-        // mengelompokkan sesi mingguan (jadwal berulang, bukan
-        // tanggal spesifik -- tabel part_time_schedules memang
-        // tidak punya kolom tanggal, hanya day_of_week).
-        $urutanHari = array_keys(self::HARI_KERJA);
-
-        return $employees->map(function (Employee $employee) use ($urutanHari) {
-            $sesi = $employee->partTimeSchedules
-                ->sortBy(function ($s) use ($urutanHari) {
-                    $indeksHari = array_search($s->day_of_week, $urutanHari);
-                    $indeksHari = $indeksHari === false ? 99 : $indeksHari;
-
-                    return sprintf('%02d %s', $indeksHari, $s->start_time);
-                })
-                ->map(fn ($s) => (object) [
-                    'day_of_week' => $s->day_of_week,
-                    'hari_label' => self::HARI_KERJA[$s->day_of_week] ?? ucfirst($s->day_of_week),
-                    'jam_mulai' => Carbon::parse($s->start_time)->format('H:i'),
-                    'jam_selesai' => Carbon::parse($s->end_time)->format('H:i'),
-                    'kegiatan' => $s->activity,
-                    'hourly_rate' => $s->hourly_rate,
-                ])
-                ->values();
-
-            // Dikelompokkan per hari (senin, selasa, dst), bukan per
-            // tanggal kalender -- karena jadwalnya memang berulang
-            // tiap minggu, bukan sesi sekali-jalan di tanggal tertentu.
-            $sesiPerHari = $sesi->groupBy('day_of_week')
-                ->map(fn ($sesiHari) => (object) [
-                    'hari_label' => $sesiHari->first()->hari_label,
-                    'sesi' => $sesiHari->sortBy('jam_mulai')->values(),
-                ]);
-
-            $sesiMingguan = collect($urutanHari)
-                ->filter(fn ($hari) => $sesiPerHari->has($hari))
-                ->mapWithKeys(fn ($hari) => [$hari => $sesiPerHari->get($hari)]);
-
-            $totalSesi = $sesi->count();
-            $totalMenit = 0;
-
-            foreach ($sesi as $item) {
-                $mulai = Carbon::createFromFormat('H:i', $item->jam_mulai);
-                $selesai = Carbon::createFromFormat('H:i', $item->jam_selesai);
-                $totalMenit += $mulai->diffInMinutes($selesai);
-            }
-
-            return (object) [
-                'employee_id' => $employee->id,
-                'nama' => $employee->full_name,
-                'jabatan' => $employee->position ?? 'Guru',
-                'rate_per_jam' => $employee->partTimeSchedules->max('hourly_rate') ?? 0,
-                'sesi' => $sesi,
-                'sesi_mingguan' => $sesiMingguan,
-                'total_sesi' => $totalSesi,
-                'total_jam' => round($totalMenit / 60, 1),
-            ];
-        });
-    }
-
-    /**
-     * ================================================================
      * APPROVAL PRESENSI
      * ================================================================
-     *
-     * PENTING (FIX #1):
-     * Sebelumnya, query mulai dari tabel Attendance. Akibatnya
-     * karyawan yang belum absen sama sekali tidak akan pernah
-     * muncul di daftar, karena memang tidak ada baris attendance
-     * untuk dia.
-     *
-     * PENTING (FIX #2):
-     * Sekarang query mulai dari tabel Employee, untuk SATU TANGGAL
-     * terpilih (bukan rentang). Semua karyawan tetap akan selalu
-     * muncul; kalau belum ada attendance di tanggal tersebut,
-     * field check_in/check_out/status akan diisi placeholder '-'.
-     *
-     * Kenapa satu tanggal, bukan rentang?
-     * Kalau rentang beberapa hari dipakai, satu karyawan bisa
-     * punya banyak baris (1 per hari), dan makna "belum absen"
-     * jadi tidak jelas (belum absen di hari yang mana?). Untuk
-     * laporan rentang bulanan, sudah ada method terpisah:
-     * getRiwayatAbsensi() dan presensiBulanan().
      */
     private function getAttendances(array $filters)
     {
@@ -280,7 +187,7 @@ class JadwalKerjaController extends Controller
         // Ambil semua attendance karyawan tetap di tanggal terpilih,
         // dikelompokkan per employee_id supaya gampang dicocokkan.
         $attendancesHariIni = Attendance::query()
-            ->with(['shift', 'partTimeSchedule'])
+            ->with('shift')
             ->whereDate('tanggal', $tanggalDipilih)
             ->whereIn('employee_id', $employees->pluck('id'))
             ->get()
@@ -296,8 +203,6 @@ class JadwalKerjaController extends Controller
                     'employee' => $employee,
                     'tanggal' => Carbon::parse($tanggalDipilih),
                     'shift' => null,
-                    'partTimeSchedule' => null,
-                    'activity' => null,
                     'check_in' => null,
                     'check_out' => null,
                     'check_in_lat' => null,
@@ -316,8 +221,7 @@ class JadwalKerjaController extends Controller
             $lateLabel = 'Tepat waktu';
             $lateMinutes = 0;
 
-            $startTime = $attendance->shift?->start_time
-                ?? $attendance->partTimeSchedule?->start_time;
+            $startTime = $attendance->shift?->start_time;
 
             if ($attendance->check_in && $startTime) {
                 $date = $attendance->tanggal instanceof Carbon
@@ -367,6 +271,7 @@ class JadwalKerjaController extends Controller
     private function getRiwayatAbsensi(int $bulan, int $tahun): Collection
     {
         $employees = Employee::query()
+            ->where('employee_type', 'tetap')
             ->with('branch')
             ->orderBy('full_name')
             ->get();
@@ -374,24 +279,21 @@ class JadwalKerjaController extends Controller
         $attendancesBulanIni = Attendance::query()
             ->whereYear('tanggal', $tahun)
             ->whereMonth('tanggal', $bulan)
-            ->with(['shift', 'partTimeSchedule'])
+            ->with('shift')
             ->orderByDesc('tanggal')
             ->get()
             ->groupBy('employee_id');
 
         return $employees->map(function (Employee $employee) use ($attendancesBulanIni) {
             $records = $attendancesBulanIni->get($employee->id, collect());
-            $isTetap = $employee->employee_type === 'tetap';
 
-            $detail = $records->map(function (Attendance $attendance) use ($isTetap) {
+            $detail = $records->map(function (Attendance $attendance) {
                 return (object) [
                     'tanggal' => $attendance->tanggal,
                     'jam_masuk' => $attendance->check_in,
                     'jam_keluar' => $attendance->check_out,
                     'status' => $attendance->status,
-                    'jadwal' => $isTetap
-                        ? ($attendance->shift?->name ?? '—')
-                        : ($attendance->partTimeSchedule?->activity ?? $attendance->activity ?? '—'),
+                    'jadwal' => $attendance->shift?->name ?? '—',
                 ];
             })->values();
 
@@ -410,72 +312,6 @@ class JadwalKerjaController extends Controller
 
     /**
      * ================================================================
-     * JADWAL GURU BULANAN
-     * ================================================================
-     * Database menyimpan jadwal mingguan; method ini meng-expand
-     * jadwal tersebut ke setiap tanggal dalam bulan yang dipilih.
-     */
-    public function jadwalGuruBulanan(Request $request, Employee $employee)
-    {
-        abort_unless($employee->can_submit_teaching_sessions, 404);
-
-        $bulan = (int) $request->input('bulan', now()->month);
-        $tahun = (int) $request->input('tahun', now()->year);
-
-        $employee->load(['branch', 'partTimeSchedules']);
-
-        $awalBulan = Carbon::create($tahun, $bulan, 1)->startOfDay();
-        $akhirBulan = $awalBulan->copy()->endOfMonth();
-
-        $mingguan = collect();
-
-        for ($tanggal = $awalBulan->copy(); $tanggal->lte($akhirBulan); $tanggal->addDay()) {
-            if ($tanggal->isSunday()) {
-                continue;
-            }
-
-            // FIX: tabel part_time_schedules tidak punya kolom tanggal,
-            // hanya day_of_week (jadwal berulang tiap minggu). Jadi
-            // sesi untuk tanggal kalender ini dicocokkan lewat hari-nya
-            // (senin/selasa/dst), sama seperti di presensiBulanan().
-            $hariKey = array_keys(self::HARI_KERJA)[$tanggal->dayOfWeekIso - 1] ?? null;
-
-            $sesiHari = $hariKey
-                ? $employee->partTimeSchedules
-                    ->where('day_of_week', $hariKey)
-                    ->sortBy('start_time')
-                    ->map(fn ($schedule) => (object) [
-                        'jam_mulai' => Carbon::parse($schedule->start_time)->format('H:i'),
-                        'jam_selesai' => Carbon::parse($schedule->end_time)->format('H:i'),
-                        'kegiatan' => $schedule->activity,
-                    ])
-                    ->values()
-                : collect();
-
-            $mingguKe = (int) ceil($tanggal->day / 7);
-
-            if (! $mingguan->has($mingguKe)) {
-                $mingguan->put($mingguKe, collect());
-            }
-
-            $mingguan->get($mingguKe)->push((object) [
-                'tanggal' => $tanggal->copy(),
-                'sesi' => $sesiHari,
-            ]);
-        }
-
-        return view('owner.jadwal.jadwal-guru-bulanan', [
-            'employee' => $employee,
-            'mingguan' => $mingguan,
-            'bulan' => $bulan,
-            'tahun' => $tahun,
-            'daftarBulan' => self::NAMA_BULAN,
-            'daftarTahun' => $this->getDaftarTahun(),
-        ]);
-    }
-
-    /**
-     * ================================================================
      * DAFTAR TAHUN (untuk dropdown filter)
      * ================================================================
      */
@@ -489,25 +325,21 @@ class JadwalKerjaController extends Controller
 
     /**
      * ================================================================
-     * PRESENSI BULANAN (per karyawan)
+     * PRESENSI BULANAN (per karyawan tetap)
      * ================================================================
-     * Guru dapat memiliki banyak sesi pada hari yang sama, jadi
-     * TIDAK menggunakan keyBy('tanggal') untuk guru.
      */
     public function presensiBulanan(Request $request, Employee $employee)
     {
         $bulan = (int) $request->input('bulan', now()->month);
         $tahun = (int) $request->input('tahun', now()->year);
 
-        $employee->load(['branch', 'partTimeSchedules']);
-
-        $isTetap = $employee->employee_type === 'tetap';
+        $employee->load('branch');
 
         $attendances = Attendance::query()
             ->where('employee_id', $employee->id)
             ->whereYear('tanggal', $tahun)
             ->whereMonth('tanggal', $bulan)
-            ->with(['shift', 'partTimeSchedule'])
+            ->with('shift')
             ->orderBy('tanggal')
             ->orderBy('check_in')
             ->get();
@@ -528,39 +360,11 @@ class JadwalKerjaController extends Controller
 
             $tanggalKey = $periode->format('Y-m-d');
             $attendanceHariIni = $attendancesPerTanggal->get($tanggalKey, collect());
-
-            $hariKey = array_keys(self::HARI_KERJA)[$periode->dayOfWeekIso - 1] ?? null;
-            $jadwalHariIni = collect();
-
-            if (! $isTetap && $hariKey) {
-                $jadwalHariIni = $employee->partTimeSchedules
-                    ->where('day_of_week', $hariKey)
-                    ->sortBy('start_time')
-                    ->map(fn ($schedule) => (object) [
-                        'id' => $schedule->id,
-                        'jam_mulai' => Carbon::parse($schedule->start_time)->format('H:i'),
-                        'jam_selesai' => Carbon::parse($schedule->end_time)->format('H:i'),
-                        'kegiatan' => $schedule->activity,
-                    ])
-                    ->values();
-            }
-
-            if ($isTetap) {
-                $attendancePertama = $attendanceHariIni->first();
-                $jadwalLabel = $attendancePertama
-                    ? ($attendancePertama->shift?->name ?? '—')
-                    : '—';
-            } else {
-                $jadwalLabel = $jadwalHariIni
-                    ->map(fn ($sesi) => $sesi->jam_mulai.' - '.$sesi->jam_selesai)
-                    ->implode(', ');
-
-                if (! $jadwalLabel) {
-                    $jadwalLabel = '—';
-                }
-            }
-
             $attendance = $attendanceHariIni->first();
+
+            $jadwalLabel = $attendance
+                ? ($attendance->shift?->name ?? '—')
+                : '—';
 
             $distance = $attendanceHariIni
                 ->pluck('distance_m')
@@ -588,7 +392,7 @@ class JadwalKerjaController extends Controller
             }
 
             $detailSesi = $attendanceHariIni->map(function (Attendance $attendance) {
-                $startTime = $attendance->partTimeSchedule?->start_time;
+                $startTime = $attendance->shift?->start_time;
                 $lateMinutes = 0;
 
                 if ($attendance->check_in && $startTime) {
@@ -606,7 +410,7 @@ class JadwalKerjaController extends Controller
                     'jam_masuk' => $attendance->check_in,
                     'jam_keluar' => $attendance->check_out,
                     'status' => $attendance->status,
-                    'jadwal' => $attendance->partTimeSchedule?->activity ?? $attendance->activity ?? '—',
+                    'jadwal' => $attendance->shift?->name ?? '—',
                     'jam_jadwal' => $startTime,
                     'late_minutes' => $lateMinutes,
                     'distance' => $attendance->distance_m,
@@ -616,16 +420,8 @@ class JadwalKerjaController extends Controller
             $hariDalamBulan->push((object) [
                 'minggu_ke' => (int) ceil($periode->day / 7),
                 'tanggal' => $periode->copy(),
-
-                // Dipertahankan agar Blade lama tidak langsung rusak.
                 'attendance' => $attendance,
-
-                // Semua attendance pada tanggal ini (guru bisa lebih dari satu).
                 'attendances' => $attendanceHariIni,
-
-                // Semua jadwal pada tanggal ini.
-                'jadwal_sesi' => $jadwalHariIni,
-
                 'jadwal' => $jadwalLabel,
                 'detail_sesi' => $detailSesi,
                 'distance' => $distance,
@@ -637,7 +433,6 @@ class JadwalKerjaController extends Controller
 
         $mingguan = $hariDalamBulan->groupBy('minggu_ke');
 
-        // Summary berdasarkan Attendance, bukan berdasarkan jadwal.
         $summary = [
             'tepat_waktu' => $attendances->where('status', 'tepat_waktu')->count(),
             'terlambat' => $attendances->where('status', 'terlambat')->count(),
@@ -649,7 +444,6 @@ class JadwalKerjaController extends Controller
 
         return view('owner.jadwal.presensi-bulanan', [
             'employee' => $employee,
-            'isTetap' => $isTetap,
             'mingguan' => $mingguan,
             'bulan' => $bulan,
             'tahun' => $tahun,
