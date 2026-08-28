@@ -74,10 +74,10 @@
         {{-- NAVIGATION --}}
         <nav class="navlist">
 
-            <a href="#" class="nav-item active" data-page="beranda">
-                <i class="fa-solid fa-house nav-ico"></i>
-                Beranda
-            </a>
+            <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <i class="fa-solid fa-house nav-ico"></i>
+            Beranda
+        </a>
 
             {{-- ===== KEHADIRAN (SUBMENU) ===== --}}
             <div class="nav-group {{ request()->routeIs(['presensi', 'kunjungan-klien-saya']) ? 'open' : '' }}" id="navKehadiran">
@@ -91,21 +91,22 @@
                     <a href="{{ route('presensi') }}" class="nav-sub-item {{ request()->routeIs('presensi') ? 'active' : '' }}">
                         <span class="nav-sub-ico"><i class="fa-solid fa-clipboard-check"></i></span>
                         <span class="nav-sub-label">Presensi</span>
-                    </a>
-                    <a href="#" class="nav-sub-item" data-page="izin">
-                        <span class="nav-sub-ico"><i class="fa-solid fa-plane-departure"></i></span>
-                        <span class="nav-sub-label">Izin &amp; Cuti</span>
-                    </a>
                     <a href="{{ route('kunjungan-klien-saya') }}" class="nav-sub-item {{ request()->routeIs('kunjungan-klien-saya') ? 'active' : '' }}">
+                    </a>
+                    <a href="{{ route('leave-requests.index') }}" class="nav-sub-item {{ request()->routeIs('leave-requests.*') ? 'active' : '' }}">
+                    <span class="nav-sub-ico"><i class="fa-solid fa-plane-departure"></i></span>
+                    <span class="nav-sub-label">Izin &amp; Cuti</span>
+                    </a>
+
                         <span class="nav-sub-ico"><i class="fa-solid fa-map-location-dot"></i></span>
                         <span class="nav-sub-label">Kunjungan Klien</span>
                     </a>
                 </div>
             </div>
-
-            <a href="#" class="nav-item" data-page="gaji">
-                <i class="fa-solid fa-sack-dollar nav-ico"></i>
-                Gaji Saya
+            
+            <a href="{{ route('payslips.index') }}" class="nav-item {{ request()->routeIs('payslips.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-sack-dollar nav-ico"></i>
+            Gaji Saya
             </a>
 
             <a href="#" class="nav-item" data-page="faq">
