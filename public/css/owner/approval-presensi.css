@@ -1,0 +1,794 @@
+/* ========================================================
+   APPROVAL PRESENSI
+   ======================================================== */
+
+/* ========================================================
+   1. VARIABLES
+   ======================================================== */
+
+:root {
+    --gold: #f5a623;
+    --gold-deep: #de8c0f;
+    --gold-pale: #fff4de;
+    --gold-pale2: #fdecc8;
+
+    --paper: #ffffff;
+    --bg: #fbfbf9;
+
+    --line: #edeef0;
+    --line-soft: #f4f5f2;
+
+    --text: #22262b;
+    --text-dim: #6b7280;
+    --text-faint: #9aa0a8;
+
+    --green: #2f8a5b;
+    --green-soft: #e7f5ec;
+
+    --rust: #d34d3c;
+    --rust-soft: #fceae7;
+
+    --blue: #2e6fdb;
+    --blue-soft: #e8effc;
+
+    --shadow:
+        0 1px 2px rgba(20, 20, 20, 0.03),
+        0 10px 26px -16px rgba(20, 20, 20, 0.14);
+}
+
+/* ========================================================
+   2. BREADCRUMB & PAGE HEADER
+   ======================================================== */
+
+.crumb {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    margin-bottom: 14px;
+
+    font-size: 12.5px;
+    color: var(--text-faint);
+}
+
+.crumb b {
+    color: var(--text-dim);
+    font-weight: 700;
+}
+
+.page-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    margin-bottom: 20px;
+
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.page-title {
+    font-family: "Poppins", sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.page-actions {
+    display: flex;
+    gap: 9px;
+    flex-wrap: wrap;
+}
+
+/* ========================================================
+   3. BUTTONS
+   ======================================================== */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 10px 16px;
+
+    border: 1px solid transparent;
+    border-radius: 9px;
+
+    font-family: "Poppins", sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+    white-space: nowrap;
+
+    transition: 0.15s ease;
+}
+
+.btn-gold {
+    background: var(--gold);
+    color: #fff;
+
+    box-shadow: 0 6px 14px rgba(245, 166, 35, 0.28);
+}
+
+.btn-gold:hover {
+    background: var(--gold-deep);
+}
+
+.btn-line {
+    background: #fff;
+    color: var(--text);
+    border-color: var(--line);
+}
+
+.btn-line:hover {
+    background: var(--line-soft);
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--text-dim);
+    border-color: transparent;
+}
+
+.btn-ghost:hover {
+    background: var(--line-soft);
+}
+
+.btn-sm {
+    padding: 8px 13px;
+    font-size: 11.5px;
+    border-radius: 8px;
+}
+
+.btn-xs {
+    padding: 5px 10px;
+    font-size: 11px;
+    border-radius: 7px;
+}
+
+.approval-action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.btn-disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* ========================================================
+   4. CARD
+   ======================================================== */
+
+.card {
+    background: var(--paper);
+
+    border: 1px solid var(--line);
+    border-radius: 16px;
+
+    padding: 20px;
+
+    box-shadow: var(--shadow);
+}
+
+.card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 15px;
+
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.card-title {
+    font-family: "Poppins", sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.card-sub {
+    margin-top: 2px;
+
+    font-size: 12px;
+    color: var(--text-dim);
+}
+
+/* ========================================================
+   5. BADGE
+   ======================================================== */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    padding: 3px 9px;
+
+    border-radius: 20px;
+
+    font-size: 10.5px;
+    font-weight: 800;
+}
+
+.badge-green {
+    background: var(--green-soft);
+    color: var(--green);
+}
+
+.badge-rust {
+    background: var(--rust-soft);
+    color: var(--rust);
+}
+
+.badge-gold {
+    background: var(--gold-pale);
+    color: var(--gold-deep);
+}
+
+.badge-gray {
+    background: var(--line-soft);
+    color: var(--text-dim);
+}
+
+.badge-blue {
+    background: var(--blue-soft);
+    color: var(--blue);
+}
+
+/* ========================================================
+   6. TABLE
+   ======================================================== */
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    min-width: 760px;
+
+    border-collapse: collapse;
+}
+
+th {
+    padding: 11px 14px;
+
+    background: var(--line-soft);
+
+    border-bottom: 1px solid var(--line);
+
+    color: var(--text-faint);
+
+    font-size: 11px;
+    font-weight: 800;
+
+    text-align: left;
+    text-transform: uppercase;
+
+    letter-spacing: 0.04em;
+
+    white-space: nowrap;
+}
+
+th:first-child {
+    border-radius: 9px 0 0 9px;
+}
+
+th:last-child {
+    border-radius: 0 9px 9px 0;
+}
+
+td {
+    padding: 13px 14px;
+
+    border-bottom: 1px solid var(--line-soft);
+
+    font-size: 13px;
+
+    white-space: nowrap;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:hover td {
+    background: #fcfbf8;
+}
+
+.row-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.row-link {
+    color: var(--gold-deep);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.row-link:hover {
+    text-decoration: underline;
+}
+
+.mono {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ========================================================
+   7. AVATAR
+   ======================================================== */
+
+.avatar-dot {
+    width: 32px;
+    height: 32px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 9px;
+
+    color: #fff;
+
+    font-size: 11.5px;
+    font-weight: 800;
+}
+
+/* ========================================================
+   8. TOOLBAR & FILTER
+   ======================================================== */
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+    margin-bottom: 16px;
+
+    flex-wrap: wrap;
+}
+
+.toolbar-left {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    flex-wrap: wrap;
+}
+
+.search-box {
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 15px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+}
+
+.search-box input {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 13px;
+    background: transparent;
+}
+
+.field-input-inline {
+    padding: 9px 13px;
+
+    background: #fff;
+
+    border: 1px solid var(--line);
+    border-radius: 9px;
+
+    color: var(--text);
+
+    font-family: "Poppins", sans-serif;
+    font-size: 12.5px;
+
+    cursor: pointer;
+}
+
+.field-input-inline:focus {
+    outline: none;
+    border-color: var(--gold);
+}
+
+.quota-chip {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+}
+
+.quota-chip b {
+    color: var(--gold-deep);
+}
+
+/* ========================================================
+   9. FORM
+   ======================================================== */
+
+.field input,
+.field select,
+.field textarea {
+    width: 100%;
+
+    padding: 10px 13px;
+
+    background: #fcfcfb;
+
+    border: 1px solid var(--line);
+    border-radius: 9px;
+
+    color: var(--text);
+
+    font-family: "Poppins", sans-serif;
+    font-size: 13.5px;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+    outline: none;
+
+    border-color: var(--gold);
+
+    background: #fff;
+}
+
+/* ========================================================
+   10. NOTE BOX
+   ======================================================== */
+
+.note-box {
+    display: flex;
+    gap: 9px;
+
+    margin-top: 14px;
+    padding: 12px 14px;
+
+    background: var(--gold-pale);
+
+    border: 1px solid var(--gold-pale2);
+    border-radius: 10px;
+
+    color: #8a6212;
+
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* ========================================================
+   11. EMPTY STATE
+   ======================================================== */
+
+.empty-state {
+    padding: 34px 10px !important;
+
+    color: var(--text-faint);
+
+    font-size: 13px;
+
+    text-align: center;
+
+    white-space: normal !important;
+}
+
+/* ========================================================
+   12. PHOTO THUMBNAIL
+   ======================================================== */
+
+.photo-thumb {
+    width: 38px;
+    height: 38px;
+
+    overflow: hidden;
+
+    border: 1px solid var(--line);
+    border-radius: 8px;
+
+    cursor: pointer;
+    flex-shrink: 0;
+
+    transition: border-color 0.15s ease;
+}
+
+.photo-thumb img {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+.photo-thumb:hover {
+    border-color: var(--gold);
+}
+
+/* ========================================================
+   13. TEXT STATUS
+   ======================================================== */
+
+.text-rust {
+    color: var(--rust);
+    font-weight: 700;
+}
+
+/* ========================================================
+   14. PAGINATION
+   ======================================================== */
+
+.pagination-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 14px;
+
+    margin-top: 18px;
+    padding-top: 16px;
+
+    border-top: 1px solid var(--line-soft);
+}
+
+.pagination-info {
+    color: var(--text-dim);
+    font-size: 12px;
+}
+
+/* ========================================================
+   15. TOAST
+   ======================================================== */
+
+.toast {
+    position: fixed;
+    right: 26px;
+    bottom: 26px;
+    z-index: 50;
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 13px 18px;
+
+    background: var(--text);
+
+    border-radius: 12px;
+
+    color: #fff;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+
+    transform: translateY(20px);
+    opacity: 0;
+
+    pointer-events: none;
+
+    transition: 0.25s ease;
+}
+
+.toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.toast-dot {
+    width: 8px;
+    height: 8px;
+
+    flex-shrink: 0;
+
+    background: var(--gold);
+
+    border-radius: 50%;
+}
+
+/* ========================================================
+    16. RESPONSIVE
+    ======================================================== */
+
+@media (max-width: 640px) {
+    /* Toolbar */
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .toolbar-left {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .field-input-inline,
+    .search-box {
+        width: 100%;
+    }
+
+}
+
+/* ===== RESPONSIVE GLOBAL ===== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+main,
+.content,
+.page-content,
+.container,
+.card,
+.grid,
+.page-head,
+.toolbar {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.card {
+    overflow: hidden;
+}
+
+.grid-2,
+.grid-2-even,
+.grid-3,
+.grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+table {
+    width: 100%;
+    min-width: 0;
+}
+
+th,
+td {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.search-box {
+    min-width: 0;
+    max-width: 100%;
+}
+
+@media (max-width: 900px) {
+    .grid-2,
+    .grid-2-even,
+    .grid-3,
+    .grid-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .page-head,
+    .toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .toolbar-left,
+    .page-actions {
+        width: 100%;
+    }
+
+    .field-input-inline,
+    .search-box,
+    .page-actions .btn {
+        width: 100%;
+    }
+
+    .page-actions .btn {
+        justify-content: center;
+    }
+
+}
+
+@media (max-width: 600px) {
+    .card {
+        padding: 14px;
+        border-radius: 12px;
+    }
+
+    .page-title {
+        font-size: 22px;
+    }
+
+    .card-title {
+        font-size: 14px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .pilltabs,
+    .subtabs,
+    .shift-toggle {
+        width: 100%;
+    }
+
+    .pilltab,
+    .subtab {
+        flex: 1;
+        text-align: center;
+        padding: 8px 10px;
+        font-size: 11.5px;
+    }
+
+    .shift-toggle {
+        flex-direction: column;
+    }
+
+    .shift-opt {
+        width: 100%;
+    }
+
+    .radar {
+        width: 150px;
+        height: 150px;
+    }
+
+    .cam-frame {
+        width: 100%;
+        max-width: 100%;
+        aspect-ratio: 4 / 3;
+    }
+
+    .pagination-bar {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 380px) {
+    .card {
+        padding: 12px;
+    }
+
+    .btn {
+        font-size: 12px;
+        padding: 8px 11px;
+    }
+
+    th,
+    td {
+        padding: 9px 8px;
+        font-size: 11px;
+    }
+}

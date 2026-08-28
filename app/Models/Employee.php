@@ -29,6 +29,7 @@ class Employee extends Model
         'address',
         'position',
         'employee_type',
+        'can_submit_teaching_sessions',
         'join_date',
         'nik',
     ];
@@ -36,6 +37,7 @@ class Employee extends Model
     protected $casts = [
         'birth_date' => 'date',
         'join_date' => 'date',
+        'can_submit_teaching_sessions' => 'boolean',
     ];
 
     public function branch(): BelongsTo
@@ -94,5 +96,12 @@ class Employee extends Model
         $first = mb_substr($parts[0] ?? '', 0, 1);
         $second = mb_substr($parts[1] ?? '', 0, 1);
         return mb_strtoupper($first . $second);
+    }
+
+    public function avatarColor(): string
+    {
+        $colors = ['#3B6EF6', '#F2A21F', '#8B5CF6', '#2F8A5B', '#D34D3C', '#0EA5E9', '#EC4899'];
+        $index = $this->id % count($colors);
+        return $colors[$index];
     }
 }
