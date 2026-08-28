@@ -120,10 +120,51 @@
                             @endforeach
                         </div>
 
-                        <div style="display:flex; gap:8px; margin-top:18px;">
+                        <div style="margin-top:18px;">
+    <button
+        type="button"
+        id="btnCapture"
+        class="btn"
+        style="
+            background:#f9a825;
+            color:#fff;
+            border:none;
+            border-radius:10px;
+            padding:11px 24px;
+            font-size:14px;
+            font-weight:700;
+            cursor:pointer;
+            box-shadow:0 4px 10px rgba(249,168,37,0.20);
+        "
+    >
+        Ambil Foto
+    </button>
+
+    <button
+        type="button"
+        id="btnRetake"
+        class="btn"
+        style="
+            background:#f9a825;
+            color:#fff;
+            border:none;
+            border-radius:10px;
+            padding:11px 24px;
+            font-size:14px;
+            font-weight:700;
+            cursor:pointer;
+            box-shadow:0 4px 10px rgba(249,168,37,0.20);
+            display:none;
+        "
+    >
+        Ambil Ulang
+    </button>
+</div>
+
+                        {{-- <div style="display:flex; gap:8px; margin-top:18px;">
                             <button type="button" id="btnCapture" class="btn btn-line" style="flex:1;">Ambil Foto</button>
                             <button type="button" id="btnRetake" class="btn btn-line" style="flex:1; display:none;">Ambil Ulang</button>
-                        </div>
+                        </div> --}}
 
                         <button type="submit" id="btnSubmitCam" class="btn btn-gold btn-block" style="margin-top:10px; padding:14px;" disabled>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

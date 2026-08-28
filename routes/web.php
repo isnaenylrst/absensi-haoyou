@@ -174,6 +174,9 @@ Route::middleware('auth')->group(function () {
         // ----------------------------------------------
         Route::get('/payroll', [PayrollController::class, 'index'])
             ->name('payroll.index');
+    
+        Route::get('/payroll/history', [PayrollController::class, 'history'])
+            ->name('payroll.history');
 
         Route::patch('/payroll/{employee}', [PayrollController::class, 'updateComponent'])
             ->name('payroll.update');
