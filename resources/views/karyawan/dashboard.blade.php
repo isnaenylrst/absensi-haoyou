@@ -88,10 +88,12 @@
                 </div>
 
                 <div class="nav-sub">
-                    <a href="{{ route('presensi') }}" class="nav-sub-item {{ request()->routeIs('presensi') ? 'active' : '' }}">
-                        <span class="nav-sub-ico"><i class="fa-solid fa-clipboard-check"></i></span>
-                        <span class="nav-sub-label">Presensi</span>
-                    </a>
+                    @can('access-presensi')
+                        <a href="{{ route('presensi') }}" class="nav-sub-item {{ request()->routeIs('presensi') ? 'active' : '' }}">
+                            <span class="nav-sub-ico"><i class="fa-solid fa-clipboard-check"></i></span>
+                            <span class="nav-sub-label">Presensi</span>
+                        </a>
+                    @endcan
                     <a href="#" class="nav-sub-item" data-page="izin">
                         <span class="nav-sub-ico"><i class="fa-solid fa-plane-departure"></i></span>
                         <span class="nav-sub-label">Izin &amp; Cuti</span>

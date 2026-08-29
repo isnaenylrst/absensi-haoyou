@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\LeaveRequest;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -15,6 +16,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Gate::define('access-presensi', function ($user) {
+            return $user->employee?->employee_type === 'tetap';
+        });
+
         View::composer('owner.dashboard', function ($view) {
             $view->with('pendingLeaveCount', LeaveRequest::where('status', 'menunggu')->count());
             $view->with('pendingLeaveList', LeaveRequest::with('employee')

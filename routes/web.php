@@ -45,16 +45,18 @@ Route::middleware('auth')->group(function () {
         ->name('profil.password');
 
     // ==================================================
-    // PRESENSI KARYAWAN
+    // PRESENSI KARYAWAN (khusus karyawan tetap)
     // ==================================================
-    Route::get('/presensi', PresensiController::class)
-        ->name('presensi');
+    Route::middleware('can:access-presensi')->group(function () {
+        Route::get('/presensi', PresensiController::class)
+            ->name('presensi');
 
-    Route::post('/presensi/check-in', [PresensiController::class, 'checkIn'])
-        ->name('presensi.check-in');
+        Route::post('/presensi/check-in', [PresensiController::class, 'checkIn'])
+            ->name('presensi.check-in');
 
-    Route::post('/presensi/check-out', [PresensiController::class, 'checkOut'])
-        ->name('presensi.check-out');
+        Route::post('/presensi/check-out', [PresensiController::class, 'checkOut'])
+            ->name('presensi.check-out');
+    });
 
     // ==================================================
     // KUNJUNGAN KLIEN - KARYAWAN
