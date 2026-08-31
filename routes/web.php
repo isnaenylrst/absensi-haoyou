@@ -10,7 +10,6 @@ use App\Http\Controllers\Karyawan\PresensiController;
 use App\Http\Controllers\Karyawan\ClientVisitController;
 use App\Http\Controllers\Owner\EmployeeController;
 use App\Http\Controllers\Owner\JadwalKerjaController;
-use App\Http\Controllers\Owner\ApprovalController;
 use App\Http\Controllers\Owner\KunjunganController;
 use App\Http\Controllers\Owner\SettingController;
 use Illuminate\Support\Facades\Route;
@@ -49,16 +48,18 @@ Route::middleware('auth')->group(function () {
         ->name('profil.password');
 
     // ==================================================
-    // PRESENSI KARYAWAN
+    // PRESENSI KARYAWAN (khusus karyawan tetap)
     // ==================================================
-    Route::get('/presensi', PresensiController::class)
-        ->name('presensi');
+    Route::middleware('can:access-presensi')->group(function () {
+        Route::get('/presensi', PresensiController::class)
+            ->name('presensi');
 
-    Route::post('/presensi/check-in', [PresensiController::class, 'checkIn'])
-        ->name('presensi.check-in');
+        Route::post('/presensi/check-in', [PresensiController::class, 'checkIn'])
+            ->name('presensi.check-in');
 
-    Route::post('/presensi/check-out', [PresensiController::class, 'checkOut'])
-        ->name('presensi.check-out');
+        Route::post('/presensi/check-out', [PresensiController::class, 'checkOut'])
+            ->name('presensi.check-out');
+    });
 
     // ==================================================
     // KUNJUNGAN KLIEN - KARYAWAN
@@ -133,20 +134,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/jadwal-kerja', JadwalKerjaController::class)
             ->name('jadwal-kerja');
 
-        Route::get('/jadwal-kerja/presensi-bulanan/{employee}', [JadwalKerjaController::class, 'presensiBulanan'])
-            ->name('jadwal-kerja.presensi-bulanan');
-
-        Route::get('/jadwal-kerja/guru/{employee}/jadwal-bulanan', [JadwalKerjaController::class, 'jadwalGuruBulanan'])
-            ->name('jadwal-kerja.guru-bulanan');
-
         Route::post('/jadwal-kerja/shift', [JadwalKerjaController::class, 'storeShift'])
             ->name('owner.shift.store');
-
-        // ----------------------------------------------
-        // Approval Presensi
-        // ----------------------------------------------
-        Route::get('/approval', [ApprovalController::class, 'index'])
-            ->name('approval');
 
         // ----------------------------------------------
         // Kunjungan Klien - Owner

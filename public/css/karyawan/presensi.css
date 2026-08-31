@@ -1418,3 +1418,146 @@ td {
         font-size: 11px;
     }
 }
+
+.cam-btn-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 18px;
+    justify-content: center;
+    align-items: center;
+}
+ 
+.cam-btn-row .btn {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+}
+
+/* ================================================================
+   TAMBAHAN — tombol switch kamera depan/belakang
+   Tempel di akhir file presensi.css (setelah .cam-btn-row)
+   ================================================================ */
+ 
+.cam-switch-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.45);
+    border: none;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 3;
+    transition: 0.15s;
+}
+.cam-switch-btn:hover {
+    background: rgba(0, 0, 0, 0.65);
+}
+.cam-switch-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ================================================================
+   MODE GELAP
+   ================================================================ */
+body.dark-mode {
+    --paper: #1e2126;
+    --bg: #14161a;
+    --line: #2c2f35;
+    --line-soft: #24272d;
+    --text: #f1f2f4;
+    --text-dim: #9aa0a8;
+    --text-faint: #6b7280;
+    --green-soft: rgba(47, 138, 91, 0.16);
+    --rust-soft: rgba(211, 77, 60, 0.16);
+    --gold-pale: rgba(245, 166, 35, 0.16);
+    --gold-pale2: rgba(245, 166, 35, 0.28);
+    --blue-soft: rgba(46, 111, 219, 0.16);
+    --shadow:
+        0 1px 2px rgba(0, 0, 0, 0.25),
+        0 10px 26px -16px rgba(0, 0, 0, 0.55);
+}
+
+body.dark-mode .btn-line {
+    background: var(--line-soft);
+    color: var(--text);
+    border-color: var(--line);
+}
+body.dark-mode .btn-line:hover {
+    background: var(--line);
+}
+
+body.dark-mode .search-box {
+    background: var(--line-soft);
+    border-color: var(--line);
+}
+
+body.dark-mode .field input,
+body.dark-mode .field select,
+body.dark-mode .field textarea {
+    background: var(--line-soft);
+    color: var(--text);
+    border-color: var(--line);
+}
+body.dark-mode .field input:focus,
+body.dark-mode .field select:focus,
+body.dark-mode .field textarea:focus {
+    background: var(--paper);
+    border-color: var(--gold);
+}
+
+body.dark-mode .session-input-row,
+body.dark-mode .week-day,
+body.dark-mode .session-status-row {
+    background: var(--line-soft);
+    border-color: var(--line);
+}
+
+body.dark-mode .pilltabs {
+    background: var(--line-soft);
+}
+body.dark-mode .pilltab.active {
+    background: var(--paper);
+    color: var(--text);
+}
+
+body.dark-mode .visit-card {
+    background: var(--paper);
+    border-color: var(--line);
+}
+
+body.dark-mode .cell-input {
+    background: var(--line-soft);
+    color: var(--text);
+}
+body.dark-mode .cell-input:focus {
+    background: var(--paper);
+}
+
+body.dark-mode .note-box {
+    color: #f3d99a;
+}
+body.dark-mode .note-box-green,
+body.dark-mode .owner-panel-note {
+    color: #9fe0bb;
+}
+
+body.dark-mode table tr:hover td {
+    background: var(--line-soft);
+}
+
+body.dark-mode .toast {
+    background: var(--paper);
+    color: var(--text);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb {
+    background: #3a3d44;
+}

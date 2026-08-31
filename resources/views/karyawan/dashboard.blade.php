@@ -266,45 +266,15 @@
 
                 {{-- SUBMENU --}}
                 <div class="nav-sub">
-
-
-                    {{-- ==============================
-                        PRESENSI
-                    =============================== --}}
-
-                    <a
-                        href="{{ route('presensi') }}"
-                        class="nav-sub-item {{ request()->routeIs('presensi') ? 'active' : '' }}"
-                    >
-
-                        <span class="nav-sub-ico">
-                            <i class="fa-solid fa-clipboard-check"></i>
-                        </span>
-
-                        <span class="nav-sub-label">
-                            Presensi
-                        </span>
-
-                    </a>
-
-
-                    {{-- ==============================
-                        IZIN & CUTI
-                    =============================== --}}
-
-                    <a
-                        href="{{ route('leave-requests.index') }}"
-                        class="nav-sub-item {{ request()->routeIs('leave-requests.*') ? 'active' : '' }}"
-                    >
-
-                        <span class="nav-sub-ico">
-                            <i class="fa-solid fa-plane-departure"></i>
-                        </span>
-
-                        <span class="nav-sub-label">
-                            Izin &amp; Cuti
-                        </span>
-
+                    @can('access-presensi')
+                        <a href="{{ route('presensi') }}" class="nav-sub-item {{ request()->routeIs('presensi') ? 'active' : '' }}">
+                            <span class="nav-sub-ico"><i class="fa-solid fa-clipboard-check"></i></span>
+                            <span class="nav-sub-label">Presensi</span>
+                        </a>
+                    @endcan
+                        <a href="{{ route('leave-requests.index') }}" class="nav-sub-item {{ request()->routeIs('leave-requests.*') ? 'active' : '' }}">
+                        <span class="nav-sub-ico"><i class="fa-solid fa-plane-departure"></i></span>
+                        <span class="nav-sub-label">Izin &amp; Cuti</span>
                     </a>
 
 

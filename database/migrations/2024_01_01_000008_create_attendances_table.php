@@ -15,10 +15,6 @@ return new class extends Migration
                 ->constrained('shift_schedules')->nullOnDelete();
             $table->foreignId('shift_id')->nullable()
                 ->constrained('shifts')->nullOnDelete();
-            $table->foreignId('part_time_schedule_id')->nullable()
-                ->constrained('part_time_schedules')->nullOnDelete();
-
-            $table->string('activity', 150)->nullable();
 
             $table->foreignId('branch_id')->constrained('branches')->restrictOnDelete();
             $table->date('tanggal');

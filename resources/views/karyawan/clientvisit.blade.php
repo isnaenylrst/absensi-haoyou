@@ -39,8 +39,8 @@
                 <label>Jenis Kunjungan</label>
                 <select name="visit_type" required>
                     <option value="Les Privat" @selected(old('visit_type') === 'Les Privat')>Les Privat</option>
+                    <option value="Event" @selected(old('visit_type') === 'Event')>Event</option>
                     <option value="Kunjungan Sales" @selected(old('visit_type') === 'Kunjungan Sales')>Kunjungan Sales</option>
-                    <option value="Survei Lokasi" @selected(old('visit_type') === 'Survei Lokasi')>Survei Lokasi</option>
                 </select>
             </div>
         </div>
@@ -81,6 +81,15 @@
                     <i class="ti ti-camera-off" style="font-size:26px;"></i>
                     Kamera tidak tersedia / izin ditolak
                 </div>
+
+                <button type="button" id="btnSwitchCam" class="cam-switch-btn" title="Ganti kamera">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 2.1 21 6l-4 3.9"/>
+                        <path d="M3 12v-1a4 4 0 0 1 4-4h14"/>
+                        <path d="m7 21.9-4-3.9 4-3.9"/>
+                        <path d="M21 12v1a4 4 0 0 1-4 4H3"/>
+                    </svg>
+                </button>
             </div>
             <canvas id="camCanvas" style="display:none;"></canvas>
 
@@ -177,10 +186,12 @@
     const canvas = document.getElementById('camCanvas');
     const btnCapture = document.getElementById('btnCapture');
     const btnRetake = document.getElementById('btnRetake');
+    const btnSwitchCam = document.getElementById('btnSwitchCam');
     const photoInput = document.getElementById('photoInput');
     const btnSubmit = document.getElementById('btnSubmit');
 
     let stream = null;
+    let currentFacing = 'environment'; // default kamera belakang (untuk foto lokasi kunjungan)
 
     function useManualAddress() {
         addressInput.readOnly = false;
@@ -305,11 +316,18 @@
     btnAddrAuto.addEventListener('click', detectLocation);
     btnAddrManual.addEventListener('click', useManualAddress);
 
-    async function startCamera() {
+    async function startCamera(facing) {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+
+        if (btnSwitchCam) btnSwitchCam.disabled = true;
+
         try {
             stream = await navigator.mediaDevices.getUserMedia({
                 video: {
-                    facingMode: { ideal: 'environment' },
+                    facingMode: { ideal: facing },
                 },
                 audio: false,
             });
@@ -318,11 +336,21 @@
             video.style.display = 'block';
             placeholder.style.display = 'none';
             btnCapture.disabled = false;
+            currentFacing = facing;
         } catch (error) {
             video.style.display = 'none';
             placeholder.style.display = 'flex';
             btnCapture.disabled = true;
+        } finally {
+            if (btnSwitchCam) btnSwitchCam.disabled = false;
         }
+    }
+
+    if (btnSwitchCam) {
+        btnSwitchCam.addEventListener('click', function () {
+            const next = currentFacing === 'environment' ? 'user' : 'environment';
+            startCamera(next);
+        });
     }
 
     btnCapture.addEventListener('click', function () {
@@ -355,6 +383,7 @@
             video.style.display = 'none';
             btnCapture.style.display = 'none';
             btnRetake.style.display = 'inline-flex';
+            if (btnSwitchCam) btnSwitchCam.style.display = 'none';
             btnSubmit.disabled = false;
 
             if (stream) {
@@ -369,10 +398,11 @@
         preview.style.display = 'none';
         btnRetake.style.display = 'none';
         btnCapture.style.display = 'inline-flex';
+        if (btnSwitchCam) btnSwitchCam.style.display = 'flex';
         btnSubmit.disabled = true;
         photoInput.value = '';
 
-        startCamera();
+        startCamera(currentFacing);
     });
 
     form.addEventListener('submit', function (event) {
@@ -390,7 +420,7 @@
     });
 
     useManualAddress();
-    startCamera();
+    startCamera(currentFacing);
 })();
 </script>
 @endsection

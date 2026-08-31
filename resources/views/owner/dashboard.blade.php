@@ -87,6 +87,15 @@
 
 <body data-role="owner">
 
+<script>
+    (function () {
+        var theme = localStorage.getItem('absenly_theme') || 'light';
+        if (theme === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+    })();
+</script>
+
 <div class="app" id="absensiApp">
 
     {{-- =====================================================
@@ -116,7 +125,6 @@
                 <div class="nav-item" onclick="toggleGroup()">
                     <i class="fa-solid fa-clock nav-ico"></i>
                     Kehadiran
-                    <span class="nav-badge nav-badge-inline">2</span>
                     <i class="fa-solid fa-chevron-right nav-chevron"></i>
                 </div>
 
@@ -281,7 +289,7 @@
         moonIcon.style.display = theme === 'dark' ? 'inline' : 'none';
     }
 
-    const savedTheme = localStorage.getItem('absenly_theme') || 'light';
+    const savedTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
     applyTheme(savedTheme);
 
     themeToggle.addEventListener('click', function () {
