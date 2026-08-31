@@ -36,9 +36,6 @@ class JadwalKerjaController extends Controller
         9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
     ];
 
-    /**
-     * Halaman utama Jadwal Kerja.
-     */
     public function __invoke(Request $request)
     {
         $filters = $request->only([
@@ -50,22 +47,37 @@ class JadwalKerjaController extends Controller
             'status',
         ]);
 
+        $isAjax = $request->ajax() || $request->wantsJson();
+
+        $attendances = $this->getAttendances($filters);
+        $summary     = $this->attendanceSummary; // sudah keisi setelah getAttendances()
+
         $bulanTerpilih = (int) $request->input('bulan', now()->month);
         $tahunTerpilih = (int) $request->input('tahun', now()->year);
 
-        return view('owner.jadwalkaryawan', [
-            'hariKerja'   => array_values(self::HARI_KERJA),
-            'shifts'      => $this->getShifts(),
-            'attendances' => $this->getAttendances($filters),
-            'summary'     => $this->attendanceSummary, // <-- tambahan, WAJIB dipanggil SETELAH getAttendances()
-            'branches'    => Branch::orderBy('name')->get(),
-            'filters'     => $filters,
-            'riwayat'     => $this->getRiwayatAbsensi($bulanTerpilih, $tahunTerpilih),
+        $view = view('owner.jadwalkaryawan', [
+            'hariKerja'     => array_values(self::HARI_KERJA),
+            // Query berat di-skip kalau ini request AJAX (tidak dipakai section 'approval')
+            'shifts'        => $isAjax ? collect() : $this->getShifts(),
+            'attendances'   => $attendances,
+            'summary'       => $summary,
+            'branches'      => $isAjax ? collect() : Branch::orderBy('name')->get(),
+            'filters'       => $filters,
+            'riwayat'       => $isAjax ? collect() : $this->getRiwayatAbsensi($bulanTerpilih, $tahunTerpilih),
             'bulanTerpilih' => $bulanTerpilih,
             'tahunTerpilih' => $tahunTerpilih,
             'daftarBulan'   => self::NAMA_BULAN,
-            'daftarTahun'   => $this->getDaftarTahun(),
+            'daftarTahun'   => $isAjax ? [] : $this->getDaftarTahun(),
         ]);
+
+        if ($isAjax) {
+            /** @disregard P1013 */
+            $sections = $view->renderSections();
+
+            return response($sections['approval'] ?? '');
+        }
+
+        return $view;
     }
 
     /**
