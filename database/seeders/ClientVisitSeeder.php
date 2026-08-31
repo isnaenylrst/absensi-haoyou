@@ -21,7 +21,7 @@ class ClientVisitSeeder extends Seeder
                 'employee_code' => 'EMP0006', // Natalia Repiuli Dertina Sitorus
                 'client_name' => 'Keluarga Bapak Hendra',
                 'address' => 'Jl. Ijen No. 12, Malang',
-                'visit_type' => 'Les Privat Mandarin',
+                'visit_type' => 'Les Privat',
                 'latitude' => -7.9797,
                 'longitude' => 112.6304,
                 'accuracy_m' => 8.50,
@@ -33,7 +33,7 @@ class ClientVisitSeeder extends Seeder
                 'employee_code' => 'EMP0006',
                 'client_name' => 'Keluarga Bapak Hendra',
                 'address' => 'Jl. Ijen No. 12, Malang',
-                'visit_type' => 'Les Privat Mandarin',
+                'visit_type' => 'Les Privat',
                 'latitude' => -7.9795,
                 'longitude' => 112.6306,
                 'accuracy_m' => 12.30,
@@ -45,7 +45,7 @@ class ClientVisitSeeder extends Seeder
                 'employee_code' => 'EMP0008', // Marsya Amelia
                 'client_name' => 'Ibu Susanti',
                 'address' => 'Jl. Bendungan Sutami No. 5, Malang',
-                'visit_type' => 'Les Privat Mandarin',
+                'visit_type' => 'Les Privat',
                 'latitude' => -7.9553,
                 'longitude' => 112.6086,
                 'accuracy_m' => 6.00,
@@ -57,7 +57,7 @@ class ClientVisitSeeder extends Seeder
                 'employee_code' => 'EMP0011', // Fitri Maulidah
                 'client_name' => 'Keluarga Bapak Yusuf',
                 'address' => 'Perumahan Griya Shanta Blok C.10, Malang',
-                'visit_type' => 'Kunjungan Home Visit',
+                'visit_type' => 'Kunjungan Sales',
                 'latitude' => null,
                 'longitude' => null,
                 'accuracy_m' => null,
@@ -69,7 +69,7 @@ class ClientVisitSeeder extends Seeder
                 'employee_code' => 'EMP0015', // Dwi Ayu Wulandari
                 'client_name' => 'Sekolah Mitra ABC',
                 'address' => 'Jl. Bantur No. 20, Malang',
-                'visit_type' => 'Kunjungan Sekolah Mitra',
+                'visit_type' => 'Event',
                 'latitude' => -8.1234,
                 'longitude' => 112.5678,
                 'accuracy_m' => 15.00,
@@ -99,11 +99,6 @@ class ClientVisitSeeder extends Seeder
         }
     }
 
-    /**
-     * Pastikan ada 1 file foto dummy di storage/app/public/seed-photos/.
-     * Kalau belum ada, generate gambar polos sederhana pakai GD
-     * supaya seeder tidak bergantung pada file yang harus di-commit manual.
-     */
     private function ensureDummyPhoto(): string
     {
         $path = 'seed-photos/dummy-client-visit.jpg';

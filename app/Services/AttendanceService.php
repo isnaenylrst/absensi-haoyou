@@ -19,6 +19,7 @@ class AttendanceService
         'senin' => 1, 'selasa' => 2, 'rabu' => 3, 'kamis' => 4,
         'jumat' => 5, 'sabtu' => 6, 'minggu' => 7,
     ];
+    private const MAX_REASONABLE_DISTANCE_M = 100000; // 100 km
 
     /**
      * Presensi masuk karyawan TETAP: shift dipilih manual, wajib foto dari kamera + koordinat.
@@ -68,6 +69,15 @@ class AttendanceService
             $lat,
             $lng
         );
+
+        // Tolak lebih dulu kalau jaraknya di luar akal sehat (indikasi GPS/lokasi tidak valid),
+        // sebelum masuk ke pengecekan radius kantor yang normal.
+        if ($distanceM > self::MAX_REASONABLE_DISTANCE_M) {
+            throw new AttendanceException(
+                'Lokasi GPS tidak valid atau tidak akurat (jarak terdeteksi terlalu jauh). '
+                .'Pastikan GPS/lokasi aktif, lalu coba lagi.'
+            );
+        }
 
         if ($distanceM > $branch->radius_meter
             && $setting->out_of_radius_policy === 'ditolak_otomatis'

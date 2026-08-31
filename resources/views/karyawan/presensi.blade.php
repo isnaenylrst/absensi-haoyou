@@ -80,6 +80,15 @@
                             Pratinjau kamera real-time
                         </div>
 
+                        <button type="button" id="btnSwitchCam" class="cam-switch-btn" title="Ganti kamera">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 2.1 21 6l-4 3.9"/>
+                                <path d="M3 12v-1a4 4 0 0 1 4-4h14"/>
+                                <path d="m7 21.9-4-3.9 4-3.9"/>
+                                <path d="M21 12v1a4 4 0 0 1-4 4H3"/>
+                            </svg>
+                        </button>
+
                         <div class="cam-timestamp" id="camTimestamp"></div>
                         <div class="cam-geo" id="camGeoLabel">📍 Mendeteksi lokasi...</div>
                     </div>
@@ -98,9 +107,9 @@
                         @endforeach
                     </div>
 
-                    <div style="display:flex; gap:8px; margin-top:18px;">
-                        <button type="button" id="btnCapture" class="btn btn-line" style="flex:1;">Ambil Foto</button>
-                        <button type="button" id="btnRetake" class="btn btn-line" style="flex:1; display:none;">Ambil Ulang</button>
+                    <div class="cam-btn-row">
+                        <button type="button" id="btnCapture" class="btn btn-line">Ambil Foto</button>
+                        <button type="button" id="btnRetake" class="btn btn-line" style="display:none;">Ambil Ulang</button>
                     </div>
 
                     <button type="submit" id="btnSubmitCam" class="btn btn-gold btn-block" style="margin-top:10px; padding:14px;" disabled>
@@ -128,15 +137,24 @@
                             Pratinjau kamera real-time
                         </div>
 
+                        <button type="button" id="btnSwitchCam" class="cam-switch-btn" title="Ganti kamera">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 2.1 21 6l-4 3.9"/>
+                                <path d="M3 12v-1a4 4 0 0 1 4-4h14"/>
+                                <path d="m7 21.9-4-3.9 4-3.9"/>
+                                <path d="M21 12v1a4 4 0 0 1-4 4H3"/>
+                            </svg>
+                        </button>
+
                         <div class="cam-timestamp" id="camTimestamp"></div>
                         <div class="cam-geo">📍 Sudah absen masuk {{ $todayAttendance->check_in->format('H:i') }}</div>
                     </div>
 
                     <input type="file" name="photo" id="photoInput" accept="image/*" style="display:none;" required>
 
-                    <div style="display:flex; gap:8px; margin-top:18px;">
-                        <button type="button" id="btnCapture" class="btn btn-line" style="flex:1;">Ambil Foto</button>
-                        <button type="button" id="btnRetake" class="btn btn-line" style="flex:1; display:none;">Ambil Ulang</button>
+                    <div class="cam-btn-row">
+                        <button type="button" id="btnCapture" class="btn btn-line">Ambil Foto</button>
+                        <button type="button" id="btnRetake" class="btn btn-line" style="display:none;">Ambil Ulang</button>
                     </div>
 
                     <button type="submit" id="btnSubmitCam" class="btn btn-gold btn-block" style="margin-top:10px; padding:14px;" disabled>
@@ -287,6 +305,7 @@
             const camGeoLabel = document.getElementById('camGeoLabel');
             const btnCapture = document.getElementById('btnCapture');
             const btnRetake = document.getElementById('btnRetake');
+            const btnSwitchCam = document.getElementById('btnSwitchCam');
             const photoInput = document.getElementById('photoInput');
             const btnSubmitCam = document.getElementById('btnSubmitCam');
             const latInput = document.getElementById('latInput');
@@ -306,6 +325,7 @@
             let stream = null;
             let hasPhoto = false;
             let hasLocation = !latInput; // kalau nggak ada latInput (form checkout), lokasi tidak wajib
+            let currentFacing = 'user'; // default kamera depan (untuk foto selfie verifikasi wajah)
 
             function distanceMeters(lat1, lng1, lat2, lng2) {
                 const R = 6371000;
@@ -325,16 +345,38 @@
             setInterval(tickClock, 1000);
             tickClock();
 
-            async function startCamera() {
+            async function startCamera(facing) {
+                // Matikan stream lama dulu kalau ada (mis. saat switch kamera)
+                if (stream) {
+                    stream.getTracks().forEach(t => t.stop());
+                    stream = null;
+                }
+
+                if (btnSwitchCam) btnSwitchCam.disabled = true;
+
                 try {
-                    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: { ideal: facing } },
+                        audio: false,
+                    });
                     video.srcObject = stream;
                     video.style.display = 'block';
                     placeholder.style.display = 'none';
+                    currentFacing = facing;
                 } catch (e) {
+                    placeholder.style.display = 'flex';
                     placeholder.innerHTML = 'Kamera tidak tersedia / izin ditolak';
                     if (btnCapture) btnCapture.disabled = true;
+                } finally {
+                    if (btnSwitchCam) btnSwitchCam.disabled = false;
                 }
+            }
+
+            if (btnSwitchCam) {
+                btnSwitchCam.addEventListener('click', function () {
+                    const next = currentFacing === 'user' ? 'environment' : 'user';
+                    startCamera(next);
+                });
             }
 
             if (btnCapture) {
@@ -355,6 +397,7 @@
                         video.style.display = 'none';
                         btnCapture.style.display = 'none';
                         btnRetake.style.display = 'inline-flex';
+                        if (btnSwitchCam) btnSwitchCam.style.display = 'none';
 
                         hasPhoto = true;
                         updateSubmitState();
@@ -369,10 +412,11 @@
                     preview.style.display = 'none';
                     btnRetake.style.display = 'none';
                     btnCapture.style.display = 'inline-flex';
+                    if (btnSwitchCam) btnSwitchCam.style.display = 'flex';
                     hasPhoto = false;
                     updateSubmitState();
                     photoInput.value = '';
-                    startCamera();
+                    startCamera(currentFacing);
                 });
             }
 
@@ -470,7 +514,7 @@
                 }, 8000);
             }
 
-            startCamera();
+            startCamera(currentFacing);
             watchLocation();
         })();
 

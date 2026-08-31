@@ -83,6 +83,15 @@
 
 <body data-role="owner">
 
+<script>
+    (function () {
+        var theme = localStorage.getItem('absenly_theme') || 'light';
+        if (theme === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+    })();
+</script>
+
 <div class="app" id="absensiApp">
 
     {{-- =====================================================
@@ -274,7 +283,7 @@
         moonIcon.style.display = theme === 'dark' ? 'inline' : 'none';
     }
 
-    const savedTheme = localStorage.getItem('absenly_theme') || 'light';
+    const savedTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
     applyTheme(savedTheme);
 
     themeToggle.addEventListener('click', function () {

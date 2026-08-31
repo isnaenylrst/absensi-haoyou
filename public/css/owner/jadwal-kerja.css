@@ -1,52 +1,91 @@
-/* =========================================================
-   jadwal-kerja.css
-   Khusus untuk: resources/views/owner/jadwal-kerja.blade.php
-   Hanya berisi variabel & class yang benar-benar dipakai
-   di halaman Jadwal Kerja (Karyawan Tetap & Part Time).
-   ========================================================= */
+/* ========================================================
+   1. VARIABLES
+   ======================================================== */
 
 :root {
     --gold: #f5a623;
     --gold-deep: #de8c0f;
     --gold-pale: #fff4de;
     --gold-pale2: #fdecc8;
+
     --paper: #ffffff;
     --bg: #fbfbf9;
+
     --line: #edeef0;
     --line-soft: #f4f5f2;
+
     --text: #22262b;
     --text-dim: #6b7280;
     --text-faint: #9aa0a8;
-    --blue: #2e6fdb;
-    --blue-soft: #e8effc;
+
     --green: #2f8a5b;
     --green-soft: #e7f5ec;
+
     --rust: #d34d3c;
     --rust-soft: #fceae7;
+
+    --blue: #2e6fdb;
+    --blue-soft: #e8effc;
+
     --orange: #e8863a;
     --orange-soft: #fce9da;
+
     --shadow:
         0 1px 2px rgba(20, 20, 20, 0.03),
         0 10px 26px -16px rgba(20, 20, 20, 0.14);
 }
 
 .mono {
-    font-family: "Poppins", sans-serif;
+    font-variant-numeric: tabular-nums;
 }
 
-/* ===== Breadcrumb & judul halaman ===== */
+/* ========================================================
+   2. GLOBAL RESET & LAYOUT DASAR
+   ======================================================== */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+main,
+.content,
+.page-content,
+.container,
+.card,
+.grid,
+.page-head,
+.toolbar {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+/* ========================================================
+   3. BREADCRUMB & PAGE HEADER
+   ======================================================== */
+
 .crumb {
-    font-size: 12.5px;
-    color: var(--text-faint);
-    margin-bottom: 14px;
     display: flex;
     align-items: center;
     gap: 7px;
+    margin-bottom: 14px;
+    font-size: 12.5px;
+    color: var(--text-faint);
 }
 .crumb b {
     color: var(--text-dim);
     font-weight: 700;
 }
+
 .page-head {
     display: flex;
     align-items: flex-start;
@@ -66,20 +105,23 @@
     flex-wrap: wrap;
 }
 
-/* ===== Tombol ===== */
+/* ========================================================
+   4. BUTTONS
+   ======================================================== */
+
 .btn {
-    font-family: "Poppins", sans-serif;
-    font-weight: 700;
-    font-size: 13px;
-    padding: 10px 16px;
-    border-radius: 9px;
-    border: 1px solid transparent;
-    cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    transition: 0.15s;
+    padding: 10px 16px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    font-family: "Poppins", sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
     white-space: nowrap;
+    transition: 0.15s ease;
 }
 .btn-gold {
     background: var(--gold);
@@ -97,8 +139,16 @@
 .btn-line:hover {
     background: var(--line-soft);
 }
+.btn-ghost {
+    background: transparent;
+    color: var(--text-dim);
+    border-color: transparent;
+}
+.btn-ghost:hover {
+    background: var(--line-soft);
+}
 .btn-sm {
-    padding: 7px 12px;
+    padding: 8px 13px;
     font-size: 11.5px;
     border-radius: 8px;
 }
@@ -107,14 +157,33 @@
     font-size: 11px;
     border-radius: 7px;
 }
+.btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+.btn-disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
 
-/* ===== Card & grid layout ===== */
+.approval-action-buttons,
+.jadwal-action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ========================================================
+   5. CARD & GRID
+   ======================================================== */
+
 .card {
     background: var(--paper);
     border: 1px solid var(--line);
     border-radius: 16px;
     padding: 20px;
     box-shadow: var(--shadow);
+    overflow: hidden;
 }
 .card-head {
     display: flex;
@@ -130,9 +199,9 @@
     font-weight: 700;
 }
 .card-sub {
+    margin-top: 2px;
     font-size: 12px;
     color: var(--text-dim);
-    margin-top: 2px;
 }
 
 .grid {
@@ -142,13 +211,233 @@
 .grid-2-even {
     grid-template-columns: 1fr 1fr;
 }
-@media (max-width: 900px) {
-    .grid-2-even {
-        grid-template-columns: 1fr;
-    }
+.grid-2,
+.grid-3,
+.grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-/* ===== Pill tabs (Karyawan Tetap / Part Time) ===== */
+/* ========================================================
+   6. BADGE
+   ======================================================== */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 10.5px;
+    font-weight: 800;
+}
+.badge-green {
+    background: var(--green-soft);
+    color: var(--green);
+}
+.badge-rust {
+    background: var(--rust-soft);
+    color: var(--rust);
+}
+.badge-gold {
+    background: var(--gold-pale);
+    color: var(--gold-deep);
+}
+.badge-gray {
+    background: var(--line-soft);
+    color: var(--text-dim);
+}
+.badge-blue {
+    background: var(--blue-soft);
+    color: var(--blue);
+}
+.badge-orange {
+    background: var(--orange-soft);
+    color: var(--orange);
+}
+
+/* ========================================================
+   7. TABLE
+   ======================================================== */
+
+.table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+}
+th {
+    padding: 11px 14px;
+    background: var(--line-soft);
+    border-bottom: 1px solid var(--line);
+    color: var(--text-faint);
+    font-size: 11px;
+    font-weight: 800;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+th:first-child {
+    border-radius: 9px 0 0 9px;
+}
+th:last-child {
+    border-radius: 0 9px 9px 0;
+}
+td {
+    padding: 13px 14px;
+    border-bottom: 1px solid var(--line-soft);
+    font-size: 13px;
+    white-space: nowrap;
+}
+tr:last-child td {
+    border-bottom: none;
+}
+tr:hover td {
+    background: #fcfbf8;
+}
+.row-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.row-link {
+    color: var(--gold-deep);
+    font-weight: 700;
+    cursor: pointer;
+}
+.row-link:hover {
+    text-decoration: underline;
+}
+.avatar-dot {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 9px;
+    color: #fff;
+    font-size: 11.5px;
+    font-weight: 800;
+}
+.text-rust {
+    color: var(--rust);
+    font-weight: 700;
+}
+
+/* Tabel khusus approval jadwal kerja */
+.jadwal-approval-table {
+    min-width: 980px;
+}
+.jadwal-approval-table th,
+.jadwal-approval-table td {
+    white-space: nowrap;
+    overflow-wrap: normal;
+}
+.jadwal-action-cell {
+    min-width: 100px;
+    text-align: center;
+    white-space: nowrap !important;
+    vertical-align: middle;
+}
+
+/* ========================================================
+   8. TOOLBAR & FILTER
+   ======================================================== */
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.search-box {
+    min-width: 200px;
+    max-width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 15px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+}
+.search-box input {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 13px;
+    background: transparent;
+}
+.field-input-inline {
+    padding: 9px 13px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    color: var(--text);
+    font-family: "Poppins", sans-serif;
+    font-size: 12.5px;
+    cursor: pointer;
+}
+.field-input-inline:focus {
+    outline: none;
+    border-color: var(--gold);
+}
+.quota-chip {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+}
+.quota-chip b {
+    color: var(--gold-deep);
+}
+
+/* ========================================================
+   9. FORM
+   ======================================================== */
+
+.field input,
+.field select,
+.field textarea {
+    width: 100%;
+    padding: 10px 13px;
+    background: #fcfcfb;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    color: var(--text);
+    font-family: "Poppins", sans-serif;
+    font-size: 13.5px;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+    background: #fff;
+}
+.field-hint {
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-top: 4px;
+}
+
+/* ========================================================
+   10. PILL TABS (Karyawan Tetap / Part Time)
+   ======================================================== */
+
 .pilltabs {
     display: flex;
     gap: 4px;
@@ -179,7 +468,10 @@
     display: block;
 }
 
-/* ===== Key-value list (detail shift) ===== */
+/* ========================================================
+   11. KEY-VALUE LIST (detail shift)
+   ======================================================== */
+
 .kv {
     display: flex;
     justify-content: space-between;
@@ -197,119 +489,56 @@
     font-weight: 700;
 }
 
-/* ===== Badge status shift ===== */
-.badge {
-    font-size: 10.5px;
-    font-weight: 800;
-    padding: 3px 9px;
-    border-radius: 20px;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-}
-.badge-blue {
-    background: var(--blue-soft);
-    color: var(--blue);
-}
-.badge-green {
-    background: var(--green-soft);
-    color: var(--green);
-}
-.badge-rust {
-    background: var(--rust-soft);
-    color: var(--rust);
-}
-.badge-orange {
-    background: var(--orange-soft);
-    color: var(--orange);
-}
-.badge-gray {
-    background: var(--line-soft);
-    color: var(--text-dim);
-}
+/* ========================================================
+   12. NOTE BOX
+   ======================================================== */
 
-/* ===== Tabel penempatan shift mingguan ===== */
-.table-wrap {
-    overflow-x: auto;
-}
-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 760px;
-}
-th {
-    text-align: left;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--text-faint);
-    padding: 11px 14px;
-    border-bottom: 1px solid var(--line);
-    font-weight: 800;
-    background: var(--line-soft);
-    white-space: nowrap;
-}
-th:first-child {
-    border-radius: 9px 0 0 9px;
-}
-th:last-child {
-    border-radius: 0 9px 9px 0;
-}
-td {
-    padding: 13px 14px;
-    font-size: 13px;
-    border-bottom: 1px solid var(--line-soft);
-    white-space: nowrap;
-}
-tr:last-child td {
-    border-bottom: none;
-}
-tr:hover td {
-    background: #fcfbf8;
-}
-.row-name {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.avatar-dot {
-    width: 32px;
-    height: 32px;
-    border-radius: 9px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 11.5px;
-    color: #fff;
-    flex-shrink: 0;
-}
-
-/* ===== Catatan info (note box) ===== */
 .note-box {
-    background: var(--gold-pale);
-    border: 1px solid var(--gold-pale2);
-    border-radius: 10px;
-    padding: 12px 14px;
-    font-size: 12px;
-    color: #8a6212;
     display: flex;
     gap: 9px;
     margin-top: 14px;
+    padding: 12px 14px;
+    background: var(--gold-pale);
+    border: 1px solid var(--gold-pale2);
+    border-radius: 10px;
+    color: #8a6212;
+    font-size: 12px;
     line-height: 1.5;
 }
 
-/* ===== Jadwal mingguan per sesi (Karyawan Part Time) ===== */
+/* ========================================================
+   13. PHOTO THUMBNAIL
+   ======================================================== */
+
+.photo-thumb {
+    width: 38px;
+    height: 38px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: border-color 0.15s ease;
+}
+.photo-thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.photo-thumb:hover {
+    border-color: var(--gold);
+}
+
+/* ========================================================
+   14. JADWAL MINGGUAN PER SESI (Karyawan Part Time)
+   ======================================================== */
+
 .week-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 10px;
     margin-top: 12px;
-}
-@media (max-width: 900px) {
-    .week-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
 }
 .week-day {
     background: var(--bg);
@@ -347,9 +576,8 @@ tr:hover td {
     color: #6b5a2e;
     margin-top: 1px;
 }
-
 .session-chip-absence {
-    background: var(--rust-soft, #fceae7);
+    background: var(--rust-soft);
     border-color: #f4c6c0;
 }
 .week-day-empty {
@@ -357,13 +585,51 @@ tr:hover td {
     color: var(--text-faint);
     padding: 6px 0;
 }
-.field-hint {
-    font-size: 11px;
+
+.jadwal-guru-week-grid,
+.guru-week-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    margin: 0;
+    padding: 20px;
+}
+.guru-week-grid {
+    margin-top: 0;
+    padding: 0;
+}
+.jadwal-guru-week-grid .week-day {
+    min-height: 126px;
+}
+.guru-week-block + .guru-week-block {
+    margin-top: 14px;
+}
+.guru-week-title {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+    color: var(--text);
+    font-family: "Poppins", sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+}
+.guru-week-title span {
     color: var(--text-faint);
-    margin-top: 4px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 400;
+}
+.guru-month-week {
+    margin-bottom: 18px;
+}
+.guru-month-week .guru-week-title {
+    margin-bottom: 14px;
 }
 
-/* ===== Presensi bulanan ===== */
+/* ========================================================
+   15. PRESENSI BULANAN
+   ======================================================== */
+
 .pb-topbar {
     display: flex;
     align-items: center;
@@ -372,13 +638,11 @@ tr:hover td {
     gap: 16px;
     margin-bottom: 18px;
 }
-
 .pb-employee {
     display: flex;
     align-items: center;
     gap: 12px;
 }
-
 .pb-avatar {
     width: 48px;
     height: 48px;
@@ -392,7 +656,6 @@ tr:hover td {
     font-size: 15px;
     font-weight: 800;
 }
-
 .pb-name {
     color: var(--text);
     font-family: "Poppins", sans-serif;
@@ -400,19 +663,16 @@ tr:hover td {
     font-weight: 700;
     line-height: 1.3;
 }
-
 .pb-sub {
     margin-top: 3px;
     color: var(--text-dim);
     font-size: 12px;
 }
-
 .pb-month-form {
     display: flex;
     align-items: center;
     gap: 8px;
 }
-
 .pb-month-form select {
     padding: 9px 13px;
     background: #fff;
@@ -423,30 +683,25 @@ tr:hover td {
     font-size: 12.5px;
     cursor: pointer;
 }
-
 .pb-month-form select:focus {
     outline: none;
     border-color: var(--gold);
 }
-
 .pb-month-form-page {
     justify-content: flex-end;
     margin-bottom: 16px;
 }
-
 .pb-month-form-page label {
     color: var(--text-dim);
     font-size: 12px;
     font-weight: 700;
 }
-
 .pb-summary {
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
     margin-bottom: 18px;
 }
-
 .pb-summary-chip {
     flex: 1;
     min-width: 140px;
@@ -456,29 +711,24 @@ tr:hover td {
     border-radius: 12px;
     box-shadow: var(--shadow);
 }
-
 .pb-summary-chip .pb-num {
     color: var(--text);
     font-family: "Poppins", sans-serif;
     font-size: 22px;
     font-weight: 800;
 }
-
 .pb-summary-chip .pb-label {
     margin-top: 2px;
     color: var(--text-dim);
     font-size: 12px;
 }
-
 .pb-summary-chip.ok .pb-num {
-    color: var(--green, #2f8a5b);
+    color: var(--green);
 }
-
 .pb-summary-chip.late .pb-num,
 .pb-summary-chip.out .pb-num {
-    color: var(--rust, #d34d3c);
+    color: var(--rust);
 }
-
 .pb-week-navigation {
     display: flex;
     align-items: center;
@@ -486,18 +736,15 @@ tr:hover td {
     gap: 12px;
     margin-bottom: 12px;
 }
-
 .pb-week-indicator {
     color: var(--text-dim);
     font-size: 12px;
     font-weight: 700;
 }
-
 .pb-week-navigation .btn:disabled {
     opacity: 0.4;
     cursor: not-allowed;
 }
-
 .pb-week {
     margin-bottom: 18px;
     overflow: hidden;
@@ -506,7 +753,6 @@ tr:hover td {
     border-radius: 16px;
     box-shadow: var(--shadow);
 }
-
 .pb-week-head {
     display: flex;
     align-items: center;
@@ -515,60 +761,49 @@ tr:hover td {
     padding: 16px 20px;
     border-bottom: 1px solid var(--line);
 }
-
 .pb-week-title {
     color: var(--text);
     font-family: "Poppins", sans-serif;
     font-size: 15px;
     font-weight: 700;
 }
-
 .pb-week-range {
     color: var(--text-faint);
     font-size: 12px;
 }
-
 .pb-week table {
     min-width: 760px;
 }
-
 .pb-week th {
     padding: 11px 14px;
     font-size: 11px;
 }
-
 .pb-week td {
     padding: 13px 14px;
     font-size: 13px;
 }
-
 .pb-tgl {
     display: flex;
     flex-direction: column;
     line-height: 1.35;
 }
-
 .pb-tgl-hari {
     color: var(--text);
     font-weight: 700;
 }
-
 .pb-tgl-tanggal {
     color: var(--text-faint);
     font-size: 11px;
 }
-
 .pb-radius-out {
-    color: var(--rust, #d34d3c);
+    color: var(--rust);
     font-weight: 700;
 }
-
 .pb-empty {
     color: var(--text-faint);
     font-size: 12px;
     font-style: italic;
 }
-
 .pb-btn-detail {
     padding: 7px 12px;
     background: var(--gold);
@@ -581,85 +816,73 @@ tr:hover td {
     cursor: pointer;
     transition: 0.15s;
 }
-
 .pb-btn-detail:hover {
     background: var(--gold-deep);
 }
-
 .pb-btn-detail:disabled {
     opacity: 0.4;
     cursor: not-allowed;
 }
 
-.jadwal-approval-table {
-    min-width: 980px;
-}
+/* ========================================================
+   16. PAGINATION
+   ======================================================== */
 
-.jadwal-approval-table th,
-.jadwal-approval-table td {
-    white-space: nowrap;
-    overflow-wrap: normal;
-}
-
-.jadwal-action-cell {
-    min-width: 190px;
-    white-space: nowrap !important;
-    vertical-align: middle;
-}
-
-.jadwal-action-buttons {
+.pagination-bar {
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line-soft);
+}
+.pagination-info {
+    color: var(--text-dim);
+    font-size: 12px;
 }
 
-.jadwal-guru-week-grid {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    margin: 0;
-    padding: 20px;
-}
-
-.jadwal-guru-week-grid .week-day {
-    min-height: 126px;
-}
-
-.guru-week-block + .guru-week-block {
-    margin-top: 14px;
-}
-
-.guru-week-title {
+.pg-arrow {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid #ddd8cc;
+    background: #fff;
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 8px;
-    color: var(--text);
-    font-family: "Poppins", sans-serif;
+    align-items: center;
+    justify-content: center;
+    color: #5a5952;
+    text-decoration: none;
     font-size: 13px;
-    font-weight: 700;
+    transition: background 0.15s, border-color 0.15s;
+}
+.pg-arrow:hover {
+    background: #faf9f5;
+    border-color: var(--orange);
+    color: #8a6212;
+}
+.pg-arrow-disabled {
+    opacity: 0.4;
+    cursor: default;
+    pointer-events: none;
+}
+.pg-current {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #fcebd9;
+    color: #8a6212;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 13px;
 }
 
-.guru-week-title span {
-    color: var(--text-faint);
-    font-family: inherit;
-    font-size: 11px;
-    font-weight: 400;
-}
+/* ========================================================
+   17. MODAL DETAIL PRESENSI
+   ======================================================== */
 
-.guru-week-grid {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    margin-top: 0;
-}
-
-.guru-month-week {
-    margin-bottom: 18px;
-}
-
-.guru-month-week .guru-week-title {
-    margin-bottom: 14px;
-}
-
-/* ===== Modal detail presensi ===== */
 .modal-overlay {
     position: fixed;
     inset: 0;
@@ -673,18 +896,16 @@ tr:hover td {
     pointer-events: none;
     transition: opacity 0.18s ease;
 }
-
 .modal-overlay.show {
     display: flex;
     opacity: 1;
     pointer-events: auto;
 }
-
 .modal-box {
     position: relative;
     display: flex;
-    width: 100%;
-    max-width: 780px;
+    width: min(780px, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
     max-height: 88vh;
     overflow: hidden;
     background: var(--paper);
@@ -693,11 +914,9 @@ tr:hover td {
     transform: translateY(10px);
     transition: transform 0.18s ease;
 }
-
 .modal-overlay.show .modal-box {
     transform: translateY(0);
 }
-
 .modal-photo-panel {
     display: flex;
     flex-direction: column;
@@ -706,25 +925,21 @@ tr:hover td {
     align-self: stretch;
     background: var(--line-soft);
 }
-
 .modal-photo-cell {
     position: relative;
     flex: 1;
     min-height: 160px;
     overflow: hidden;
 }
-
 .modal-photo-cell + .modal-photo-cell {
     border-top: 1px solid var(--paper);
 }
-
 .modal-photo-cell img {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
-
 .modal-photo-empty {
     width: 100%;
     height: 100%;
@@ -733,7 +948,6 @@ tr:hover td {
     justify-content: center;
     color: var(--text-faint);
 }
-
 .modal-photo-empty-inner {
     display: flex;
     flex-direction: column;
@@ -742,7 +956,6 @@ tr:hover td {
     font-size: 11px;
     text-align: center;
 }
-
 .modal-photo-tag {
     position: absolute;
     bottom: 10px;
@@ -758,7 +971,6 @@ tr:hover td {
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
 }
-
 .modal-content {
     display: flex;
     flex: 1;
@@ -767,7 +979,6 @@ tr:hover td {
     padding: 26px 28px 22px;
     overflow-y: auto;
 }
-
 .modal-content-head {
     display: flex;
     align-items: flex-start;
@@ -776,14 +987,12 @@ tr:hover td {
     padding-right: 40px;
     padding-bottom: 10px;
 }
-
 .modal-employee-block {
     display: flex;
     align-items: center;
     min-width: 0;
     gap: 12px;
 }
-
 .modal-employee-name {
     color: var(--text);
     font-family: "Poppins", sans-serif;
@@ -791,13 +1000,11 @@ tr:hover td {
     font-weight: 600;
     line-height: 1.3;
 }
-
 .modal-employee-sub {
     margin-top: 1px;
     color: var(--text-faint);
     font-size: 12px;
 }
-
 .modal-close {
     position: absolute;
     top: 12px;
@@ -816,14 +1023,12 @@ tr:hover td {
     cursor: pointer;
     transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
 }
-
 .modal-close i {
     color: inherit;
     font-size: 16px;
     line-height: 1;
     pointer-events: none;
 }
-
 .modal-close:hover {
     background: #fef2f2;
     border-color: #fecaca;
@@ -831,11 +1036,9 @@ tr:hover td {
     transform: rotate(90deg);
     box-shadow: 0 4px 12px rgba(220, 38, 38, 0.12);
 }
-
 .modal-info-list {
     padding: 16px 0;
 }
-
 .modal-info-row {
     display: flex;
     align-items: baseline;
@@ -845,33 +1048,27 @@ tr:hover td {
     border-top: 1px solid #f8f8f6;
     font-size: 13px;
 }
-
 .modal-info-row:first-child {
     border-top: none;
 }
-
 .modal-info-label {
     flex-shrink: 0;
     color: var(--text-faint);
 }
-
 .modal-info-value {
     color: var(--text);
     font-weight: 500;
     text-align: right;
     word-break: break-word;
 }
-
 .modal-info-value.mono {
     font-variant-numeric: tabular-nums;
 }
-
 .modal-block.notes {
     margin-bottom: 16px;
     padding-top: 14px;
     border-top: 1px solid var(--line-soft);
 }
-
 .modal-block-label {
     margin-bottom: 4px;
     color: var(--text-faint);
@@ -880,7 +1077,6 @@ tr:hover td {
     letter-spacing: 0.04em;
     text-transform: uppercase;
 }
-
 .modal-block.notes p {
     margin: 0;
     color: var(--text);
@@ -888,7 +1084,6 @@ tr:hover td {
     line-height: 1.5;
     word-break: break-word;
 }
-
 .modal-actions {
     display: flex;
     gap: 8px;
@@ -898,7 +1093,6 @@ tr:hover td {
     bottom: -22px;
     background: var(--paper);
 }
-
 .modal-action-btn {
     flex: 1;
     display: flex;
@@ -913,23 +1107,23 @@ tr:hover td {
     text-decoration: none;
     cursor: pointer;
 }
-
 .modal-action-btn.line {
     background: #fff;
     border: 1px solid var(--line);
     color: var(--text);
 }
-
 .modal-action-btn.line:hover {
     background: var(--line-soft);
 }
-
 .modal-action-btn[disabled] {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-/* ===== Toast notifikasi (disiapkan untuk aksi Simpan/Edit ke depannya) ===== */
+/* ========================================================
+   18. TOAST
+   ======================================================== */
+
 .toast {
     position: fixed;
     bottom: 26px;
@@ -962,113 +1156,84 @@ tr:hover td {
     flex-shrink: 0;
 }
 
-/* ===== RESPONSIVE GLOBAL ===== */
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
+/* ========================================================
+   19. EMPTY STATE
+   ======================================================== */
+
+.empty-state {
+    padding: 34px 10px !important;
+    color: var(--text-faint);
+    font-size: 13px;
+    text-align: center;
+    white-space: normal !important;
 }
 
-html,
-body {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-}
-
-main,
-.content,
-.page-content,
-.container,
-.card,
-.grid,
-.page-head,
-.toolbar {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-}
-
-.card {
-    overflow: hidden;
-}
-
-.grid-2,
-.grid-2-even,
-.grid-3,
-.grid-4 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.table-wrap {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-table {
-    width: 100%;
-    min-width: 0;
-}
+/* ========================================================
+   20. RESPONSIVE
+   ======================================================== */
 
 th,
 td {
     white-space: normal;
     overflow-wrap: anywhere;
 }
-
 .search-box {
     min-width: 0;
     max-width: 100%;
-}
-
-.modal-box {
-    width: min(780px, calc(100vw - 32px));
-    max-width: calc(100vw - 32px);
 }
 
 @media (max-width: 900px) {
     .jadwal-guru-week-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
-
+    .week-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
     .grid-2,
     .grid-2-even,
     .grid-3,
     .grid-4 {
         grid-template-columns: 1fr;
     }
-
     .page-head,
     .toolbar {
         align-items: stretch;
         flex-direction: column;
     }
-
     .toolbar-left,
     .page-actions {
         width: 100%;
     }
-
     .field-input-inline,
     .search-box,
     .page-actions .btn {
         width: 100%;
     }
-
     .page-actions .btn {
         justify-content: center;
     }
-
     .modal-box {
         flex-direction: column;
         max-height: 92vh;
     }
-
     .modal-photo-panel {
         width: 100%;
         height: 220px;
+    }
+}
+
+@media (max-width: 640px) {
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .toolbar-left {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .field-input-inline,
+    .search-box {
+        width: 100%;
     }
 }
 
@@ -1077,35 +1242,28 @@ td {
         justify-content: flex-start;
         flex-wrap: wrap;
     }
-
     .jadwal-guru-week-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         padding: 14px;
     }
-
     .card {
         padding: 14px;
         border-radius: 12px;
     }
-
     .page-title {
         font-size: 22px;
     }
-
     .card-title {
         font-size: 14px;
     }
-
     .form-row {
         grid-template-columns: 1fr;
     }
-
     .pilltabs,
     .subtabs,
     .shift-toggle {
         width: 100%;
     }
-
     .pilltab,
     .subtab {
         flex: 1;
@@ -1113,51 +1271,40 @@ td {
         padding: 8px 10px;
         font-size: 11.5px;
     }
-
     .shift-toggle {
         flex-direction: column;
     }
-
     .shift-opt {
         width: 100%;
     }
-
     .radar {
         width: 150px;
         height: 150px;
     }
-
     .cam-frame {
         width: 100%;
         max-width: 100%;
         aspect-ratio: 4 / 3;
     }
-
     .modal-overlay {
         padding: 10px;
     }
-
     .modal-box {
         width: 100%;
         max-width: 100%;
     }
-
     .modal-content {
         padding: 16px;
     }
-
     .modal-photo-panel {
         height: 180px;
     }
-
     .modal-actions {
         flex-direction: column;
     }
-
     .modal-action-btn {
         width: 100%;
     }
-
     .pagination-bar {
         flex-wrap: wrap;
     }
@@ -1167,15 +1314,169 @@ td {
     .card {
         padding: 12px;
     }
-
     .btn {
         font-size: 12px;
         padding: 8px 11px;
     }
-
     th,
     td {
         padding: 9px 8px;
         font-size: 11px;
     }
+}
+
+/* ========================================================================
+   21. MODE GELAP (DARK MODE)
+   Aktif ketika <body class="dark-mode"> — di-toggle oleh #themeToggle
+   di layout owner/dashboard.blade.php.
+   ======================================================================== */
+
+body.dark-mode {
+    --paper: #1e2126;
+    --bg: #14161a;
+    --line: #2c2f35;
+    --line-soft: #24272d;
+    --text: #f1f2f4;
+    --text-dim: #9aa0a8;
+    --text-faint: #6b7280;
+    --green-soft: rgba(47, 138, 91, 0.16);
+    --rust-soft: rgba(211, 77, 60, 0.16);
+    --gold-pale: rgba(245, 166, 35, 0.16);
+    --gold-pale2: rgba(245, 166, 35, 0.28);
+    --blue-soft: rgba(46, 111, 219, 0.16);
+    --orange-soft: rgba(232, 134, 58, 0.16);
+    --shadow:
+        0 1px 2px rgba(0, 0, 0, 0.25),
+        0 10px 26px -16px rgba(0, 0, 0, 0.55);
+}
+
+/* Buttons */
+body.dark-mode .btn-line {
+    background: var(--line-soft);
+    color: var(--text);
+    border-color: var(--line);
+}
+body.dark-mode .btn-line:hover {
+    background: var(--line);
+}
+
+/* Toolbar & filter */
+body.dark-mode .search-box,
+body.dark-mode .field-input-inline,
+body.dark-mode .pb-month-form select {
+    background: var(--line-soft);
+    color: var(--text);
+    border-color: var(--line);
+}
+
+/* Form */
+body.dark-mode .field input,
+body.dark-mode .field select,
+body.dark-mode .field textarea {
+    background: var(--line-soft);
+    color: var(--text);
+    border-color: var(--line);
+}
+body.dark-mode .field input:focus,
+body.dark-mode .field select:focus,
+body.dark-mode .field textarea:focus {
+    background: var(--paper);
+    border-color: var(--gold);
+}
+
+/* Pill tabs */
+body.dark-mode .pilltabs {
+    background: var(--line-soft);
+}
+body.dark-mode .pilltab.active {
+    background: var(--paper);
+    color: var(--text);
+}
+
+/* Table */
+body.dark-mode table tr:hover td {
+    background: var(--line-soft);
+}
+
+/* Week grid / session chip */
+body.dark-mode .week-day {
+    background: var(--bg);
+    border-color: var(--line);
+}
+body.dark-mode .session-chip-label {
+    color: var(--text-dim);
+}
+
+/* Photo thumb */
+body.dark-mode .photo-thumb {
+    border-color: var(--line);
+}
+
+/* Note box */
+body.dark-mode .note-box {
+    color: #f3d99a;
+}
+
+/* Pagination custom (pg-arrow / pg-current) */
+body.dark-mode .pg-arrow {
+    background: var(--line-soft);
+    border-color: var(--line);
+    color: var(--text-dim);
+}
+body.dark-mode .pg-arrow:hover {
+    background: var(--line);
+    border-color: var(--orange);
+    color: #f3d99a;
+}
+body.dark-mode .pg-current {
+    background: rgba(232, 134, 58, 0.22);
+    color: #f3c98a;
+}
+
+/* Modal */
+body.dark-mode .modal-photo-panel {
+    background: var(--line-soft);
+}
+body.dark-mode .modal-photo-cell + .modal-photo-cell {
+    border-top-color: var(--paper);
+}
+body.dark-mode .modal-photo-tag {
+    background: rgba(30, 33, 38, 0.9);
+    color: var(--text);
+}
+body.dark-mode .modal-close {
+    background: var(--line-soft);
+    border-color: var(--line);
+    color: var(--text-dim);
+}
+body.dark-mode .modal-close:hover {
+    background: rgba(211, 77, 60, 0.16);
+    border-color: rgba(211, 77, 60, 0.4);
+    color: #f2867a;
+}
+body.dark-mode .modal-info-row {
+    border-top-color: var(--line-soft);
+}
+body.dark-mode .modal-action-btn.line {
+    background: var(--line-soft);
+    border-color: var(--line);
+    color: var(--text);
+}
+body.dark-mode .modal-action-btn.line:hover {
+    background: var(--line);
+}
+
+/* Toast */
+body.dark-mode .toast {
+    background: var(--paper);
+    color: var(--text);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+body.dark-mode .toast-dot {
+    background: var(--gold);
+}
+
+/* Scrollbar */
+body.dark-mode ::-webkit-scrollbar-thumb {
+    background: #3a3d44;
 }

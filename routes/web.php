@@ -112,9 +112,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/jadwal-kerja', JadwalKerjaController::class)
             ->name('jadwal-kerja');
 
-        Route::get('/jadwal-kerja/presensi-bulanan/{employee}', [JadwalKerjaController::class, 'presensiBulanan'])
-            ->name('jadwal-kerja.presensi-bulanan');
-
         Route::post('/jadwal-kerja/shift', [JadwalKerjaController::class, 'storeShift'])
             ->name('owner.shift.store');
 
