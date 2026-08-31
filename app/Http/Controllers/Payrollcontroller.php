@@ -17,15 +17,22 @@ class PayrollController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
-    | RATE UANG MAKAN & BENSIN
+    | RATE UANG MAKAN & BENSIN KARYAWAN TETAP
     |--------------------------------------------------------------------------
     | Rp10.000 makan + Rp10.000 bensin
     | Total = Rp20.000 per hari hadir
+    |
+    | CATATAN:
+    | Rate ini HANYA digunakan untuk KARYAWAN TETAP.
+    |
+    | KARYAWAN PART TIME:
+    | Uang makan dan bensin diinput MANUAL oleh Owner.
     */
 
     private const RATE_MAKAN = 10000;
     private const RATE_BENSIN = 10000;
     private const RATE_MAKAN_BENSIN = 20000;
+
 
     /**
      * ============================================================
@@ -41,15 +48,18 @@ class PayrollController extends Controller
         // Ambil pengaturan keterlambatan dari database
         $settings = AttendanceSetting::current();
 
+
         /*
         |--------------------------------------------------------------------------
         | KARYAWAN TETAP
         |--------------------------------------------------------------------------
+        | Karyawan tetap menggunakan data absensi.
         */
         $tetapEmployees = Employee::where('employee_type', 'tetap')
             ->with('payrollComponent')
             ->get()
             ->map(function ($employee) use ($periode, $settings) {
+
                 return $this->attachTetapSummary(
                     $employee,
                     $periode,
@@ -57,123 +67,208 @@ class PayrollController extends Controller
                 );
             });
 
+
         /*
         |--------------------------------------------------------------------------
         | KARYAWAN PART TIME
         |--------------------------------------------------------------------------
+        | Part time TIDAK menggunakan absensi.
+        |
+        | Hanya mengambil:
+        | - Fee Mengajar
+        | - Uang Makan Manual
+        | - Uang Bensin Manual
         */
         $partTimeEmployees = Employee::where('employee_type', 'part_time')
             ->with('payrollComponent')
             ->get()
             ->map(function ($employee) use ($periode) {
+
                 return $this->attachPartTimeSummary(
                     $employee,
                     $periode
                 );
             });
 
+
         return view('owner.payroll', [
+
             'tetapEmployees' => $tetapEmployees,
+
             'partTimeEmployees' => $partTimeEmployees,
 
             'periodeLabel' => $periode->translatedFormat('F Y'),
+
             'periodeValue' => $periode->format('Y-m'),
 
             'isCurrentPeriode' => $periode->isSameMonth(Carbon::now()),
 
+
             /*
             |--------------------------------------------------------------------------
-            | RATE
+            | RATE UNTUK KARYAWAN TETAP
             |--------------------------------------------------------------------------
             */
             'rateMakan' => self::RATE_MAKAN,
+
             'rateBensin' => self::RATE_BENSIN,
+
             'rateMakanBensin' => self::RATE_MAKAN_BENSIN,
         ]);
     }
+
 
     /**
      * ============================================================
      * SIMPAN KOMPONEN GAJI
      * ============================================================
      *
-     * Owner dapat menginput:
-     *
-     * Karyawan Tetap:
+     * KARYAWAN TETAP:
      * - Gaji Pokok
      * - Bonus
-     * - THR aktif
+     * - THR
      *
-     * Part Time:
+     * Uang makan dan bensin otomatis berdasarkan absensi.
+     *
+     *
+     * KARYAWAN PART TIME:
      * - Fee Mengajar
-     * - Bonus
+     * - Uang Makan Manual
+     * - Uang Bensin Manual
      *
-     * Uang makan dan bensin tidak perlu dihitung manual
-     * karena sistem otomatis berdasarkan jumlah hari hadir.
+     * Part time TIDAK menggunakan absensi.
      */
     public function updateComponent(
         UpdatePayrollComponentRequest $request,
         Employee $employee
     ): RedirectResponse {
 
-        PayrollComponent::updateOrCreate(
-            [
-                'employee_id' => $employee->id,
-            ],
-            [
-                /*
-                |--------------------------------------------------------------------------
-                | TETAP
-                |--------------------------------------------------------------------------
-                | base_salary = gaji pokok bulanan
-                |
-                | PART TIME
-                |
-                | base_salary = fee mengajar
-                */
-                'base_salary' => $request->base_salary,
 
-                /*
-                |--------------------------------------------------------------------------
-                | UANG MAKAN
-                |--------------------------------------------------------------------------
-                | Sistem menetapkan Rp10.000/hari.
-                |
-                | Jadi sebenarnya owner tidak perlu mengetik
-                | angka ini lagi.
-                */
-                'meal_rate' => self::RATE_MAKAN,
+        /*
+        |--------------------------------------------------------------------------
+        | KARYAWAN PART TIME
+        |--------------------------------------------------------------------------
+        | Semua komponen berikut diinput manual oleh Owner:
+        |
+        | 1. Fee Mengajar
+        | 2. Uang Makan
+        | 3. Uang Bensin
+        |
+        | Tidak ada perhitungan Rp10.000.
+        */
+        if ($employee->employee_type === 'part_time') {
 
-                /*
-                |--------------------------------------------------------------------------
-                | UANG BENSIN
-                |--------------------------------------------------------------------------
-                */
-                'transport_rate' => self::RATE_BENSIN,
+            PayrollComponent::updateOrCreate(
+                [
+                    'employee_id' => $employee->id,
+                ],
+                [
+                    /*
+                    |--------------------------------------------------------------------------
+                    | FEE MENGAJAR
+                    |--------------------------------------------------------------------------
+                    | Disimpan di base_salary karena struktur database
+                    | menggunakan field tersebut.
+                    */
+                    'base_salary' => $request->base_salary,
 
-                /*
-                |--------------------------------------------------------------------------
-                | BONUS
-                |--------------------------------------------------------------------------
-                */
-                'allowance' => $request->allowance ?? 0,
+                    /*
+                    |--------------------------------------------------------------------------
+                    | UANG MAKAN MANUAL
+                    |--------------------------------------------------------------------------
+                    */
+                    'meal_rate' => $request->meal_rate ?? 0,
 
-                /*
-                |--------------------------------------------------------------------------
-                | THR
-                |--------------------------------------------------------------------------
-                */
-                'thr_active' => $request->boolean('thr_active'),
+                    /*
+                    |--------------------------------------------------------------------------
+                    | UANG BENSIN MANUAL
+                    |--------------------------------------------------------------------------
+                    */
+                    'transport_rate' => $request->transport_rate ?? 0,
 
-                'effective_date' => now()->format('Y-m-d'),
-            ]
-        );
+                    /*
+                    |--------------------------------------------------------------------------
+                    | PART TIME TIDAK MENGGUNAKAN BONUS
+                    |--------------------------------------------------------------------------
+                    */
+                    'allowance' => 0,
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | PART TIME TIDAK MENGGUNAKAN THR
+                    |--------------------------------------------------------------------------
+                    */
+                    'thr_active' => false,
+
+                    'effective_date' => now()->format('Y-m-d'),
+                ]
+            );
+
+        } else {
+
+            /*
+            |--------------------------------------------------------------------------
+            | KARYAWAN TETAP
+            |--------------------------------------------------------------------------
+            | Tetap menggunakan sistem lama:
+            |
+            | Uang makan = Rp10.000 × hari hadir
+            | Uang bensin = Rp10.000 × hari hadir
+            */
+            PayrollComponent::updateOrCreate(
+                [
+                    'employee_id' => $employee->id,
+                ],
+                [
+                    /*
+                    |--------------------------------------------------------------------------
+                    | GAJI POKOK
+                    |--------------------------------------------------------------------------
+                    */
+                    'base_salary' => $request->base_salary,
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | UANG MAKAN
+                    |--------------------------------------------------------------------------
+                    | Rate tetap Rp10.000/hari.
+                    */
+                    'meal_rate' => self::RATE_MAKAN,
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | UANG BENSIN
+                    |--------------------------------------------------------------------------
+                    | Rate tetap Rp10.000/hari.
+                    */
+                    'transport_rate' => self::RATE_BENSIN,
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | BONUS
+                    |--------------------------------------------------------------------------
+                    */
+                    'allowance' => $request->allowance ?? 0,
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | THR
+                    |--------------------------------------------------------------------------
+                    */
+                    'thr_active' => $request->boolean('thr_active'),
+
+                    'effective_date' => now()->format('Y-m-d'),
+                ]
+            );
+        }
+
 
         return back()->with(
             'success',
             "Komponen gaji {$employee->full_name} berhasil disimpan."
         );
     }
+
 
     /**
      * ============================================================
@@ -190,6 +285,7 @@ class PayrollController extends Controller
 
         $employees = Employee::with('payrollComponent')->get();
 
+
         foreach ($employees as $employee) {
 
             /*
@@ -200,6 +296,7 @@ class PayrollController extends Controller
             if (!$employee->payrollComponent) {
                 continue;
             }
+
 
             /*
             |--------------------------------------------------------------------------
@@ -216,12 +313,14 @@ class PayrollController extends Controller
 
                 $component = $data->payrollComponent;
 
+
                 /*
                 |--------------------------------------------------------------------------
                 | GAJI POKOK
                 |--------------------------------------------------------------------------
                 */
                 $gajiPokok = (float) ($component->base_salary ?? 0);
+
 
                 /*
                 |--------------------------------------------------------------------------
@@ -230,7 +329,10 @@ class PayrollController extends Controller
                 | Rp10.000 × hari hadir
                 |--------------------------------------------------------------------------
                 */
-                $uangMakan = self::RATE_MAKAN * $data->hari_hadir;
+                $uangMakan =
+                    self::RATE_MAKAN
+                    * $data->hari_hadir;
+
 
                 /*
                 |--------------------------------------------------------------------------
@@ -239,7 +341,10 @@ class PayrollController extends Controller
                 | Rp10.000 × hari hadir
                 |--------------------------------------------------------------------------
                 */
-                $uangBensin = self::RATE_BENSIN * $data->hari_hadir;
+                $uangBensin =
+                    self::RATE_BENSIN
+                    * $data->hari_hadir;
+
 
                 /*
                 |--------------------------------------------------------------------------
@@ -247,6 +352,7 @@ class PayrollController extends Controller
                 |--------------------------------------------------------------------------
                 */
                 $bonus = (float) ($component->allowance ?? 0);
+
 
                 /*
                 |--------------------------------------------------------------------------
@@ -259,73 +365,94 @@ class PayrollController extends Controller
                     + $uangBensin
                     + $bonus;
 
+
                 /*
                 |--------------------------------------------------------------------------
                 | POTONGAN KETERLAMBATAN
                 |--------------------------------------------------------------------------
-                |
-                | Potongan dihitung otomatis dari data presensi.
-                | late_minutes sudah ditentukan saat presensi.
-                |
                 */
                 $potongan = $data->potongan_telat;
+
 
                 /*
                 |--------------------------------------------------------------------------
                 | TOTAL DITERIMA
                 |--------------------------------------------------------------------------
                 */
-                $totalDiterima = $pendapatan - $potongan;
+                $totalDiterima =
+                    $pendapatan
+                    - $potongan;
 
+
+                /*
+                |--------------------------------------------------------------------------
+                | HARI HADIR
+                |--------------------------------------------------------------------------
+                */
                 $hariHadir = $data->hari_hadir;
             }
+
 
             /*
             |--------------------------------------------------------------------------
             | KARYAWAN PART TIME
             |--------------------------------------------------------------------------
+            |
+            | PART TIME TIDAK MENGGUNAKAN:
+            | - Absensi
+            | - Hari hadir
+            | - Perhitungan Rp10.000
+            | - Potongan telat
+            | - Bonus
+            |
+            | Owner hanya memasukkan:
+            | - Fee Mengajar
+            | - Uang Makan
+            | - Uang Bensin
             */
             else {
 
-                $data = $this->attachPartTimeSummary(
-                    $employee,
-                    $periode
-                );
+                $component = $employee->payrollComponent;
 
-                $component = $data->payrollComponent;
 
                 /*
                 |--------------------------------------------------------------------------
                 | FEE MENGAJAR
                 |--------------------------------------------------------------------------
-                | Owner menginput fee mengajar.
-                |
-                | base_salary dipakai sebagai tempat penyimpanan
-                | fee mengajar karena struktur database saat ini
-                | menggunakan field base_salary.
                 */
-                $feeMengajar = (float) ($component->base_salary ?? 0);
+                $feeMengajar =
+                    (float) ($component->base_salary ?? 0);
+
 
                 /*
                 |--------------------------------------------------------------------------
-                | UANG MAKAN
+                | UANG MAKAN MANUAL
                 |--------------------------------------------------------------------------
+                | Tidak dikalikan hari hadir.
+                | Tidak menggunakan Rp10.000.
                 */
-                $uangMakan = self::RATE_MAKAN * $data->hari_hadir;
+                $uangMakan =
+                    (float) ($component->meal_rate ?? 0);
+
 
                 /*
                 |--------------------------------------------------------------------------
-                | UANG BENSIN
+                | UANG BENSIN MANUAL
                 |--------------------------------------------------------------------------
+                | Tidak dikalikan hari hadir.
+                | Tidak menggunakan Rp10.000.
                 */
-                $uangBensin = self::RATE_BENSIN * $data->hari_hadir;
+                $uangBensin =
+                    (float) ($component->transport_rate ?? 0);
+
 
                 /*
                 |--------------------------------------------------------------------------
-                | BONUS
+                | PART TIME TIDAK ADA BONUS
                 |--------------------------------------------------------------------------
                 */
-                $bonus = (float) ($component->allowance ?? 0);
+                $bonus = 0;
+
 
                 /*
                 |--------------------------------------------------------------------------
@@ -335,20 +462,37 @@ class PayrollController extends Controller
                 $pendapatan =
                     $feeMengajar
                     + $uangMakan
-                    + $uangBensin
-                    + $bonus;
+                    + $uangBensin;
+
 
                 /*
                 |--------------------------------------------------------------------------
-                | PART TIME TIDAK ADA POTONGAN KETERLAMBATAN
+                | PART TIME TIDAK ADA POTONGAN
                 |--------------------------------------------------------------------------
                 */
                 $potongan = 0;
 
-                $totalDiterima = $pendapatan;
 
-                $hariHadir = $data->hari_hadir;
+                /*
+                |--------------------------------------------------------------------------
+                | TOTAL DITERIMA
+                |--------------------------------------------------------------------------
+                */
+                $totalDiterima =
+                    $pendapatan;
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | PART TIME TIDAK ADA ABSENSI
+                |--------------------------------------------------------------------------
+                |
+                | Disimpan 0 karena memang Part Time tidak menggunakan
+                | data kehadiran untuk payroll.
+                */
+                $hariHadir = 0;
             }
+
 
             /*
             |--------------------------------------------------------------------------
@@ -358,7 +502,9 @@ class PayrollController extends Controller
             Payslip::updateOrCreate(
                 [
                     'employee_id' => $employee->id,
+
                     'period_month' => $periode->month,
+
                     'period_year' => $periode->year,
                 ],
                 [
@@ -375,6 +521,7 @@ class PayrollController extends Controller
             );
         }
 
+
         return redirect()
             ->route('payroll.index', [
                 'periode' => $periode->format('Y-m')
@@ -385,6 +532,7 @@ class PayrollController extends Controller
             );
     }
 
+
     /**
      * ============================================================
      * RIWAYAT PAYROLL
@@ -393,6 +541,7 @@ class PayrollController extends Controller
     public function history(Request $request): View
     {
         abort_unless(auth()->user()->role === 'owner', 403);
+
 
         /*
         |--------------------------------------------------------------------------
@@ -407,6 +556,7 @@ class PayrollController extends Controller
             ->orderByDesc('period_month')
             ->get();
 
+
         /*
         |--------------------------------------------------------------------------
         | PERIODE YANG DIPILIH
@@ -417,10 +567,12 @@ class PayrollController extends Controller
             optional($periods->first())->period_year
         );
 
+
         $selectedMonth = (int) $request->query(
             'month',
             optional($periods->first())->period_month
         );
+
 
         /*
         |--------------------------------------------------------------------------
@@ -433,27 +585,36 @@ class PayrollController extends Controller
             ->orderBy('employee_id')
             ->get();
 
+
         /*
         |--------------------------------------------------------------------------
         | LABEL PERIODE
         |--------------------------------------------------------------------------
         */
-        $periodeLabel = ($selectedYear && $selectedMonth)
-            ? Carbon::createFromDate(
-                $selectedYear,
-                $selectedMonth,
-                1
-            )->translatedFormat('F Y')
-            : null;
+        $periodeLabel =
+            ($selectedYear && $selectedMonth)
+                ? Carbon::createFromDate(
+                    $selectedYear,
+                    $selectedMonth,
+                    1
+                )->translatedFormat('F Y')
+                : null;
+
 
         return view('owner.payroll-history', [
+
             'periods' => $periods,
+
             'payslips' => $payslips,
+
             'selectedYear' => $selectedYear,
+
             'selectedMonth' => $selectedMonth,
+
             'periodeLabel' => $periodeLabel,
         ]);
     }
+
 
     /**
      * ============================================================
@@ -463,6 +624,7 @@ class PayrollController extends Controller
     private function resolvePeriode(Request $request): Carbon
     {
         $periode = $request->query('periode');
+
 
         if ($periode) {
 
@@ -480,13 +642,17 @@ class PayrollController extends Controller
             }
         }
 
+
         return Carbon::now()->startOfMonth();
     }
+
 
     /**
      * ============================================================
      * SUMMARY KARYAWAN TETAP
      * ============================================================
+     *
+     * Karyawan tetap menggunakan absensi.
      */
     private function attachTetapSummary(
         Employee $employee,
@@ -494,17 +660,16 @@ class PayrollController extends Controller
         AttendanceSetting $settings
     ): Employee {
 
+
         /*
         |--------------------------------------------------------------------------
         | JUMLAH HARI HADIR
         |--------------------------------------------------------------------------
-        |
         | Diambil dari tabel attendances.
         |
         | Hanya:
         | - tepat_waktu
         | - terlambat
-        |
         */
         $hariHadir = Attendance::where(
                 'employee_id',
@@ -527,6 +692,7 @@ class PayrollController extends Controller
             )
             ->distinct('tanggal')
             ->count('tanggal');
+
 
         /*
         |--------------------------------------------------------------------------
@@ -548,6 +714,7 @@ class PayrollController extends Controller
             ->where('status', 'terlambat')
             ->sum('late_minutes');
 
+
         /*
         |--------------------------------------------------------------------------
         | JUMLAH KETERLAMBATAN
@@ -568,129 +735,61 @@ class PayrollController extends Controller
             ->where('status', 'terlambat')
             ->count();
 
+
         /*
         |--------------------------------------------------------------------------
         | POTONGAN
         |--------------------------------------------------------------------------
-        |
-        | Menggunakan nilai dari AttendanceSetting.
-        |
-        | Contoh:
-        | 2 kali telat
-        | total 30 menit
-        | deduction = Rp500/menit
-        |
-        | potongan = 30 × 500
-        |
         */
         $potonganTelat =
             $totalTelatMenit
             * $settings->late_deduction_per_minute;
+
 
         /*
         |--------------------------------------------------------------------------
         | SIMPAN DATA TAMBAHAN KE OBJECT EMPLOYEE
         |--------------------------------------------------------------------------
         */
-        $employee->hari_hadir = $hariHadir;
+        $employee->hari_hadir =
+            $hariHadir;
 
-        $employee->jumlah_telat = $jumlahTelat;
 
-        $employee->total_telat_menit = $totalTelatMenit;
+        $employee->jumlah_telat =
+            $jumlahTelat;
 
-        $employee->potongan_telat = $potonganTelat;
+
+        $employee->total_telat_menit =
+            $totalTelatMenit;
+
+
+        $employee->potongan_telat =
+            $potonganTelat;
+
 
         /*
         |--------------------------------------------------------------------------
         | UANG MAKAN
+        |--------------------------------------------------------------------------
+        | Rp10.000 × hari hadir
         |--------------------------------------------------------------------------
         */
         $employee->uang_makan =
             self::RATE_MAKAN
             * $hariHadir;
 
+
         /*
         |--------------------------------------------------------------------------
         | UANG BENSIN
+        |--------------------------------------------------------------------------
+        | Rp10.000 × hari hadir
         |--------------------------------------------------------------------------
         */
         $employee->uang_bensin =
             self::RATE_BENSIN
             * $hariHadir;
 
-        return $employee;
-    }
-
-    /**
-     * ============================================================
-     * SUMMARY KARYAWAN PART TIME
-     * ============================================================
-     */
-    private function attachPartTimeSummary(
-        Employee $employee,
-        Carbon $periode
-    ): Employee {
-
-        /*
-        |--------------------------------------------------------------------------
-        | HARI HADIR
-        |--------------------------------------------------------------------------
-        |
-        | Dihitung berdasarkan tanggal presensi unik.
-        |
-        */
-        $hariHadir = Attendance::where(
-                'employee_id',
-                $employee->id
-            )
-            ->whereMonth(
-                'tanggal',
-                $periode->month
-            )
-            ->whereYear(
-                'tanggal',
-                $periode->year
-            )
-            ->whereIn(
-                'status',
-                [
-                    'tepat_waktu',
-                    'terlambat'
-                ]
-            )
-            ->distinct('tanggal')
-            ->count('tanggal');
-
-        /*
-        |--------------------------------------------------------------------------
-        | PART TIME TIDAK ADA POTONGAN TELAT
-        |--------------------------------------------------------------------------
-        */
-        $employee->hari_hadir = $hariHadir;
-
-        $employee->jumlah_telat = 0;
-
-        $employee->total_telat_menit = 0;
-
-        $employee->potongan_telat = 0;
-
-        /*
-        |--------------------------------------------------------------------------
-        | UANG MAKAN
-        |--------------------------------------------------------------------------
-        */
-        $employee->uang_makan =
-            self::RATE_MAKAN
-            * $hariHadir;
-
-        /*
-        |--------------------------------------------------------------------------
-        | UANG BENSIN
-        |--------------------------------------------------------------------------
-        */
-        $employee->uang_bensin =
-            self::RATE_BENSIN
-            * $hariHadir;
 
         /*
         |--------------------------------------------------------------------------
@@ -700,6 +799,101 @@ class PayrollController extends Controller
         $employee->makan_bensin =
             self::RATE_MAKAN_BENSIN
             * $hariHadir;
+
+
+        return $employee;
+    }
+
+
+    /**
+     * ============================================================
+     * SUMMARY KARYAWAN PART TIME
+     * ============================================================
+     *
+     * PART TIME TIDAK MENGGUNAKAN ABSENSI.
+     *
+     * Komponen:
+     * - Fee Mengajar
+     * - Uang Makan Manual
+     * - Uang Bensin Manual
+     *
+     * Tidak ada:
+     * - Hari hadir
+     * - Potongan telat
+     * - Rate Rp10.000
+     */
+    private function attachPartTimeSummary(
+        Employee $employee,
+        Carbon $periode
+    ): Employee {
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | PART TIME TIDAK MENGGUNAKAN ABSENSI
+        |--------------------------------------------------------------------------
+        */
+        $employee->hari_hadir = 0;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TIDAK ADA KETERLAMBATAN
+        |--------------------------------------------------------------------------
+        */
+        $employee->jumlah_telat = 0;
+
+        $employee->total_telat_menit = 0;
+
+        $employee->potongan_telat = 0;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | AMBIL KOMPONEN PAYROLL
+        |--------------------------------------------------------------------------
+        */
+        $component =
+            $employee->payrollComponent;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | UANG MAKAN MANUAL
+        |--------------------------------------------------------------------------
+        | Nilainya berasal dari input Owner.
+        |
+        | Tidak dikalikan hari hadir.
+        | Tidak menggunakan rate Rp10.000.
+        |--------------------------------------------------------------------------
+        */
+        $employee->uang_makan =
+            (float) ($component->meal_rate ?? 0);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | UANG BENSIN MANUAL
+        |--------------------------------------------------------------------------
+        | Nilainya berasal dari input Owner.
+        |
+        | Tidak dikalikan hari hadir.
+        | Tidak menggunakan rate Rp10.000.
+        |--------------------------------------------------------------------------
+        */
+        $employee->uang_bensin =
+            (float) ($component->transport_rate ?? 0);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TOTAL MAKAN + BENSIN
+        |--------------------------------------------------------------------------
+        */
+        $employee->makan_bensin =
+            $employee->uang_makan
+            + $employee->uang_bensin;
+
 
         return $employee;
     }

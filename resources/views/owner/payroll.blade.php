@@ -645,26 +645,24 @@ KARYAWAN PART TIME
 ============================================================ --}}
 
 <div class="divider-label">
-
-Karyawan Part Time — Fee Mengajar
-
+    Karyawan Part Time — Fee Mengajar
 </div>
 
-<div class="field-hint"
-     style="margin-bottom:10px;">
+<div class="field-hint" style="margin-bottom:10px;">
 
-Sistem mengambil jumlah hari hadir dari data presensi
-bulan <strong>{{ $periodeLabel }}</strong>.
+```
+Fee mengajar, uang makan, dan uang bensin
+diinput manual oleh Owner.
 
-Uang makan dan bensin dihitung berdasarkan jumlah hari hadir.
-
-<strong>
-    Tidak ada potongan keterlambatan untuk karyawan part-time.
-</strong>
+Tidak menggunakan absensi dan tidak menggunakan
+perhitungan Rp10.000 per hari.
+```
 
 </div>
 
 <div class="table-wrap">
+
+```
 <table class="paytable">
 
     <tr>
@@ -676,37 +674,11 @@ Uang makan dan bensin dihitung berdasarkan jumlah hari hadir.
         </th>
 
         <th>
-            Hari Hadir
-        </th>
-
-        <th>
             Uang Makan
-            <br>
-            <span style="
-                font-size:10px;
-                font-weight:600;
-            ">
-                Rp10.000 /hari
-            </span>
         </th>
 
         <th>
             Uang Bensin
-            <br>
-            <span style="
-                font-size:10px;
-                font-weight:600;
-            ">
-                Rp10.000 /hari
-            </span>
-        </th>
-
-        <th>
-            Bonus
-        </th>
-
-        <th>
-            Potongan Telat
         </th>
 
         <th>
@@ -724,82 +696,66 @@ Uang makan dan bensin dihitung berdasarkan jumlah hari hadir.
 
             $pc = $employee->payrollComponent;
 
-
             /*
             |--------------------------------------------------------------------------
             | FEE MENGAJAR
             |--------------------------------------------------------------------------
             */
-
             $feeMengajar =
                 (float) ($pc?->base_salary ?? 0);
 
 
             /*
             |--------------------------------------------------------------------------
-            | MAKAN
+            | UANG MAKAN
             |--------------------------------------------------------------------------
+            | Diambil dari meal_rate karena controller
+            | menyimpan input manual Owner ke field ini.
             */
-
             $uangMakan =
-                10000 * $employee->hari_hadir;
+                (float) ($pc?->meal_rate ?? 0);
 
 
             /*
             |--------------------------------------------------------------------------
-            | BENSIN
+            | UANG BENSIN
             |--------------------------------------------------------------------------
+            | Diambil dari transport_rate karena controller
+            | menyimpan input manual Owner ke field ini.
             */
-
             $uangBensin =
-                10000 * $employee->hari_hadir;
+                (float) ($pc?->transport_rate ?? 0);
 
 
             /*
             |--------------------------------------------------------------------------
-            | BONUS
+            | TOTAL DITERIMA
             |--------------------------------------------------------------------------
             */
-
-            $bonus =
-                (float) ($pc?->allowance ?? 0);
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | PART TIME TIDAK ADA POTONGAN
-            |--------------------------------------------------------------------------
-            */
-
-            $potonganTelat = 0;
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | TOTAL
-            |--------------------------------------------------------------------------
-            */
-
             $total =
                 $feeMengajar
                 + $uangMakan
-                + $uangBensin
-                + $bonus;
+                + $uangBensin;
 
         @endphp
 
 
         <tr class="payrow">
 
-            <form action="{{ route('payroll.update', $employee) }}"
-                  method="POST">
+            <form
+                action="{{ route('payroll.update', $employee) }}"
+                method="POST"
+            >
 
                 @csrf
 
                 @method('PATCH')
 
 
-                {{-- KARYAWAN --}}
+                {{-- ====================================================
+                KARYAWAN
+                ==================================================== --}}
+
                 <td>
 
                     <div style="
@@ -811,12 +767,15 @@ Uang makan dan bensin dihitung berdasarkan jumlah hari hadir.
 
                     </div>
 
+
                     <div class="row-updated">
 
                         {{ $employee->employee_code }}
 
                         @if ($employee->position)
+
                             · {{ $employee->position }}
+
                         @endif
 
                     </div>
@@ -824,14 +783,21 @@ Uang makan dan bensin dihitung berdasarkan jumlah hari hadir.
                 </td>
 
 
-                {{-- FEE MENGAJAR --}}
+                {{-- ====================================================
+                FEE MENGAJAR
+                ==================================================== --}}
+
                 <td>
 
-                    <input type="number"
-                           name="base_salary"
-                           class="cell-input"
-                           min="0"
-                           value="{{ $pc?->base_salary ?? 0 }}">
+                    <input
+                        type="number"
+                        name="base_salary"
+                        class="cell-input"
+                        min="0"
+                        step="1"
+                        value="{{ $feeMengajar }}"
+                        oninput="hitungTotal{{ $employee->id }}()"
+                    >
 
                     <div style="
                         font-size:10px;
@@ -839,24 +805,30 @@ Uang makan dan bensin dihitung berdasarkan jumlah hari hadir.
                         margin-top:3px;
                     ">
 
-                        Input owner
+                        Input Owner
 
                     </div>
 
                 </td>
 
 
-                {{-- HARI HADIR --}}
+                {{-- ====================================================
+                UANG MAKAN
+                ==================================================== --}}
+
                 <td>
 
-                    <div style="
-                        font-weight:700;
-                        white-space:nowrap;
-                    ">
-
-                        {{ $employee->hari_hadir }} hari
-
-                    </div>
+                    <input
+                        type="number"
+                        id="meal-{{ $employee->id }}"
+                        name="meal_rate"
+                        class="cell-input"
+                        min="0"
+                        step="1"
+                        value="{{ $uangMakan }}"
+                        oninput="hitungTotal{{ $employee->id }}()"
+                        placeholder="0"
+                    >
 
                     <div style="
                         font-size:10px;
@@ -864,24 +836,30 @@ Uang makan dan bensin dihitung berdasarkan jumlah hari hadir.
                         margin-top:3px;
                     ">
 
-                        Dari presensi
+                        Input Owner
 
                     </div>
 
                 </td>
 
 
-                {{-- UANG MAKAN --}}
+                {{-- ====================================================
+                UANG BENSIN
+                ==================================================== --}}
+
                 <td>
 
-                    <div style="
-                        font-weight:700;
-                        white-space:nowrap;
-                    ">
-
-                        Rp {{ number_format($uangMakan, 0, ',', '.') }}
-
-                    </div>
+                    <input
+                        type="number"
+                        id="transport-{{ $employee->id }}"
+                        name="transport_rate"
+                        class="cell-input"
+                        min="0"
+                        step="1"
+                        value="{{ $uangBensin }}"
+                        oninput="hitungTotal{{ $employee->id }}()"
+                        placeholder="0"
+                    >
 
                     <div style="
                         font-size:10px;
@@ -889,84 +867,27 @@ Uang makan dan bensin dihitung berdasarkan jumlah hari hadir.
                         margin-top:3px;
                     ">
 
-                        Rp10.000 × {{ $employee->hari_hadir }}
+                        Input Owner
 
                     </div>
 
                 </td>
 
 
-                {{-- UANG BENSIN --}}
+                {{-- ====================================================
+                TOTAL DITERIMA
+                ==================================================== --}}
+
                 <td>
 
-                    <div style="
-                        font-weight:700;
-                        white-space:nowrap;
-                    ">
-
-                        Rp {{ number_format($uangBensin, 0, ',', '.') }}
-
-                    </div>
-
-                    <div style="
-                        font-size:10px;
-                        color:#888;
-                        margin-top:3px;
-                    ">
-
-                        Rp10.000 × {{ $employee->hari_hadir }}
-
-                    </div>
-
-                </td>
-
-
-                {{-- BONUS --}}
-                <td>
-
-                    <input type="number"
-                           name="allowance"
-                           class="cell-input"
-                           min="0"
-                           value="{{ $pc?->allowance ?? 0 }}">
-
-                </td>
-
-
-                {{-- POTONGAN --}}
-                <td>
-
-                    <div style="
-                        color:#666;
-                        font-weight:700;
-                        white-space:nowrap;
-                    ">
-
-                        Rp 0
-
-                    </div>
-
-                    <div style="
-                        font-size:10px;
-                        color:#888;
-                        margin-top:3px;
-                    ">
-
-                        Tidak berlaku
-
-                    </div>
-
-                </td>
-
-
-                {{-- TOTAL --}}
-                <td>
-
-                    <div class="row-total mono"
-                         style="
+                    <div
+                        id="total-{{ $employee->id }}"
+                        class="row-total mono"
+                        style="
                             white-space:nowrap;
                             font-weight:800;
-                         ">
+                        "
+                    >
 
                         Rp {{ number_format($total, 0, ',', '.') }}
 
@@ -975,29 +896,16 @@ Uang makan dan bensin dihitung berdasarkan jumlah hari hadir.
                 </td>
 
 
-                {{-- ACTION --}}
+                {{-- ====================================================
+                SIMPAN
+                ==================================================== --}}
+
                 <td>
 
-                    <input type="hidden"
-                           name="meal_rate"
-                           value="0">
-
-                    <input type="hidden"
-                           name="transport_rate"
-                           value="0">
-
-                    <input type="hidden"
-                           name="hourly_rate"
-                           value="0">
-
-
-                    <input type="hidden"
-                           name="thr_active"
-                           value="0">
-
-
-                    <button type="submit"
-                            class="btn btn-line btn-sm">
+                    <button
+                        type="submit"
+                        class="btn btn-line btn-sm"
+                    >
 
                         Simpan
 
@@ -1010,16 +918,103 @@ Uang makan dan bensin dihitung berdasarkan jumlah hari hadir.
         </tr>
 
 
+        {{-- ============================================================
+        JAVASCRIPT HITUNG TOTAL
+        ============================================================ --}}
+
+        <script>
+
+            function hitungTotal{{ $employee->id }}() {
+
+                /*
+                |--------------------------------------------------------------------------
+                | AMBIL FEE MENGAJAR
+                |--------------------------------------------------------------------------
+                */
+                const feeInput =
+                    document.querySelector(
+                        '#total-{{ $employee->id }}'
+                    ).closest('tr')
+                    .querySelector(
+                        '[name="base_salary"]'
+                    );
+
+                const fee =
+                    Number(
+                        feeInput?.value || 0
+                    );
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | AMBIL UANG MAKAN
+                |--------------------------------------------------------------------------
+                */
+                const makan =
+                    Number(
+                        document.getElementById(
+                            'meal-{{ $employee->id }}'
+                        )?.value || 0
+                    );
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | AMBIL UANG BENSIN
+                |--------------------------------------------------------------------------
+                */
+                const bensin =
+                    Number(
+                        document.getElementById(
+                            'transport-{{ $employee->id }}'
+                        )?.value || 0
+                    );
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | TOTAL
+                |--------------------------------------------------------------------------
+                |
+                | Fee Mengajar
+                | + Uang Makan
+                | + Uang Bensin
+                |
+                */
+                const total =
+                    fee
+                    + makan
+                    + bensin;
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | TAMPILKAN TOTAL
+                |--------------------------------------------------------------------------
+                */
+                document.getElementById(
+                    'total-{{ $employee->id }}'
+                ).innerText =
+                    'Rp ' +
+                    total.toLocaleString('id-ID');
+
+            }
+
+        </script>
+
+
     @empty
 
         <tr>
 
-            <td colspan="9"
+            <td
+                colspan="6"
                 style="
                     text-align:center;
                     color:#9AA0A8;
                     padding:25px;
-                ">
+                "
+            >
 
                 Belum ada karyawan part-time.
 
@@ -1031,6 +1026,7 @@ Uang makan dan bensin dihitung berdasarkan jumlah hari hadir.
 
 </table>
 </div>
+
 
 {{-- ============================================================
 PUBLISH
