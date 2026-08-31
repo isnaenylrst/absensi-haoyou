@@ -650,19 +650,13 @@ KARYAWAN PART TIME
 
 <div class="field-hint" style="margin-bottom:10px;">
 
-```
 Fee mengajar, uang makan, dan uang bensin
 diinput manual oleh Owner.
-
-Tidak menggunakan absensi dan tidak menggunakan
-perhitungan Rp10.000 per hari.
-```
 
 </div>
 
 <div class="table-wrap">
 
-```
 <table class="paytable">
 
     <tr>
