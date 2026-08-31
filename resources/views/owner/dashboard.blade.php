@@ -45,6 +45,10 @@
         .tb-avatar-menu-item:hover { background: #F7F8FA; }
         .tb-avatar-menu-danger { color: #D34D3C; }
 
+        /* ===== Ikon Mode Gelap/Terang — tanpa background, cuma beda warna dari ikon lain ===== */
+        #themeIconSun { color: #FFD24C; }  /* kuning emas, beda dari putih polos gear/lonceng */
+        #themeIconMoon { color: #C9B8FF; } /* ungu muda */
+
         /* ===== Mode Gelap ===== */
         :root {
             --bg-page: #f7f8fa;
@@ -106,9 +110,11 @@
         <nav class="navlist">
 
             <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <i class="fa-solid fa-house nav-ico"></i>
+
+           <i class="fa-solid fa-house nav-ico"></i>
                 {{ __('nav.beranda') }}
             </a>
+
 
             <a href="{{ route('karyawan.index') }}" class="nav-item {{ request()->routeIs('karyawan.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-users nav-ico"></i>
@@ -133,9 +139,8 @@
                         <span class="nav-sub-ico"><i class="fa-solid fa-calendar-days"></i></span>
                         <span class="nav-sub-label">Jadwal Kerja</span>
                     </a>
-
-                    {{-- Route 'izin' belum ada di web.php --}}
-                    <a href="#" class="nav-sub-item">
+                    
+<a href="{{ route('leave-requests.index') }}" class="nav-sub-item {{ request()->routeIs('leave-requests.*') ? 'active' : '' }}">
                         <span class="nav-sub-ico"><i class="fa-solid fa-plane-departure"></i></span>
                         <span class="nav-sub-label">Izin &amp; Cuti</span>
                     </a>
@@ -147,10 +152,11 @@
                 </div>
             </div>
 
-            {{-- Route 'payroll' belum ada di web.php --}}
-            <a href="#" class="nav-item">
+<a href="{{ route('payroll.index') }}" class="nav-item {{ request()->routeIs('payroll.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-sack-dollar nav-ico"></i>
                 Payroll
+            </a>
+            
             </a>
 
             <a href="{{ route('pengaturan.edit') }}" class="nav-item {{ request()->routeIs('pengaturan.*') ? 'active' : '' }}">
@@ -200,7 +206,7 @@
                     </div>
                 </div>
 
-                {{-- ===== Mode Gelap/Terang ===== --}}
+                {{-- ===== Mode Gelap/Terang — polos tanpa background, dibedakan lewat warna ikon ===== --}}
                 <button type="button" class="tb-icon" id="themeToggle" title="Mode Gelap/Terang" style="border:none; cursor:pointer;">
                     <i class="fa-solid fa-sun" id="themeIconSun"></i>
                     <i class="fa-solid fa-moon" id="themeIconMoon" style="display:none;"></i>

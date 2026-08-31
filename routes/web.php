@@ -3,6 +3,9 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\LeaveRequestController;
+use App\Http\Controllers\PayslipController;
+use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\Karyawan\PresensiController;
 use App\Http\Controllers\Karyawan\ClientVisitController;
 use App\Http\Controllers\Owner\EmployeeController;
@@ -26,8 +29,9 @@ Route::middleware('guest')->group(function () {
 // AUTHENTICATED
 // ======================================================
 Route::middleware('auth')->group(function () {
+
     // Dashboard
-    Route::get('/beranda', DashboardController::class)
+    Route::get('/beranda', [DashboardController::class, 'index'])
         ->name('dashboard');
 
     // Logout
@@ -35,9 +39,8 @@ Route::middleware('auth')->group(function () {
         ->name('logout');
 
     // ==================================================
-    // PROFIL & PASSWORD
+    // PROFIL & PASSWORD (semua role)
     // ==================================================
-    // Semua role
     Route::get('/profil', [ProfileController::class, 'edit'])
         ->name('profil.edit');
 
@@ -68,23 +71,43 @@ Route::middleware('auth')->group(function () {
         ->name('kunjungan-klien-saya.store');
 
     // ==================================================
+    // IZIN & CUTI (semua role - karyawan ajukan, owner approve)
+    // ==================================================
+    Route::get('/izin', [LeaveRequestController::class, 'index'])
+        ->name('leave-requests.index');
+
+    Route::post('/izin', [LeaveRequestController::class, 'store'])
+        ->name('leave-requests.store');
+
+    Route::patch('/izin/{leaveRequest}/approve', [LeaveRequestController::class, 'approve'])
+        ->name('leave-requests.approve');
+
+    Route::patch('/izin/{leaveRequest}/reject', [LeaveRequestController::class, 'reject'])
+        ->name('leave-requests.reject');
+
+    // ==================================================
+    // GAJI SAYA - khusus karyawan (read-only)
+    // ==================================================
+    Route::get('/gaji-saya', [PayslipController::class, 'index'])
+        ->name('payslips.index');
+
+    Route::get('/gaji-saya/unduh-pdf', [PayslipController::class, 'downloadPdf'])
+        ->name('payslips.download-pdf');
+
+    // ==================================================
     // OWNER ONLY
     // ==================================================
-
     Route::middleware('role:owner')->group(function () {
 
         // ----------------------------------------------
         // Profil Owner
         // ----------------------------------------------
-
         Route::put('/profil', [ProfileController::class, 'update'])
             ->name('profil.update');
-
 
         // ----------------------------------------------
         // Karyawan
         // ----------------------------------------------
-
         Route::get('karyawan-export', [EmployeeController::class, 'exportCsv'])
             ->name('karyawan.export');
 
@@ -104,7 +127,6 @@ Route::middleware('auth')->group(function () {
 
         Route::post('karyawan/{karyawan}/toggle-status', [EmployeeController::class, 'toggleStatus'])
             ->name('karyawan.toggle-status');
-
 
         // ----------------------------------------------
         // Jadwal Kerja
@@ -135,12 +157,25 @@ Route::middleware('auth')->group(function () {
 
         Route::put('/pengaturan/aturan', [SettingController::class, 'updateAturan'])
             ->name('pengaturan.aturan');
+
+        // ----------------------------------------------
+        // Payroll
+        // ----------------------------------------------
+        Route::get('/payroll', [PayrollController::class, 'index'])
+            ->name('payroll.index');
+    
+        Route::get('/payroll/history', [PayrollController::class, 'history'])
+            ->name('payroll.history');
+
+        Route::patch('/payroll/{employee}', [PayrollController::class, 'updateComponent'])
+            ->name('payroll.update');
+
+        Route::post('/payroll/publish', [PayrollController::class, 'publishAll'])
+            ->name('payroll.publish');
     });
 });
-
 
 // ======================================================
 // ROOT
 // ======================================================
-
 Route::get('/', fn () => redirect()->route('login'));

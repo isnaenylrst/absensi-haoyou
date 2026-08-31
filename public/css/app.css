@@ -175,3 +175,163 @@ body{
   .sidebar.open{ transform:translateX(0); }
   .main{ margin-left:0; }
 }
+
+/* ============================================================
+   TAMBAHAN CSS UNTUK KONTEN HALAMAN
+   IZIN & CUTI
+============================================================ */
+
+:root{
+  --green:#2F8A5B;
+  --green-soft:#E7F5EC;
+  --rust-soft:#FCEAE7;
+  --blue:#2E6FDB;
+  --blue-soft:#E8EFFC;
+}
+
+.crumb{ font-size:12.5px; color:var(--text-faint); margin-bottom:14px; display:flex; align-items:center; gap:7px; }
+.crumb b{ color:var(--text-dim); font-weight:700; }
+
+.page-head{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+.page-title{ font-family:'Poppins', sans-serif; font-size:28px; font-weight:700; }
+.page-actions{ display:flex; gap:9px; flex-wrap:wrap; }
+
+/* buttons */
+.btn{ font-family:'Poppins', sans-serif; font-weight:700; font-size:13px; padding:10px 16px; border-radius:9px; border:1px solid transparent; cursor:pointer; display:inline-flex; align-items:center; gap:7px; transition:.15s; white-space:nowrap; }
+.btn-gold{ background:var(--gold); color:#fff; box-shadow:0 6px 14px rgba(245,166,35,.28); }
+.btn-gold:hover{ background:var(--gold-deep); }
+.btn-line{ background:#fff; color:var(--text); border-color:var(--line); }
+.btn-line:hover{ background:var(--line-soft); }
+.btn-ghost{ background:transparent; color:var(--text-dim); border-color:transparent; }
+.btn-ghost:hover{ background:var(--line-soft); }
+.btn-sm{ padding:7px 12px; font-size:11.5px; border-radius:8px; }
+.btn-block{ width:100%; justify-content:center; }
+.btn:disabled{ opacity:.4; cursor:not-allowed; }
+
+/* card */
+.card{ background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:20px; box-shadow:var(--shadow); }
+.card-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:15px; gap:12px; flex-wrap:wrap; }
+.card-title{ font-family:'Poppins', sans-serif; font-size:16px; font-weight:700; }
+.card-sub{ font-size:12px; color:var(--text-dim); margin-top:2px; }
+
+.grid{ display:grid; gap:16px; }
+.grid-4{ grid-template-columns:repeat(4,1fr); }
+.grid-3{ grid-template-columns:repeat(3,1fr); }
+.grid-2{ grid-template-columns:1.3fr 1fr; }
+.grid-2-even{ grid-template-columns:1fr 1fr; }
+@media(max-width:1100px){ .grid-4{grid-template-columns:repeat(2,1fr);} .grid-3{grid-template-columns:1fr 1fr;} .grid-2{grid-template-columns:1fr;} }
+
+/* stat cards */
+.stat-card{ display:flex; flex-direction:column; gap:9px; }
+.stat-top{ display:flex; align-items:center; justify-content:space-between; }
+.stat-ico{ width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; }
+.stat-value{ font-family:'Poppins', sans-serif; font-size:25px; font-weight:700; }
+.stat-label{ font-size:12px; color:var(--text-dim); }
+
+.badge{ font-size:10.5px; font-weight:800; padding:3px 9px; border-radius:20px; display:inline-flex; align-items:center; gap:5px; }
+.badge-green{ background:var(--green-soft); color:var(--green); }
+.badge-rust{ background:var(--rust-soft); color:var(--rust); }
+.badge-gold{ background:var(--gold-pale); color:var(--gold-deep); }
+.badge-gray{ background:var(--line-soft); color:var(--text-dim); }
+.badge-blue{ background:var(--blue-soft); color:var(--blue); }
+
+/* table */
+.table-wrap{ overflow-x:auto; }
+table{ width:100%; border-collapse:collapse; min-width:760px; }
+th{ text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-faint); padding:11px 14px; border-bottom:1px solid var(--line); font-weight:800; background:var(--line-soft); white-space:nowrap; }
+th:first-child{ border-radius:9px 0 0 9px; }
+th:last-child{ border-radius:0 9px 9px 0; }
+td{ padding:13px 14px; font-size:13px; border-bottom:1px solid var(--line-soft); white-space:nowrap; }
+tr:last-child td{ border-bottom:none; }
+tr:hover td{ background:#FCFBF8; }
+.row-name{ display:flex; align-items:center; gap:10px; }
+.row-link{ color:var(--gold-deep); font-weight:700; cursor:pointer; }
+.row-link:hover{ text-decoration:underline; }
+
+.avatar-dot{ width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:11.5px; color:#fff; flex-shrink:0; }
+.avatar-lg{ width:60px; height:60px; border-radius:16px; background:linear-gradient(150deg, var(--gold), #F8C15C); display:flex; align-items:center; justify-content:center; color:#fff; font-family:'Poppins', sans-serif; font-weight:700; font-size:21px; flex-shrink:0; }
+
+/* toolbar untuk tabel (search, filter) */
+.toolbar{ display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap; justify-content:space-between; }
+.toolbar-left{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.search-box{ display:flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:9px; padding:9px 13px; background:#fff; min-width:200px; }
+.search-box input{ border:none; outline:none; font-size:12.5px; width:100%; }
+.quota-chip{ font-size:12px; color:var(--text-dim); font-weight:600; }
+.quota-chip b{ color:var(--gold-deep); }
+
+/* pill tabs (Informasi Pribadi / Kontak / ...) */
+.pilltabs{ display:flex; gap:4px; background:var(--line-soft); padding:4px; border-radius:11px; margin-bottom:18px; width:fit-content; flex-wrap:wrap; }
+.pilltab{ padding:9px 16px; font-size:12.5px; font-weight:700; color:var(--text-dim); border-radius:8px; cursor:pointer; }
+.pilltab.active{ background:#fff; color:var(--text); box-shadow:var(--shadow); }
+.subpage{ display:none; }
+.subpage.active{ display:block; }
+
+/* underline tabs */
+.subtabs{ display:flex; gap:6px; border-bottom:1px solid var(--line); margin-bottom:20px; flex-wrap:wrap; }
+.subtab{ padding:10px 16px; font-size:13px; font-weight:700; color:var(--text-dim); cursor:pointer; border-bottom:2px solid transparent; }
+.subtab.active{ color:var(--gold-deep); border-bottom-color:var(--gold); }
+
+/* forms */
+.field{ margin-bottom:15px; }
+.field label{ display:block; font-size:12px; font-weight:700; color:var(--text-dim); margin-bottom:6px; }
+.field input, .field select, .field textarea{ width:100%; padding:10px 13px; border:1px solid var(--line); border-radius:9px; font-family:'Poppins', sans-serif; font-size:13.5px; color:var(--text); background:#FCFCFB; }
+.field input:focus, .field select:focus, .field textarea:focus{ outline:none; border-color:var(--gold); background:#fff; }
+.field-hint{ font-size:11px; color:var(--text-faint); margin-top:4px; }
+.form-row{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media(max-width:700px){ .form-row{grid-template-columns:1fr;} }
+
+.note-box{ background:var(--gold-pale); border:1px solid var(--gold-pale2); border-radius:10px; padding:12px 14px; font-size:12px; color:#8A6212; display:flex; gap:9px; margin-top:14px; line-height:1.5; }
+.note-box-green{ background:var(--green-soft); border-color:#CDEBD9; color:#215A3D; }
+
+.timeline-item{ display:flex; gap:14px; padding:12px 0; border-bottom:1px solid var(--line-soft); }
+.timeline-item:last-child{ border-bottom:none; }
+.timeline-dot{ width:9px; height:9px; border-radius:50%; margin-top:5px; flex-shrink:0; }
+.timeline-title{ font-size:13px; font-weight:700; }
+.timeline-sub{ font-size:11.5px; color:var(--text-dim); margin-top:2px; }
+.timeline-time{ margin-left:auto; font-family:'Poppins', sans-serif; font-size:11.5px; color:var(--text-faint); white-space:nowrap; }
+.ti-row{ display:flex; width:100%; }
+
+.divider-label{ font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-faint); font-weight:800; margin:20px 0 11px; }
+.kv{ display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px dashed var(--line); font-size:12.5px; }
+.kv:last-child{ border-bottom:none; }
+.kv-lbl{ color:var(--text-dim); }
+.kv-val{ font-weight:700; }
+
+.owner-panel-note{ background:var(--green-soft); border:1px solid #CDEBD9; border-radius:10px; padding:12px 14px; font-size:12px; color:#215A3D; display:flex; gap:9px; margin-bottom:18px; line-height:1.5; }
+
+.toast{ position:fixed; bottom:26px; right:26px; background:var(--text); color:#fff; padding:13px 18px; border-radius:12px; font-size:13px; font-weight:700; display:flex; align-items:center; gap:10px; box-shadow:0 12px 30px rgba(0,0,0,.25); transform:translateY(20px); opacity:0; pointer-events:none; transition:.25s; z-index:50; }
+.toast.show{ transform:translateY(0); opacity:1; }
+.toast-dot{ width:8px; height:8px; border-radius:50%; background:var(--gold); flex-shrink:0; }
+
+/* ============================================================
+   TAMBAHAN CSS UNTUK HALAMAN GAJI SAYA
+============================================================ */
+
+.pay-row{ display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--line-soft); }
+.pay-row:last-child{ border-bottom:none; }
+.pay-label{ font-size:13px; font-weight:600; }
+.pay-sub{ font-size:11px; color:var(--text-faint); margin-top:2px; }
+.pay-val{ font-family:'Poppins', sans-serif; font-size:13.5px; font-weight:700; }
+.pay-neg{ color:var(--rust); }
+.pay-pos{ color:var(--green); }
+.pay-total{ display:flex; align-items:center; justify-content:space-between; padding-top:16px; margin-top:6px; border-top:2px solid var(--text); }
+.pay-total .pay-label{ font-family:'Poppins', sans-serif; font-size:16px; font-weight:700; }
+.pay-total .pay-val{ font-family:'Poppins', sans-serif; font-size:20px; font-weight:800; color:var(--gold-deep); }
+
+.progress{ height:6px; border-radius:6px; background:var(--line-soft); overflow:hidden; margin-top:8px; }
+.progress-fill{ height:100%; background:var(--gold); border-radius:6px; }
+
+.locked-panel{ display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:60px 20px; color:var(--text-faint); }
+.locked-panel svg{ margin-bottom:12px; opacity:.5; }
+.locked-panel-title{ font-family:'Poppins', sans-serif; font-size:17px; font-weight:700; color:var(--text-dim); margin-bottom:4px; }
+
+/* ============================================================
+   TAMBAHAN CSS UNTUK HALAMAN PAYROLL
+============================================================ */
+
+.cell-input{ width:90px; padding:7px 8px; border:1px solid transparent; border-radius:7px; font-family:'Poppins', sans-serif; font-size:12px; background:var(--line-soft); color:var(--text); }
+.cell-input:focus{ outline:none; border-color:var(--gold); background:#fff; }
+.row-total{ font-weight:800; white-space:nowrap; }
+.row-updated{ font-size:10px; color:var(--text-faint); margin-top:3px; }
+.thr-check{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--text-dim); }
+.owner-panel-note{ background:var(--green-soft); border:1px solid #CDEBD9; border-radius:10px; padding:12px 14px; font-size:12px; color:#215A3D; display:flex; gap:9px; margin-bottom:18px; line-height:1.5; }
