@@ -5,12 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    {{-- CSRF Token --}}
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Beranda') | Absenly</title>
+    <title>@yield('title', 'Beranda') | Presence</title>
 
-    {{-- Google Fonts --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
@@ -24,13 +22,12 @@
         referrerpolicy="no-referrer"
     >
 
-    {{-- CSS Layout Absensi --}}
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 
-    {{-- CSS Dropdown Profile --}}
+    {{-- CSS Dropdown Profile & Notifikasi --}}
     <style>
         /* ==========================
-           DROPDOWN PROFILE
+           DROPDOWN PROFILE / NOTIF
         ========================== */
 
         .tb-avatar-wrap {
@@ -129,7 +126,6 @@
             margin: 0;
         }
 
-
         /* ==========================
            SIDEBAR SUBMENU
         ========================== */
@@ -169,9 +165,44 @@
         .nav-sub-label {
             display: block;
         }
+
+        /* ===== Ikon Mode Gelap/Terang — dibedakan lewat warna ikon ===== */
+        #themeIconSun { color: #FFD24C; }
+        #themeIconMoon { color: #C9B8FF; }
+
+        /* ===== Mode Gelap ===== */
+        :root {
+            --bg-page: #f7f8fa;
+            --card-bg: #ffffff;
+            --text-main: #22262B;
+            --text-dim: #6B7280;
+            --border-c: #EDEEF0;
+            --input-bg: #FCFCFC;
+            --sidebar-bg: #ffffff;
+        }
+        body.dark-mode {
+            --bg-page: #14161A;
+            --card-bg: #1E2126;
+            --text-main: #F1F2F4;
+            --text-dim: #9AA0A8;
+            --border-c: #2C2F35;
+            --input-bg: #24272D;
+            --sidebar-bg: #1A1C21;
+        }
+        body { background: var(--bg-page); color: var(--text-main); transition: background .2s, color .2s; }
+        body.dark-mode .sidebar { background: var(--sidebar-bg); border-right: 1px solid var(--border-c); }
+        body.dark-mode .nav-item { color: var(--text-dim); }
+        body.dark-mode .nav-item.active { background: rgba(255,189,8,.12); }
+        body.dark-mode .card, body.dark-mode .table-card, body.dark-mode table.tbl {
+            background: var(--card-bg); border-color: var(--border-c); color: var(--text-main);
+        }
+        body.dark-mode table.tbl th { background: #24272D; color: var(--text-dim); }
+        body.dark-mode table.tbl td { border-color: var(--border-c); }
+        body.dark-mode .field input, body.dark-mode .field select, body.dark-mode .field textarea {
+            background: var(--input-bg); border-color: var(--border-c); color: var(--text-main);
+        }
     </style>
 
-    {{-- CSS Tambahan dari halaman --}}
     @stack('styles')
 </head>
 
@@ -187,7 +218,6 @@
 
     <aside class="sidebar">
 
-        {{-- BRAND --}}
         <div class="brand">
             <img
                 src="{{ asset('assets/img/logo.png') }}"
@@ -195,7 +225,6 @@
                 class="logo"
             >
         </div>
-
 
         {{-- =====================================================
             NAVIGATION
@@ -319,46 +348,7 @@
 
             </a>
 
-
-            {{-- =================================================
-                FAQ
-            ================================================== --}}
-
-            {{-- 
-            <a
-                href="#"
-                class="nav-item"
-                data-page="faq"
-            >
-                <i class="fa-solid fa-circle-question nav-ico"></i>
-                <span>FAQ</span>
-            </a>
-            --}}
-
-
         </nav>
-
-
-        {{-- =====================================================
-            SIDEBAR FOOTER
-        ====================================================== --}}
-
-        <div class="sidebar-foot">
-
-            <div class="role-note">
-
-                <i class="fa-solid fa-circle-info role-note-ico"></i>
-
-                <span>
-                    <b class="mono">Mode Karyawan</b>
-                    &mdash;
-                    akses presensi, izin/cuti, kunjungan klien,
-                    dan gaji milik Anda sendiri.
-                </span>
-
-            </div>
-
-        </div>
 
     </aside>
 
@@ -369,9 +359,9 @@
 
     <main class="main">
 
-
         {{-- =================================================
-            TOPBAR
+            TOPBAR — Organisasi, ID, Notifikasi, Pengaturan,
+            Mode Gelap/Terang, Profil
         ================================================== --}}
 
         <header class="topbar">
@@ -391,32 +381,53 @@
             <div class="topbar-right">
 
 
-                {{-- ID --}}
-                <div class="tb-pill">
+                {{-- ===== Notifikasi ===== --}}
+                <div style="position:relative;">
+                    <button
+                        type="button"
+                        class="tb-icon"
+                        id="notifToggle"
+                        title="Notifikasi"
+                        style="border:none; cursor:pointer;"
+                    >
+                        <i class="fa-solid fa-bell"></i>
+                        @if(($myLeaveNotifCount ?? 0) > 0)
+                            <div class="tb-badge">{{ $myLeaveNotifCount }}</div>
+                        @endif
+                    </button>
 
-                    <span>ID</span>
-
-                    <i class="fa-solid fa-chevron-down"></i>
-
+                    <div class="tb-avatar-menu" id="notifMenu" style="min-width: 280px;">
+                        <div class="tb-avatar-menu-header">
+                            <div class="tb-avatar-menu-name">Notifikasi</div>
+                        </div>
+                        @forelse(($myLeaveNotifications ?? []) as $leave)
+                            <div class="tb-avatar-menu-item" style="cursor:default; display:block;">
+                                <b>Izin {{ str_replace('_',' ', ucfirst($leave->leave_type)) }}</b><br>
+                                <span style="font-size:11.5px; color:{{ $leave->status === 'disetujui' ? '#2F8A5B' : '#D34D3C' }};">
+                                    {{ $leave->status === 'disetujui' ? 'Disetujui' : 'Ditolak' }}
+                                    @if($leave->approved_at)
+                                        &middot; {{ $leave->approved_at->diffForHumans() }}
+                                    @endif
+                                </span>
+                            </div>
+                        @empty
+                            <div class="tb-avatar-menu-item" style="cursor:default; color:#9AA0A8;">Tidak ada notifikasi baru</div>
+                        @endforelse
+                    </div>
                 </div>
 
 
-                {{-- NOTIFICATION --}}
-                <div
+                {{-- ===== Mode Gelap/Terang ===== --}}
+                <button
+                    type="button"
                     class="tb-icon"
-                    title="Notifikasi"
+                    id="themeToggle"
+                    title="Mode Gelap/Terang"
+                    style="border:none; cursor:pointer;"
                 >
-                    <i class="fa-solid fa-bell"></i>
-                </div>
-
-
-                {{-- SETTINGS --}}
-                <div
-                    class="tb-icon"
-                    title="Pengaturan cepat"
-                >
-                    <i class="fa-solid fa-gear"></i>
-                </div>
+                    <i class="fa-solid fa-sun" id="themeIconSun"></i>
+                    <i class="fa-solid fa-moon" id="themeIconMoon" style="display:none;"></i>
+                </button>
 
 
                 {{-- =================================================
@@ -524,7 +535,6 @@
 
 </div>
 
-
 {{-- =========================================================
     JAVASCRIPT
 ========================================================= --}}
@@ -548,46 +558,70 @@
 
 
     /* =====================================================
-       DROPDOWN PROFILE
+       DROPDOWN GENERIK (Profil & Notifikasi)
     ====================================================== */
 
-    const avatarToggle =
-        document.getElementById('avatarToggle');
+    function setupDropdown(toggleId, menuId) {
 
-    const avatarMenu =
-        document.getElementById('avatarMenu');
+        const toggle = document.getElementById(toggleId);
+        const menu = document.getElementById(menuId);
 
+        if (!toggle || !menu) {
+            return;
+        }
 
-    if (avatarToggle && avatarMenu) {
-
-
-        // Klik avatar
-        avatarToggle.addEventListener('click', function (e) {
+        toggle.addEventListener('click', function (e) {
 
             e.preventDefault();
-
             e.stopPropagation();
 
-            avatarMenu.classList.toggle('open');
+            // Tutup dropdown lain yang sedang terbuka
+            document.querySelectorAll('.tb-avatar-menu.open').forEach(function (m) {
+                if (m !== menu) m.classList.remove('open');
+            });
 
+            menu.classList.toggle('open');
         });
 
-
-        // Klik isi dropdown
-        avatarMenu.addEventListener('click', function (e) {
-
+        menu.addEventListener('click', function (e) {
             e.stopPropagation();
-
         });
+    }
 
+    setupDropdown('notifToggle', 'notifMenu');
+    setupDropdown('avatarToggle', 'avatarMenu');
 
-        // Klik di luar dropdown
-        document.addEventListener('click', function () {
-
-            avatarMenu.classList.remove('open');
-
+    document.addEventListener('click', function () {
+        document.querySelectorAll('.tb-avatar-menu.open').forEach(function (m) {
+            m.classList.remove('open');
         });
+    });
 
+
+    /* =====================================================
+       MODE GELAP / TERANG
+    ====================================================== */
+
+    const themeToggle = document.getElementById('themeToggle');
+    const sunIcon = document.getElementById('themeIconSun');
+    const moonIcon = document.getElementById('themeIconMoon');
+
+    function applyTheme(theme) {
+        document.body.classList.toggle('dark-mode', theme === 'dark');
+        sunIcon.style.display = theme === 'dark' ? 'none' : 'inline';
+        moonIcon.style.display = theme === 'dark' ? 'inline' : 'none';
+    }
+
+    if (themeToggle) {
+        const savedTheme = localStorage.getItem('absenly_theme') || 'light';
+        applyTheme(savedTheme);
+
+        themeToggle.addEventListener('click', function () {
+            const current = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+            const next = current === 'dark' ? 'light' : 'dark';
+            applyTheme(next);
+            localStorage.setItem('absenly_theme', next);
+        });
     }
 
 </script>
@@ -599,7 +633,6 @@
     <script src="{{ asset('js/app.js') }}"></script>
 
 @endif
-
 
 {{-- JavaScript tambahan dari halaman --}}
 @stack('scripts')
