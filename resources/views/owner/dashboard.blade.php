@@ -45,6 +45,10 @@
         .tb-avatar-menu-item:hover { background: #F7F8FA; }
         .tb-avatar-menu-danger { color: #D34D3C; }
 
+        /* ===== Ikon Mode Gelap/Terang — tanpa background, cuma beda warna dari ikon lain ===== */
+        #themeIconSun { color: #FFD24C; }  /* kuning emas, beda dari putih polos gear/lonceng */
+        #themeIconMoon { color: #C9B8FF; } /* ungu muda */
+
         /* ===== Mode Gelap ===== */
         :root {
             --bg-page: #f7f8fa;
@@ -83,6 +87,15 @@
 
 <body data-role="owner">
 
+<script>
+    (function () {
+        var theme = localStorage.getItem('absenly_theme') || 'light';
+        if (theme === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+    })();
+</script>
+
 <div class="app" id="absensiApp">
 
     {{-- =====================================================
@@ -112,7 +125,6 @@
                 <div class="nav-item" onclick="toggleGroup()">
                     <i class="fa-solid fa-clock nav-ico"></i>
                     Kehadiran
-                    <span class="nav-badge nav-badge-inline">2</span>
                     <i class="fa-solid fa-chevron-right nav-chevron"></i>
                 </div>
 
@@ -194,7 +206,7 @@
                     </div>
                 </div>
 
-                {{-- ===== Mode Gelap/Terang ===== --}}
+                {{-- ===== Mode Gelap/Terang — polos tanpa background, dibedakan lewat warna ikon ===== --}}
                 <button type="button" class="tb-icon" id="themeToggle" title="Mode Gelap/Terang" style="border:none; cursor:pointer;">
                     <i class="fa-solid fa-sun" id="themeIconSun"></i>
                     <i class="fa-solid fa-moon" id="themeIconMoon" style="display:none;"></i>
@@ -277,7 +289,7 @@
         moonIcon.style.display = theme === 'dark' ? 'inline' : 'none';
     }
 
-    const savedTheme = localStorage.getItem('absenly_theme') || 'light';
+    const savedTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
     applyTheme(savedTheme);
 
     themeToggle.addEventListener('click', function () {

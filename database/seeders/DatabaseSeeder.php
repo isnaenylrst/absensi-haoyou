@@ -20,7 +20,6 @@ class DatabaseSeeder extends Seeder
 
             // 3. Jadwal kerja
             ShiftScheduleSeeder::class,
-            PartTimeScheduleSeeder::class,
 
             // 4. Aktivitas operasional harian
             AttendanceSeeder::class,

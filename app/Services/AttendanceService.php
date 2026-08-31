@@ -6,7 +6,6 @@ use App\Exceptions\AttendanceException;
 use App\Models\Attendance;
 use App\Models\AttendanceSetting;
 use App\Models\Employee;
-use App\Models\PartTimeSchedule;
 use App\Models\Shift;
 use App\Support\Geo;
 use Carbon\Carbon;
@@ -20,6 +19,7 @@ class AttendanceService
         'senin' => 1, 'selasa' => 2, 'rabu' => 3, 'kamis' => 4,
         'jumat' => 5, 'sabtu' => 6, 'minggu' => 7,
     ];
+    private const MAX_REASONABLE_DISTANCE_M = 100000; // 100 km
 
     /**
      * Presensi masuk karyawan TETAP: shift dipilih manual, wajib foto dari kamera + koordinat.
@@ -29,8 +29,7 @@ class AttendanceService
         int $shiftId,
         UploadedFile $photo,
         float $lat,
-        float $lng,
-        ?string $activity = null
+        float $lng
     ): Attendance {
         $now = Carbon::now();
         $tanggal = $now->toDateString();
@@ -71,6 +70,15 @@ class AttendanceService
             $lng
         );
 
+        // Tolak lebih dulu kalau jaraknya di luar akal sehat (indikasi GPS/lokasi tidak valid),
+        // sebelum masuk ke pengecekan radius kantor yang normal.
+        if ($distanceM > self::MAX_REASONABLE_DISTANCE_M) {
+            throw new AttendanceException(
+                'Lokasi GPS tidak valid atau tidak akurat (jarak terdeteksi terlalu jauh). '
+                .'Pastikan GPS/lokasi aktif, lalu coba lagi.'
+            );
+        }
+
         if ($distanceM > $branch->radius_meter
             && $setting->out_of_radius_policy === 'ditolak_otomatis'
         ) {
@@ -82,14 +90,12 @@ class AttendanceService
         $result = $shift->determineStatus($now);
 
         return DB::transaction(function () use (
-            $employee, $branch, $shift, $now, $tanggal, $photo, $lat, $lng, $distanceM, $result, $activity
+            $employee, $branch, $shift, $now, $tanggal, $photo, $lat, $lng, $distanceM, $result
         ) {
             return Attendance::create([
                 'employee_id' => $employee->id,
                 'branch_id' => $branch->id,
                 'shift_id' => $shift->id,
-                'part_time_schedule_id' => null,
-                'activity' => $activity,
                 'tanggal' => $tanggal,
                 'check_in' => $now,
                 'check_in_lat' => $lat,
@@ -124,52 +130,6 @@ class AttendanceService
         ]);
 
         return $attendance;
-    }
-
-    /**
-    * Presensi karyawan PART TIME: tanggal, jam mulai/selesai, dan keterangan diisi manual.
-     */
-    public function submitSesiPartTimeBatch(Employee $employee, array $sessions, string $tanggal): int
-    {
-        return DB::transaction(function () use ($employee, $sessions, $tanggal) {
-            $ranges = [];
-
-            foreach ($sessions as $session) {
-                $checkIn = Carbon::parse("{$tanggal} {$session['start_time']}");
-                $checkOut = Carbon::parse("{$tanggal} {$session['end_time']}");
-
-                foreach ($ranges as [$existingCheckIn, $existingCheckOut]) {
-                    if ($checkIn->lessThan($existingCheckOut) && $checkOut->greaterThan($existingCheckIn)) {
-                        throw new AttendanceException('Sesi yang dikirim tumpang tindih satu sama lain.');
-                    }
-                }
-
-                $overlap = PartTimeSchedule::where('employee_id', $employee->id)
-                    ->where('tanggal', $tanggal)
-                    ->where('start_time', '<', $session['end_time'])
-                    ->where('end_time', '>', $session['start_time'])
-                    ->exists();
-
-                if ($overlap) {
-                    throw new AttendanceException('Salah satu sesi tumpang tindih dengan sesi yang sudah Anda kirim hari ini.');
-                }
-
-                $ranges[] = [$checkIn, $checkOut];
-            }
-
-            foreach ($sessions as $session) {
-                PartTimeSchedule::create([
-                    'employee_id' => $employee->id,
-                    'tanggal' => $tanggal,
-                    'start_time' => $session['start_time'],
-                    'end_time' => $session['end_time'],
-                    'activity' => $session['activity'],
-                    'hourly_rate' => 0,
-                ]);
-            }
-
-            return count($sessions);
-        });
     }
 
     private function storePhoto(UploadedFile $photo, string $prefix): string

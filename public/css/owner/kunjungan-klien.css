@@ -1074,3 +1074,101 @@ tr:hover td {
         right: 10px;
     }
 }
+
+/* ========================================================================
+   BAGIAN 4 — MODE GELAP (DARK MODE)
+   Aktif ketika <body class="dark-mode"> — di-toggle oleh #themeToggle
+   di layout owner/dashboard.blade.php.
+   ======================================================================== */
+
+body.dark-mode {
+    --paper: #1e2126;
+    --bg: #14161a;
+    --line: #2c2f35;
+    --line-soft: #24272d;
+    --text: #f1f2f4;
+    --text-dim: #9aa0a8;
+    --text-faint: #6b7280;
+    --green-soft: rgba(47, 138, 91, 0.16);
+    --rust-soft: rgba(211, 77, 60, 0.16);
+    --gold-pale: rgba(245, 166, 35, 0.16);
+    --gold-pale2: rgba(245, 166, 35, 0.28);
+    --blue-soft: rgba(46, 111, 219, 0.16);
+    --shadow:
+        0 1px 2px rgba(0, 0, 0, 0.25),
+        0 10px 26px -16px rgba(0, 0, 0, 0.55);
+}
+
+/* Buttons */
+body.dark-mode .btn-line {
+    background: var(--line-soft);
+    color: var(--text);
+    border-color: var(--line);
+}
+body.dark-mode .btn-line:hover {
+    background: var(--line);
+}
+
+/* Toolbar & filter */
+body.dark-mode .search-box,
+body.dark-mode .field-input-inline {
+    background: var(--line-soft);
+    color: var(--text);
+    border-color: var(--line);
+}
+
+/* Table */
+body.dark-mode table tr:hover td {
+    background: var(--line-soft);
+}
+
+/* Photo thumbnail */
+body.dark-mode .photo-thumb {
+    border-color: var(--line);
+}
+body.dark-mode .photo-thumb.photo-error {
+    background: var(--line-soft);
+}
+
+/* Modal */
+body.dark-mode .modal-photo-panel {
+    background: var(--line-soft);
+}
+body.dark-mode .modal-photo-type {
+    background: rgba(30, 33, 38, 0.9);
+    color: var(--text);
+}
+body.dark-mode .modal-close-btn {
+    background: var(--line-soft);
+    border-color: var(--line);
+    color: var(--text-dim);
+}
+body.dark-mode .modal-close-btn:hover {
+    background: rgba(211, 77, 60, 0.16);
+    border-color: rgba(211, 77, 60, 0.4);
+    color: #f2867a;
+}
+body.dark-mode .modal-info-row,
+body.dark-mode .modal-block {
+    border-top-color: var(--line-soft);
+}
+body.dark-mode .modal-action-btn.line {
+    background: var(--line-soft);
+    border-color: var(--line);
+    color: var(--text);
+}
+body.dark-mode .modal-action-btn.line:hover {
+    background: var(--line);
+}
+
+/* Toast */
+body.dark-mode .toast {
+    background: var(--paper);
+    color: var(--text);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Scrollbar (kalau ada elemen scroll custom di halaman ini) */
+body.dark-mode ::-webkit-scrollbar-thumb {
+    background: #3a3d44;
+}

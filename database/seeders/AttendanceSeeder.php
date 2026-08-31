@@ -52,8 +52,6 @@ class AttendanceSeeder extends Seeder
                     [
                         'branch_id' => $employee->branch_id,
                         'shift_schedule_id' => $shiftSchedule->id,
-                        'part_time_schedule_id' => null,
-                        'activity' => 'Kegiatan operasional kantor',
                         'check_in' => $checkIn,
                         'check_out' => $checkOut,
                         'check_in_lat' => $outOfRadius ? -7.9510000 : -7.9501000,
