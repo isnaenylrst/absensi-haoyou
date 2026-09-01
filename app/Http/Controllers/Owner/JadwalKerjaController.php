@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\Branch;
 use App\Models\Employee;
+use App\Models\LeaveRequest;
 use App\Models\Shift;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -14,10 +15,18 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class JadwalKerjaController extends Controller
 {
+    /**
+     * Status yang valid untuk kolom attendances.status, sekaligus dipakai untuk
+     * memvalidasi input override manual dari owner.
+     */
+    private const VALID_STATUSES = ['tepat_waktu', 'terlambat', 'tidak_checkout', 'cuti', 'alpa'];
+
     private array $attendanceSummary = [
         'tepat_waktu' => 0,
         'terlambat' => 0,
+        'tidak_checkout' => 0,
         'luar_radius' => 0,
+        'cuti' => 0,
         'alpa' => 0,
     ];
 
@@ -59,6 +68,7 @@ class JadwalKerjaController extends Controller
             'hariKerja'     => array_values(self::HARI_KERJA),
             // Query berat di-skip kalau ini request AJAX (tidak dipakai section 'approval')
             'shifts'        => $isAjax ? collect() : $this->getShifts(),
+            'allShifts'     => $isAjax ? collect() : $this->getAllShifts(),
             'attendances'   => $attendances,
             'summary'       => $summary,
             'branches'      => $isAjax ? collect() : Branch::orderBy('name')->get(),
@@ -109,7 +119,91 @@ class JadwalKerjaController extends Controller
     }
 
     /**
-     * Card shift (ringkasan shift + jumlah karyawan hadir hari ini).
+     * Update shift yang sudah ada.
+     */
+    public function updateShift(Request $request, Shift $shift)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:50'],
+            'applicable_days' => ['required', 'array', 'min:1'],
+            'applicable_days.*' => ['in:senin,selasa,rabu,kamis,jumat,sabtu,minggu'],
+            'start_time' => ['required', 'date_format:H:i'],
+            'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
+            'tolerance_minutes' => ['nullable', 'integer', 'min:0', 'max:120'],
+        ], [
+            'applicable_days.required' => 'Pilih minimal 1 hari berlaku.',
+            'end_time.after' => 'Jam selesai harus setelah jam mulai.',
+        ]);
+
+        $shift->update([
+            'name' => $validated['name'],
+            'applicable_days' => $validated['applicable_days'],
+            'start_time' => $validated['start_time'],
+            'end_time' => $validated['end_time'],
+            'tolerance_minutes' => $validated['tolerance_minutes'] ?? 10,
+        ]);
+
+        return back()->with('success', 'Shift berhasil diperbarui.');
+    }
+
+    /**
+     * Owner meng-override status sebuah attendance secara manual dari modal detail
+     * (mis. status hasil sistem "Tidak Checkout" dinilai owner sebenarnya "Tepat Waktu").
+     * Attendance yang sudah pernah di-override sebelumnya TIDAK dihitung ulang otomatis lagi
+     * oleh getAttendances() — lihat resolveStatus().
+     */
+    public function updateAttendanceStatus(Request $request, Attendance $attendance)
+    {
+        $validated = $request->validate([
+            'status' => ['required', 'in:'.implode(',', self::VALID_STATUSES)],
+        ], [
+            'status.in' => 'Status tidak valid.',
+        ]);
+
+        $attendance->update([
+            'status' => $validated['status'],
+            'manual_override' => true,
+        ]);
+
+        return back()->with('success', 'Status presensi '.$attendance->employee->full_name.' berhasil diperbarui secara manual.');
+    }
+
+    /**
+     * Owner mengisi status secara manual untuk hari yang SAMA SEKALI TIDAK punya
+     * record attendance (baris "Alpa" / "Belum melakukan absensi" di tabel approval).
+     * Beda dengan updateAttendanceStatus() di atas: di sini belum ada baris Attendance
+     * untuk di-update, jadi method ini membuat record baru (updateOrCreate dipakai
+     * sebagai jaga-jaga terhadap race condition, mis. dua klik submit beruntun).
+     */
+    public function overrideAttendanceForDate(Request $request)
+    {
+        $validated = $request->validate([
+            'employee_id' => ['required', 'exists:employees,id'],
+            'tanggal' => ['required', 'date'],
+            'status' => ['required', 'in:'.implode(',', self::VALID_STATUSES)],
+        ], [
+            'status.in' => 'Status tidak valid.',
+        ]);
+
+        $employee = Employee::findOrFail($validated['employee_id']);
+
+        Attendance::updateOrCreate(
+            [
+                'employee_id' => $employee->id,
+                'tanggal' => $validated['tanggal'],
+            ],
+            [
+                'branch_id' => $employee->branch_id,
+                'status' => $validated['status'],
+                'manual_override' => true,
+            ]
+        );
+
+        return back()->with('success', 'Status presensi '.$employee->full_name.' berhasil diisi secara manual.');
+    }
+
+    /**
+     * Card shift (ringkasan shift yang berlaku HARI INI + jumlah karyawan hadir hari ini).
      */
     private function getShifts(): Collection
     {
@@ -128,12 +222,32 @@ class JadwalKerjaController extends Controller
                     ->count();
 
                 return (object) [
+                    'id' => $shift->id,
                     'nama' => $shift->name,
                     'jam_mulai' => Carbon::parse($shift->start_time)->format('H:i'),
                     'jam_selesai' => Carbon::parse($shift->end_time)->format('H:i'),
                     'toleransi_menit' => $shift->tolerance_minutes,
                     'jumlah_karyawan' => $jumlahKaryawan,
                     'hari_berlaku' => $this->formatHariBerlaku($shift->applicable_days),
+                ];
+            });
+    }
+
+    /**
+     * SEMUA shift (tanpa filter hari ini) — dipakai untuk dropdown modal Edit Shift.
+     */
+    private function getAllShifts(): Collection
+    {
+        return Shift::orderBy('start_time')
+            ->get()
+            ->map(function (Shift $shift) {
+                return (object) [
+                    'id' => $shift->id,
+                    'nama' => $shift->name,
+                    'jam_mulai' => Carbon::parse($shift->start_time)->format('H:i'),
+                    'jam_selesai' => Carbon::parse($shift->end_time)->format('H:i'),
+                    'toleransi_menit' => $shift->tolerance_minutes,
+                    'applicable_days' => $shift->applicable_days,
                 ];
             });
     }
@@ -212,10 +326,22 @@ class JadwalKerjaController extends Controller
             ->get()
             ->groupBy(fn ($a) => $a->employee_id.'|'.Carbon::parse($a->tanggal)->format('Y-m-d'));
 
-        $statusFilter = $filters['status'] ?? null;
+        // Pengajuan cuti/izin yang SUDAH DISETUJUI dan rentangnya beririsan dengan periode filter.
+        // Dipakai untuk menandai hari-hari tanpa record attendance sebagai "Cuti", bukan "Alpa".
+        // NB: asumsi leave_requests.employee_id merujuk ke employees.id, sama seperti attendances.employee_id.
+        $approvedLeavesByEmployee = LeaveRequest::query()
+            ->where('status', 'disetujui')
+            ->whereIn('employee_id', $employees->pluck('id'))
+            ->whereDate('start_date', '<=', $tanggalAkhir->toDateString())
+            ->whereDate('end_date', '>=', $tanggalMulai->toDateString())
+            ->get()
+            ->groupBy('employee_id');
+
         $hariIni = now()->toDateString();
 
-        $rows = collect();
+        // Kumpulkan SEMUA baris dulu (belum difilter status) — dipakai untuk hitung summary/chip,
+        // supaya angka chip lain tidak ikut ke-nol-kan saat salah satu status difilter.
+        $allRows = collect();
 
         for ($tanggal = $tanggalMulai->copy(); $tanggal->lte($tanggalAkhir); $tanggal->addDay()) {
             if ($tanggal->isSunday()) {
@@ -223,85 +349,121 @@ class JadwalKerjaController extends Controller
             }
 
             $tanggalKey = $tanggal->toDateString();
+            $tanggalSudahLewat = $tanggalKey < $hariIni;
 
             foreach ($employees as $employee) {
                 $attendance = $attendancesByEmployeeDate->get($employee->id.'|'.$tanggalKey)?->first();
 
                 if (! $attendance) {
-                    $row = (object) [
-                        'id' => null,
-                        'employee' => $employee,
-                        'tanggal' => $tanggal->copy(),
-                        'shift' => null,
-                        'check_in' => null,
-                        'check_out' => null,
-                        'check_in_lat' => null,
-                        'check_in_lng' => null,
-                        'check_in_photo_url' => null,
-                        'check_out_photo_url' => null,
-                        'distance_m' => null,
-                        'status' => null,
-                        'status_label' => $tanggalKey >= $hariIni ? 'Belum melakukan absensi' : 'Tidak melakukan absensi',
-                        'late_label' => '-',
-                        'late_minutes' => 0,
-                        'sudah_absen' => false,
-                    ];
-                } else {
-                    $lateLabel = 'Tepat waktu';
-                    $lateMinutes = 0;
-                    $startTime = $attendance->shift?->start_time;
+                    // Cek apakah tanggal ini masuk rentang cuti/izin yang sudah disetujui.
+                    $leave = $approvedLeavesByEmployee->get($employee->id, collect())
+                        ->first(function ($lr) use ($tanggalKey) {
+                            return $tanggalKey >= Carbon::parse($lr->start_date)->toDateString()
+                                && $tanggalKey <= Carbon::parse($lr->end_date)->toDateString();
+                        });
 
-                    if ($attendance->check_in && $startTime) {
-                        $date = Carbon::parse($attendance->tanggal)->format('Y-m-d');
-                        $scheduledTime = Carbon::parse($date.' '.$startTime);
-                        $checkInTime = Carbon::parse($attendance->check_in);
-
-                        if ($checkInTime->greaterThan($scheduledTime)) {
-                            $minutes = $scheduledTime->diffInMinutes($checkInTime);
-                            $lateMinutes = $minutes;
-                            $hours = intdiv($minutes, 60);
-                            $remainingMinutes = $minutes % 60;
-                            $parts = [];
-                            if ($hours > 0) $parts[] = $hours.' jam';
-                            if ($remainingMinutes > 0) $parts[] = $remainingMinutes.' menit';
-                            $lateLabel = 'Terlambat '.implode(' ', $parts);
-                        }
+                    if ($leave) {
+                        $row = (object) [
+                            'id' => null,
+                            'employee' => $employee,
+                            'tanggal' => $tanggal->copy(),
+                            'shift' => null,
+                            'check_in' => null,
+                            'check_out' => null,
+                            'check_in_lat' => null,
+                            'check_in_lng' => null,
+                            'check_in_photo_url' => null,
+                            'check_out_photo_url' => null,
+                            'distance_m' => null,
+                            'status' => 'cuti',
+                            'status_label' => 'Cuti',
+                            'leave_type' => $leave->leave_type,
+                            'activity' => $leave->reason,
+                            'late_label' => '-',
+                            'late_minutes' => 0,
+                            'manual_override' => false,
+                            // Dianggap "sudah ada keterangan" -> tidak masuk hitungan belum_absen/alpa.
+                            'sudah_absen' => true,
+                        ];
+                    } else {
+                        $row = (object) [
+                            'id' => null,
+                            'employee' => $employee,
+                            'tanggal' => $tanggal->copy(),
+                            'shift' => null,
+                            'check_in' => null,
+                            'check_out' => null,
+                            'check_in_lat' => null,
+                            'check_in_lng' => null,
+                            'check_in_photo_url' => null,
+                            'check_out_photo_url' => null,
+                            'distance_m' => null,
+                            'status' => $tanggalSudahLewat ? 'alpa' : null,
+                            'status_label' => $tanggalSudahLewat ? 'Tidak melakukan absensi' : 'Belum melakukan absensi',
+                            'late_label' => '-',
+                            'late_minutes' => 0,
+                            'manual_override' => false,
+                            'sudah_absen' => false,
+                        ];
                     }
-
+                } else {
                     $attendance->employee = $employee;
-                    $attendance->status_label = ucfirst(str_replace('_', ' ', $attendance->status ?? '-'));
-                    $attendance->late_label = $lateLabel;
-                    $attendance->late_minutes = $lateMinutes;
                     $attendance->sudah_absen = true;
+
+                    // Kalau owner sudah pernah override status ini secara manual, jangan dihitung
+                    // ulang — pakai apa adanya dari database sebagai keputusan final.
+                    if ($attendance->manual_override) {
+                        $attendance->status_label = ucfirst(str_replace('_', ' ', $attendance->status ?? '-'));
+                        $attendance->late_label = $attendance->late_minutes > 0
+                            ? $this->formatLateLabel($attendance->late_minutes)
+                            : ($attendance->status === 'tidak_checkout' ? 'Tidak checkout' : 'Tepat waktu');
+                    } else {
+                        [$status, $lateMinutes, $lateLabel] = $this->resolveStatus($attendance, $tanggalSudahLewat);
+
+                        $attendance->status = $status;
+                        $attendance->status_label = ucfirst(str_replace('_', ' ', $status));
+                        $attendance->late_minutes = $lateMinutes;
+                        $attendance->late_label = $lateLabel;
+                    }
 
                     $row = $attendance;
                 }
 
-                // Terapkan filter status di sini, setelah status/placeholder ditentukan.
-                if ($statusFilter === 'luar_radius' && ! ($row->distance_m !== null && $row->distance_m > 100)) {
-                    continue;
-                }
-                if ($statusFilter === 'belum_absen' && $row->sudah_absen) {
-                    continue;
-                }
-                if ($statusFilter && ! in_array($statusFilter, ['luar_radius', 'belum_absen'], true) && $row->status !== $statusFilter) {
-                    continue;
-                }
-
-                $rows->push($row);
+                $allRows->push($row);
             }
         }
 
-        $rows = $rows->sortBy('tanggal')->values();
+        $allRows = $allRows->sortBy('tanggal')->values();
 
+        // Summary/chip dihitung dari SEMUA baris (sebelum filter status) supaya angka tiap chip
+        // tetap konsisten dipakai sebagai tombol filter, termasuk yang sedang aktif dipilih.
         $this->attendanceSummary = [
-            'tepat_waktu' => $rows->where('status', 'tepat_waktu')->count(),
-            'terlambat' => $rows->where('status', 'terlambat')->count(),
-            'luar_radius' => $rows->filter(
+            'tepat_waktu' => $allRows->where('status', 'tepat_waktu')->count(),
+            'terlambat' => $allRows->where('status', 'terlambat')->count(),
+            'tidak_checkout' => $allRows->where('status', 'tidak_checkout')->count(),
+            'luar_radius' => $allRows->filter(
                 fn ($row) => $row->distance_m !== null && $row->distance_m > 100
             )->count(),
-            'alpa' => $rows->where('status', 'alpa')->count(),
+            'cuti' => $allRows->where('status', 'cuti')->count(),
+            'alpa' => $allRows->where('status', 'alpa')->count(),
         ];
+
+        // Filter status baru diterapkan di sini, khusus untuk isi tabel & pagination.
+        $statusFilter = $filters['status'] ?? null;
+
+        $rows = $allRows->filter(function ($row) use ($statusFilter) {
+            if (! $statusFilter) {
+                return true;
+            }
+            if ($statusFilter === 'luar_radius') {
+                return $row->distance_m !== null && $row->distance_m > 100;
+            }
+            if ($statusFilter === 'belum_absen') {
+                return ! $row->sudah_absen;
+            }
+
+            return $row->status === $statusFilter;
+        })->values();
 
         $perPage = 15;
         $page = (int) request()->input('page', 1);
@@ -313,6 +475,80 @@ class JadwalKerjaController extends Controller
             $page,
             ['path' => request()->url(), 'query' => request()->query()]
         );
+    }
+
+    /**
+     * Tentukan status efektif sebuah attendance yang SUDAH ADA record-nya (bukan placeholder),
+     * dan belum pernah di-override manual oleh owner. Urutan prioritas:
+     *   1. Belum check-in sama sekali & tanggal sudah lewat -> alpa (jarang terjadi di sini
+     *      karena baris tanpa check-in biasanya masuk lewat cabang "tidak ada attendance",
+     *      tapi tetap dijaga untuk record yang sudah terlanjur dibuat tanpa check_in).
+     *   2. Sudah check-in tapi belum check-out & tanggal sudah lewat -> tidak_checkout.
+     *   3. Terlambat, dihitung terhadap (jam_mulai_shift + toleransi_menit) — berdasarkan
+     *      late_minutes jika sudah terisi, atau dihitung ulang jika kosong.
+     *   4. Tepat waktu.
+     *
+     * @return array{0: string, 1: int, 2: string} [status, late_minutes, late_label]
+     */
+    private function resolveStatus(Attendance $attendance, bool $tanggalSudahLewat): array
+    {
+        if (! $attendance->check_in) {
+            return $tanggalSudahLewat
+                ? ['alpa', 0, '-']
+                : [$attendance->status ?? 'alpa', 0, '-'];
+        }
+
+        if (! $attendance->check_out && $tanggalSudahLewat) {
+            return ['tidak_checkout', (int) ($attendance->late_minutes ?? 0), 'Tidak checkout'];
+        }
+
+        // Pakai late_minutes dari kolom kalau sudah keisi (diisi saat proses check-in,
+        // dan proses itu WAJIB sudah memperhitungkan tolerance_minutes shift).
+        // Fallback hitung ulang hanya kalau kolomnya kosong/null (data lama sebelum kolom ini ada).
+        $lateMinutes = $attendance->late_minutes;
+
+        if ($lateMinutes === null) {
+            $lateMinutes = 0;
+            $startTime = $attendance->shift?->start_time;
+            $toleransi = $attendance->shift?->tolerance_minutes ?? 0;
+
+            if ($startTime) {
+                $date = Carbon::parse($attendance->tanggal)->format('Y-m-d');
+                $scheduledTime = Carbon::parse($date.' '.$startTime);
+                // Batas "tepat waktu" = jam mulai shift + toleransi. Baru dianggap terlambat
+                // kalau check_in melewati batas ini.
+                $batasTepatWaktu = $scheduledTime->copy()->addMinutes($toleransi);
+                $checkInTime = Carbon::parse($attendance->check_in);
+
+                if ($checkInTime->greaterThan($batasTepatWaktu)) {
+                    // late_minutes tetap dihitung dari jam mulai shift asli (bukan dari batas
+                    // toleransi), supaya label "Terlambat X menit" menunjukkan keterlambatan
+                    // sesungguhnya terhadap jadwal, bukan sisa setelah toleransi.
+                    $lateMinutes = $scheduledTime->diffInMinutes($checkInTime);
+                }
+            }
+        }
+
+        if ($lateMinutes > 0) {
+            return ['terlambat', $lateMinutes, $this->formatLateLabel($lateMinutes)];
+        }
+
+        return ['tepat_waktu', 0, 'Tepat waktu'];
+    }
+
+    /**
+     * Format menit telat jadi label "Terlambat X jam Y menit".
+     */
+    private function formatLateLabel(int $lateMinutes): string
+    {
+        $hours = intdiv($lateMinutes, 60);
+        $minutes = $lateMinutes % 60;
+
+        $parts = [];
+        if ($hours > 0) $parts[] = $hours.' jam';
+        if ($minutes > 0) $parts[] = $minutes.' menit';
+
+        return 'Terlambat '.implode(' ', $parts);
     }
 
     /**
@@ -336,7 +572,19 @@ class JadwalKerjaController extends Controller
             ->get()
             ->groupBy('employee_id');
 
-        return $employees->map(function (Employee $employee) use ($attendancesBulanIni) {
+        // Pengajuan cuti/izin disetujui yang beririsan dengan bulan terpilih, untuk hitung "cuti".
+        $awalBulan = Carbon::create($tahun, $bulan, 1)->startOfMonth();
+        $akhirBulan = $awalBulan->copy()->endOfMonth();
+
+        $approvedLeavesByEmployee = LeaveRequest::query()
+            ->where('status', 'disetujui')
+            ->whereIn('employee_id', $employees->pluck('id'))
+            ->whereDate('start_date', '<=', $akhirBulan->toDateString())
+            ->whereDate('end_date', '>=', $awalBulan->toDateString())
+            ->get()
+            ->groupBy('employee_id');
+
+        return $employees->map(function (Employee $employee) use ($attendancesBulanIni, $approvedLeavesByEmployee, $awalBulan, $akhirBulan) {
             $records = $attendancesBulanIni->get($employee->id, collect());
 
             $detail = $records->map(function (Attendance $attendance) {
@@ -349,6 +597,15 @@ class JadwalKerjaController extends Controller
                 ];
             })->values();
 
+            // Hitung jumlah hari cuti (dipotong ke rentang bulan yang sedang dilihat).
+            $cutiDays = $approvedLeavesByEmployee->get($employee->id, collect())
+                ->sum(function ($lr) use ($awalBulan, $akhirBulan) {
+                    $mulai = Carbon::parse($lr->start_date)->max($awalBulan);
+                    $akhir = Carbon::parse($lr->end_date)->min($akhirBulan);
+
+                    return $mulai->lte($akhir) ? $mulai->diffInDays($akhir) + 1 : 0;
+                });
+
             return (object) [
                 'id' => $employee->id,
                 'nama' => $employee->full_name,
@@ -356,6 +613,8 @@ class JadwalKerjaController extends Controller
                 'cabang' => $employee->branch->name ?? '—',
                 'hadir' => $records->where('status', 'tepat_waktu')->count(),
                 'telat' => $records->where('status', 'terlambat')->count(),
+                'tidak_checkout' => $records->where('status', 'tidak_checkout')->count(),
+                'cuti' => $cutiDays,
                 'alpa' => $records->where('status', 'alpa')->count(),
                 'detail' => $detail,
             ];

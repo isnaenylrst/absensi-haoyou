@@ -29,6 +29,7 @@ class Attendance extends Model
         'check_out_photo_url',
         'status',
         'late_minutes',
+        'manual_override',
     ];
 
     protected $casts = [
@@ -40,6 +41,7 @@ class Attendance extends Model
         'distance_m' => 'decimal:2',
         'late_minutes' => 'integer',
         'created_at' => 'datetime',
+        'manual_override' => 'boolean',
     ];
 
     public function employee(): BelongsTo

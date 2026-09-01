@@ -115,6 +115,15 @@ Route::middleware('auth')->group(function () {
         Route::post('/jadwal-kerja/shift', [JadwalKerjaController::class, 'storeShift'])
             ->name('owner.shift.store');
 
+        Route::put('/owner/shift/{shift}', [JadwalKerjaController::class, 'updateShift'])
+            ->name('owner.shift.update');  
+            
+        Route::put('/owner/attendance/{attendance}/status', [JadwalKerjaController::class, 'updateAttendanceStatus'])
+            ->name('owner.attendance.status.update');
+
+        Route::post('/owner/attendance/override', [JadwalKerjaController::class, 'overrideAttendanceForDate'])
+            ->name('owner.attendance.status.override');
+
         // ----------------------------------------------
         // Kunjungan Klien - Owner
         // ----------------------------------------------

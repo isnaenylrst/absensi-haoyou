@@ -7,118 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
-    <style>
-        #modalTambahShift.modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(20, 18, 10, 0.45);
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        #modalTambahShift.modal-overlay.show { display: flex; }
-        #modalTambahShift .modal-box {
-            background: #fff;
-            border-radius: 14px;
-            width: 420px;
-            max-width: 92vw;
-            max-height: 88vh;
-            overflow-y: auto;
-            padding: 22px 24px 20px;
-            box-shadow: 0 12px 32px rgba(0,0,0,0.18);
-        }
-        #modalTambahShift .modal-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-        }
-        #modalTambahShift .modal-head .card-title { margin: 0; }
-        #modalTambahShift .modal-close {
-            border: none;
-            background: transparent;
-            font-size: 20px;
-            line-height: 1;
-            color: #8a8a86;
-            cursor: pointer;
-            padding: 2px 4px;
-        }
-        #modalTambahShift .modal-close:hover { color: #333; }
-        #modalTambahShift .form-field { margin-bottom: 14px; }
-        #modalTambahShift .form-field label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: #4b4a45;
-            margin-bottom: 6px;
-        }
-        #modalTambahShift .form-field input[type="text"],
-        #modalTambahShift .form-field input[type="time"],
-        #modalTambahShift .form-field input[type="number"] {
-            width: 100%;
-            padding: 9px 11px;
-            border: 1px solid #ddd8cc;
-            border-radius: 8px;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
-        #modalTambahShift .form-field input:focus {
-            outline: none;
-            border-color: #E8863A;
-            box-shadow: 0 0 0 3px rgba(232,134,58,0.15);
-        }
-        #modalTambahShift .form-row { display: flex; gap: 12px; }
-        #modalTambahShift .form-row .form-field { flex: 1; }
-        #modalTambahShift .day-checkboxes {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        #modalTambahShift .day-chip { position: relative; }
-        #modalTambahShift .day-chip input {
-            position: absolute;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            cursor: pointer;
-        }
-        #modalTambahShift .day-chip span {
-            display: inline-block;
-            padding: 6px 12px;
-            border: 1px solid #ddd8cc;
-            border-radius: 999px;
-            font-size: 13px;
-            color: #5a5952;
-            background: #faf9f5;
-        }
-        #modalTambahShift .day-chip input:checked + span {
-            background: #FCEBD9;
-            border-color: #E8863A;
-            color: #8A6212;
-            font-weight: 600;
-        }
-        #modalTambahShift .field-error {
-            color: #c0392b;
-            font-size: 12px;
-            margin-top: 5px;
-        }
-        #modalTambahShift .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-            margin-top: 18px;
-            padding-top: 14px;
-            border-top: 1px solid #eee;
-        }
-        /* Indikator loading halus saat approval section di-refresh via AJAX */
-        #approvalSection.is-loading {
-            opacity: 0.5;
-            pointer-events: none;
-            transition: opacity 0.15s ease;
-        }
-    </style>
 @endpush
 
 @section('content')
@@ -128,11 +16,12 @@
     <div class="page-head"><div class="page-title">Jadwal Kerja</div></div>
 
     <div class="subpage active" id="jdw-tetap">
-      <div class="page-actions" style="margin-bottom:14px;">
+      <div class="shift-page-actions">
         <button type="button" class="btn btn-gold btn-sm" id="btnBukaTambahShift">+ Tambah Shift</button>
+        <button type="button" class="btn btn-line btn-sm" id="btnBukaEditShift"><i class="fa-solid fa-pen" style="margin-right:4px;"></i>Edit Shift</button>
       </div>
 
-      <div class="grid grid-2-even">
+      <div class="grid grid-2-even" style="margin-top:22px;margin-bottom:12px;">
         @forelse($shifts as $shift)
         <div class="card">
           <div class="card-title" style="margin-bottom:14px;">{{ $shift->nama }}</div>
@@ -176,29 +65,45 @@
             <option value="">Semua Status</option>
             <option value="tepat_waktu" @selected(($filters['status'] ?? null) === 'tepat_waktu')>Tepat Waktu</option>
             <option value="terlambat" @selected(($filters['status'] ?? null) === 'terlambat')>Terlambat</option>
+            <option value="tidak_checkout" @selected(($filters['status'] ?? null) === 'tidak_checkout')>Tidak Checkout</option>
+            <option value="cuti" @selected(($filters['status'] ?? null) === 'cuti')>Cuti</option>
+            <option value="alpa" @selected(($filters['status'] ?? null) === 'alpa')>Alpa</option>
             <option value="belum_absen" @selected(($filters['status'] ?? null) === 'belum_absen')>Belum Absen</option>
             <option value="luar_radius" @selected(($filters['status'] ?? null) === 'luar_radius')>Di Luar Radius</option>
           </select>
         </div>
       </form>
 
-      {{-- ================================================================
-           Section 'approval' didefinisikan dengan @section(...)@show:
-           - Saat page di-load normal, konten ini langsung tampil di sini.
-           - Saat controller memanggil $view->renderSections(), konten section
-             ini bisa diambil terpisah ($sections['approval']) TANPA file baru.
-           ================================================================ --}}
       <div id="approvalSection">
       @section('approval')
-        <div class="quota-chip">
-          Menampilkan <b>{{ $attendances->count() }}</b> dari <b>{{ $attendances->total() }}</b> data
+        <div class="pb-summary" style="margin-bottom:18px;">
+          @php
+            $statusAktif = $filters['status'] ?? null;
+            $chipStatuses = [
+                'tepat_waktu'    => ['label' => 'Tepat waktu', 'class' => 'ok'],
+                'terlambat'      => ['label' => 'Terlambat', 'class' => 'late'],
+                'tidak_checkout' => ['label' => 'Tidak checkout', 'class' => 'out'],
+                'cuti'           => ['label' => 'Cuti', 'class' => 'cuti'],
+                'alpa'           => ['label' => 'Alpa', 'class' => ''],
+                'luar_radius'    => ['label' => 'Di luar radius', 'class' => 'radius'],
+            ];
+          @endphp
+          @foreach ($chipStatuses as $statusValue => $chip)
+            <div
+              class="pb-summary-chip {{ $chip['class'] }} {{ $statusAktif === $statusValue ? 'active' : '' }}"
+              data-status="{{ $statusValue }}"
+              role="button"
+              tabindex="0"
+              style="cursor:pointer;"
+            >
+              <div class="pb-num">{{ $summary[$statusValue] }}</div>
+              <div class="pb-label">{{ $chip['label'] }}</div>
+            </div>
+          @endforeach
         </div>
 
-        <div class="pb-summary" style="margin-bottom:18px;">
-          <div class="pb-summary-chip ok"><div class="pb-num">{{ $summary['tepat_waktu'] }}</div><div class="pb-label">Tepat waktu</div></div>
-          <div class="pb-summary-chip late"><div class="pb-num">{{ $summary['terlambat'] }}</div><div class="pb-label">Terlambat</div></div>
-          <div class="pb-summary-chip out"><div class="pb-num">{{ $summary['luar_radius'] }}</div><div class="pb-label">Di luar radius</div></div>
-          <div class="pb-summary-chip"><div class="pb-num">{{ $summary['alpa'] }}</div><div class="pb-label">Alpa</div></div>
+        <div class="quota-chip">
+          Menampilkan <b>{{ $attendances->count() }}</b> dari <b>{{ $attendances->total() }}</b> data
         </div>
 
         <div class="card">
@@ -230,45 +135,20 @@
                   $distance = $attendance->distance_m;
                   $isOutOfRadius = $distance !== null && $distance > 100;
 
-                  $lateLabel = 'Terlambat';
+                  // Label "Terlambat X jam Y menit" sudah dihitung final di controller
+                  // (resolveStatus() / manual override) dan disimpan di $attendance->late_label,
+                  // sudah memperhitungkan tolerance_minutes shift. Tidak dihitung ulang di sini
+                  // supaya tidak ada dua sumber kebenaran yang bisa out-of-sync.
+                  $lateLabel = $attendance->late_label ?? 'Terlambat';
 
-                  $startTime = $isTetap
-                      ? $attendance->shift?->start_time
-                      : $attendance->partTimeSchedule?->start_time;
-
-                  if ($attendance->status === 'terlambat' && $attendance->check_in && $startTime) {
-                      $tanggal = $attendance->tanggal->format('Y-m-d');
-
-                      $scheduledTime = \Carbon\Carbon::parse(
-                          $tanggal . ' ' . $startTime
-                      );
-
-                      $checkInTime = \Carbon\Carbon::parse($attendance->check_in);
-
-                      $lateMinutes = $scheduledTime->diffInMinutes($checkInTime);
-
-                      $hours = intdiv($lateMinutes, 60);
-                      $minutes = $lateMinutes % 60;
-
-                      $lateParts = [];
-
-                      if ($hours > 0) {
-                          $lateParts[] = $hours . ' jam';
-                      }
-
-                      if ($minutes > 0) {
-                          $lateParts[] = $minutes . ' menit';
-                      }
-
-                      if (!empty($lateParts)) {
-                          $lateLabel .= ' ' . implode(' ', $lateParts);
-                      }
-                  }
-
+                  // Peta status -> label & warna badge. Mencakup ke-5 status yang mungkin ada
+                  // di kolom attendances.status: tepat_waktu, terlambat, tidak_checkout, cuti, alpa.
                   $statusMap = [
-                      'tepat_waktu' => ['label' => 'Tepat Waktu', 'class' => 'badge-green'],
-                      'terlambat' => ['label' => $lateLabel, 'class' => 'badge-rust'],
-                      'alpa' => ['label' => 'Alpa', 'class' => 'badge-rust'],
+                      'tepat_waktu'    => ['label' => 'Tepat Waktu', 'class' => 'badge-green'],
+                      'terlambat'      => ['label' => $lateLabel, 'class' => 'badge-rust'],
+                      'tidak_checkout' => ['label' => 'Tidak Checkout', 'class' => 'badge-orange'],
+                      'cuti'           => ['label' => 'Cuti', 'class' => 'badge-blue'],
+                      'alpa'           => ['label' => 'Alpa', 'class' => 'badge-gray-dark'],
                   ];
 
                   $statusInfo = $sudahAbsen
@@ -281,6 +161,12 @@
                   $initials = $employee->initials();
                   $avatarColors = ['#8B5CF6', '#2E6FDB', '#E8863A', '#D34D9C', '#2F8A5B', '#D34D3C'];
                   $avatarColor = $avatarColors[$employee->id % count($avatarColors)];
+
+                  // Baris "cuti" (placeholder LeaveRequest) DAN baris "alpa"/"belum absen"
+                  // (tidak ada record attendance sama sekali) sama-sama punya id null.
+                  // Butuh key unik sendiri (bukan $attendance->id) supaya tombol Detail &
+                  // <template> modal tetap bisa dipasangkan dengan benar.
+                  $modalKey = $attendance->id ?? 'row-'.$employee->id.'-'.$attendance->tanggal->format('Ymd');
                 @endphp
                 <tr>
                   <td class="row-name">
@@ -318,21 +204,15 @@
                   @endif
                   <td class="jadwal-action-cell">
                     <div class="jadwal-action-buttons">
-                    @if ($sudahAbsen)
-                      <button type="button" class="btn btn-gold btn-xs" onclick="openApprovalModal({{ $attendance->id }})">
-                        Detail
-                      </button>
-                    @else
-                      <button type="button" class="btn btn-gold btn-xs" disabled title="Karyawan belum absen">
-                        Detail
-                      </button>
-                    @endif
+                    <button type="button" class="btn btn-gold btn-xs" onclick="openApprovalModal('{{ $modalKey }}')">
+                      Detail
+                    </button>
                     </div>
                   </td>
                 </tr>
 
                 @if ($sudahAbsen)
-                <template id="modal-data-{{ $attendance->id }}">
+                <template id="modal-data-{{ $modalKey }}">
                   <button type="button" class="modal-close" onclick="closeApprovalModal()" aria-label="Tutup">
                       <i class="fa-solid fa-xmark"></i>
                   </button>
@@ -414,6 +294,27 @@
                         </div>
                         @endif
 
+                        {{-- Baris "cuti" bisa berupa placeholder dari LeaveRequest tanpa record
+                             Attendance asli (id null) — form override cuma valid untuk record
+                             Attendance sungguhan, jadi wajib dicek id-nya dulu. --}}
+                        @if ($attendance->id)
+                        <div class="modal-block override-status">
+                          <div class="modal-block-label">Ubah status secara manual</div>
+                          <form method="POST" action="{{ route('owner.attendance.status.update', $attendance->id) }}" class="modal-override-form" style="display:flex; gap:8px; align-items:stretch;">
+                            @csrf
+                            @method('PUT')
+                            <select name="status" class="field-input-inline" style="flex:1;">
+                              <option value="tepat_waktu" @selected($attendance->status === 'tepat_waktu')>Tepat Waktu</option>
+                              <option value="terlambat" @selected($attendance->status === 'terlambat')>Terlambat</option>
+                              <option value="tidak_checkout" @selected($attendance->status === 'tidak_checkout')>Tidak Checkout</option>
+                              <option value="cuti" @selected($attendance->status === 'cuti')>Cuti</option>
+                              <option value="alpa" @selected($attendance->status === 'alpa')>Alpa</option>
+                            </select>
+                            <button type="submit" class="btn btn-gold btn-xs" style="white-space:nowrap; flex-shrink:0;">Simpan Status</button>
+                          </form>
+                        </div>
+                        @endif
+
                         <div class="modal-actions">
                         @if ($attendance->check_in_lat && $attendance->check_in_lng)
                             <a href="https://www.google.com/maps?q={{ $attendance->check_in_lat }},{{ $attendance->check_in_lng }}" target="_blank" class="modal-action-btn line">
@@ -426,6 +327,61 @@
                         @endif
                         </div>
                     </div>
+                </template>
+                @else
+                {{-- Baris "alpa" / "belum melakukan absensi": tidak ada record Attendance
+                     sama sekali, jadi modalnya lebih ringkas (tanpa foto/lokasi) dan form
+                     override-nya mengirim employee_id + tanggal ke route khusus yang akan
+                     MEMBUAT record Attendance baru, bukan meng-update yang sudah ada. --}}
+                <template id="modal-data-{{ $modalKey }}">
+                  <button type="button" class="modal-close" onclick="closeApprovalModal()" aria-label="Tutup">
+                      <i class="fa-solid fa-xmark"></i>
+                  </button>
+
+                  <div class="modal-content" style="padding-top:8px;">
+                    <div class="modal-content-head">
+                      <div class="modal-employee-block">
+                        <div>
+                          <div class="modal-employee-name">{{ $employee->full_name }}</div>
+                          <div class="modal-employee-sub">{{ $employee->position ?? '-' }} &middot; {{ $isTetap ? 'Tetap' : 'Part Time' }}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="modal-info-list">
+                      <div class="modal-info-row">
+                        <span class="modal-info-label">Status</span>
+                        <span class="modal-info-value">
+                          <span class="badge badge-gray">{{ $attendance->status_label ?? 'Belum melakukan absensi' }}</span>
+                        </span>
+                      </div>
+                      <div class="modal-info-row">
+                        <span class="modal-info-label">Tanggal</span>
+                        <span class="modal-info-value">{{ $attendance->tanggal->translatedFormat('d F Y') }}</span>
+                      </div>
+                      <div class="modal-info-row">
+                        <span class="modal-info-label">Cabang</span>
+                        <span class="modal-info-value">{{ $employee->branch->name ?? '—' }}</span>
+                      </div>
+                    </div>
+
+                    <div class="modal-block override-status">
+                      <div class="modal-block-label">Ubah status secara manual</div>
+                      <form method="POST" action="{{ route('owner.attendance.status.override') }}" class="modal-override-form" style="display:flex; gap:8px; align-items:stretch;">
+                        @csrf
+                        <input type="hidden" name="employee_id" value="{{ $employee->id }}">
+                        <input type="hidden" name="tanggal" value="{{ $attendance->tanggal->format('Y-m-d') }}">
+                        <select name="status" class="field-input-inline" style="flex:1;">
+                          <option value="tepat_waktu" @selected($attendance->status === 'tepat_waktu')>Tepat Waktu</option>
+                          <option value="terlambat" @selected($attendance->status === 'terlambat')>Terlambat</option>
+                          <option value="tidak_checkout" @selected($attendance->status === 'tidak_checkout')>Tidak Checkout</option>
+                          <option value="cuti" @selected($attendance->status === 'cuti')>Cuti</option>
+                          <option value="alpa" @selected(($attendance->status ?? 'alpa') === 'alpa')>Alpa</option>
+                        </select>
+                        <button type="submit" class="btn btn-gold btn-xs" style="white-space:nowrap; flex-shrink:0;">Simpan Status</button>
+                      </form>
+                    </div>
+                  </div>
                 </template>
                 @endif
                 @empty
@@ -528,6 +484,74 @@
         </div>
     </div>
 
+    <!-- ============ MODAL: EDIT SHIFT ============ -->
+    <div class="modal-overlay @if($errors->any() && old('_form') === 'edit_shift') show @endif" id="modalEditShift">
+        <div class="modal-box">
+            <div class="modal-head">
+                <div class="card-title">Edit Shift</div>
+                <button type="button" class="modal-close" id="btnTutupEditShift" aria-label="Tutup">&times;</button>
+            </div>
+
+            <div class="form-field">
+                <label for="edit_shift_select">Pilih Shift</label>
+                <select id="edit_shift_select">
+                    <option value="">-- Pilih shift yang mau diedit --</option>
+                    @foreach ($allShifts as $shift)
+                        <option value="{{ $shift->id }}" @selected(old('shift_id') == $shift->id)>{{ $shift->nama }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <form method="POST" id="formEditShift" action="#">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="_form" value="edit_shift">
+                <input type="hidden" name="shift_id" id="edit_shift_id_hidden" value="{{ old('shift_id') }}">
+
+                <div class="form-field">
+                    <label for="edit_shift_name">Nama Shift</label>
+                    <input type="text" id="edit_shift_name" name="name" value="{{ old('name') }}" required>
+                    @error('name')<div class="field-error">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="form-field">
+                    <label>Hari Berlaku</label>
+                    <div class="day-checkboxes">
+                        @foreach(['senin' => 'Senin', 'selasa' => 'Selasa', 'rabu' => 'Rabu', 'kamis' => 'Kamis', 'jumat' => 'Jumat', 'sabtu' => 'Sabtu', 'minggu' => 'Minggu'] as $key => $label)
+                            <label class="day-chip">
+                                <input type="checkbox" name="applicable_days[]" value="{{ $key }}" class="edit-day-checkbox" {{ in_array($key, old('applicable_days', [])) ? 'checked' : '' }}>
+                                <span>{{ $label }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('applicable_days')<div class="field-error">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="edit_shift_start">Jam Mulai</label>
+                        <input type="time" id="edit_shift_start" name="start_time" value="{{ old('start_time') }}" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="edit_shift_end">Jam Selesai</label>
+                        <input type="time" id="edit_shift_end" name="end_time" value="{{ old('end_time') }}" required>
+                    </div>
+                </div>
+                @error('end_time')<div class="field-error">{{ $message }}</div>@enderror
+
+                <div class="form-field">
+                    <label for="edit_shift_toleransi">Toleransi Telat (menit)</label>
+                    <input type="number" id="edit_shift_toleransi" name="tolerance_minutes" value="{{ old('tolerance_minutes', 15) }}" min="0" max="120">
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-line btn-sm" id="btnBatalEditShift">Batal</button>
+                    <button type="submit" class="btn btn-gold btn-sm">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
 <script>
   // ===== Toast notifikasi =====
@@ -618,8 +642,33 @@
     if (link && link.closest('.pagination-bar')) {
       e.preventDefault();
       loadApproval(link.href);
+      return;
+    }
+
+    // Klik chip summary (Tepat waktu / Terlambat / dst) -> filter status, sama
+    // seperti pilih dari dropdown "Semua Status". Klik chip yang sedang aktif
+    // lagi -> filter dilepas (kembali ke "Semua Status").
+    const chip = e.target.closest('.pb-summary-chip[data-status]');
+    if (chip) {
+      applyStatusChipFilter(chip.dataset.status, chip.classList.contains('active'));
     }
   });
+
+  // Aksesibilitas: chip juga bisa diaktifkan lewat keyboard (Enter / Space).
+  approvalSection.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const chip = e.target.closest('.pb-summary-chip[data-status]');
+    if (!chip) return;
+    e.preventDefault();
+    applyStatusChipFilter(chip.dataset.status, chip.classList.contains('active'));
+  });
+
+  function applyStatusChipFilter(statusValue, isCurrentlyActive) {
+    const statusSelect = filterForm.querySelector('select[name="status"]');
+    if (!statusSelect) return;
+    statusSelect.value = isCurrentlyActive ? '' : statusValue;
+    filterForm.requestSubmit();
+  }
 
   // Tombol Back/Forward browser
   window.addEventListener('popstate', function () {
@@ -663,6 +712,76 @@
       },
     });
   }
+
+  // ===== Data shift untuk prefill form edit (semua shift, bukan cuma hari ini) =====
+  const shiftData = {
+    @foreach ($allShifts as $shift)
+      {{ $shift->id }}: {
+        name: @json($shift->nama),
+        applicable_days: @json($shift->applicable_days),
+        start_time: @json($shift->jam_mulai),
+        end_time: @json($shift->jam_selesai),
+        tolerance_minutes: {{ $shift->toleransi_menit }}
+      },
+    @endforeach
+  };
+
+  // ===== Modal Edit Shift =====
+  const modalEditShift = document.getElementById('modalEditShift');
+  const editShiftSelect = document.getElementById('edit_shift_select');
+  const formEditShift = document.getElementById('formEditShift');
+
+  document.getElementById('btnBukaEditShift').addEventListener('click', () => {
+    modalEditShift.classList.add('show');
+
+    if (!editShiftSelect.value && editShiftSelect.options.length > 1) {
+      editShiftSelect.selectedIndex = 1; // index 0 = placeholder "-- Pilih shift --"
+      const id = editShiftSelect.value;
+      if (shiftData[id]) {
+        isiFormEditShift(id, shiftData[id]);
+      }
+    }
+  });
+  
+  document.getElementById('btnTutupEditShift').addEventListener('click', () => {
+    modalEditShift.classList.remove('show');
+  });
+  document.getElementById('btnBatalEditShift').addEventListener('click', () => {
+    modalEditShift.classList.remove('show');
+  });
+  modalEditShift.addEventListener('click', (e) => {
+    if (e.target === modalEditShift) modalEditShift.classList.remove('show');
+  });
+
+  function isiFormEditShift(id, data) {
+    formEditShift.action = `/owner/shift/${id}`;
+    formEditShift.style.display = 'block';
+
+    document.getElementById('edit_shift_id_hidden').value = id;
+    document.getElementById('edit_shift_name').value = data.name;
+    document.getElementById('edit_shift_start').value = data.start_time;
+    document.getElementById('edit_shift_end').value = data.end_time;
+    document.getElementById('edit_shift_toleransi').value = data.tolerance_minutes;
+
+    document.querySelectorAll('.edit-day-checkbox').forEach((cb) => {
+      cb.checked = data.applicable_days.includes(cb.value);
+    });
+  }
+
+  editShiftSelect.addEventListener('change', () => {
+    const id = editShiftSelect.value;
+    if (!id || !shiftData[id]) {
+      formEditShift.style.display = 'none';
+      return;
+    }
+    isiFormEditShift(id, shiftData[id]);
+  });
+
+  @if($errors->any() && old('_form') === 'edit_shift')
+    modalEditShift.classList.add('show');
+    formEditShift.style.display = 'block';
+    formEditShift.action = '/owner/shift/{{ old('shift_id') }}';
+  @endif
 
   @if(session('success'))
     showToast('{{ session('success') }}');

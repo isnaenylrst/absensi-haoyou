@@ -1480,3 +1480,260 @@ body.dark-mode .toast-dot {
 body.dark-mode ::-webkit-scrollbar-thumb {
     background: #3a3d44;
 }
+
+/* ================================================================
+   MODAL: TAMBAH & EDIT SHIFT
+   ================================================================ */
+#modalTambahShift.modal-overlay,
+#modalEditShift.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 18, 10, 0.45);
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+#modalTambahShift.modal-overlay.show,
+#modalEditShift.modal-overlay.show { display: flex; }
+
+#modalTambahShift .modal-box,
+#modalEditShift .modal-box {
+    display: block;
+    background: #fff;
+    border-radius: 14px;
+    width: 420px;
+    max-width: 92vw;
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: 22px 24px 20px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+}
+
+#modalTambahShift .modal-head,
+#modalEditShift .modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+#modalTambahShift .modal-head .card-title,
+#modalEditShift .modal-head .card-title { margin: 0; }
+
+#modalTambahShift .modal-close,
+#modalEditShift .modal-close {
+    border: none;
+    background: transparent;
+    font-size: 20px;
+    line-height: 1;
+    color: #8a8a86;
+    cursor: pointer;
+    padding: 2px 4px;
+}
+#modalTambahShift .modal-close:hover,
+#modalEditShift .modal-close:hover { color: #333; }
+
+#modalTambahShift .form-field,
+#modalEditShift .form-field { margin-bottom: 14px; }
+
+#modalTambahShift .form-field label,
+#modalEditShift .form-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4b4a45;
+    margin-bottom: 6px;
+}
+
+#modalTambahShift .form-field input[type="text"],
+#modalTambahShift .form-field input[type="time"],
+#modalTambahShift .form-field input[type="number"],
+#modalEditShift .form-field input[type="text"],
+#modalEditShift .form-field input[type="time"],
+#modalEditShift .form-field input[type="number"] {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1px solid #ddd8cc;
+    border-radius: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+#modalTambahShift .form-field input:focus,
+#modalEditShift .form-field input:focus {
+    outline: none;
+    border-color: #E8863A;
+    box-shadow: 0 0 0 3px rgba(232,134,58,0.15);
+}
+
+#modalEditShift .form-field select {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1px solid #ddd8cc;
+    border-radius: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
+    background: #fff;
+    color: #3a3934;
+}
+#modalEditShift .form-field select:focus {
+    outline: none;
+    border-color: #E8863A;
+    box-shadow: 0 0 0 3px rgba(232,134,58,0.15);
+}
+
+#modalTambahShift .form-row,
+#modalEditShift .form-row { display: flex; gap: 12px; }
+#modalTambahShift .form-row .form-field,
+#modalEditShift .form-row .form-field { flex: 1; }
+
+#modalTambahShift .day-checkboxes,
+#modalEditShift .day-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+#modalTambahShift .day-chip,
+#modalEditShift .day-chip { position: relative; }
+#modalTambahShift .day-chip input,
+#modalEditShift .day-chip input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+}
+#modalTambahShift .day-chip span,
+#modalEditShift .day-chip span {
+    display: inline-block;
+    padding: 6px 12px;
+    border: 1px solid #ddd8cc;
+    border-radius: 999px;
+    font-size: 13px;
+    color: #5a5952;
+    background: #faf9f5;
+}
+#modalTambahShift .day-chip input:checked + span,
+#modalEditShift .day-chip input:checked + span {
+    background: #FCEBD9;
+    border-color: #E8863A;
+    color: #8A6212;
+    font-weight: 600;
+}
+
+#modalTambahShift .field-error,
+#modalEditShift .field-error {
+    color: #c0392b;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+#modalTambahShift .modal-actions,
+#modalEditShift .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid #eee;
+}
+
+/* Indikator loading halus saat approval section di-refresh via AJAX */
+#approvalSection.is-loading {
+    opacity: 0.5;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+/* ================================================================
+   PAGE ACTIONS: TAMBAH SHIFT & EDIT SHIFT
+   ================================================================ */
+.shift-page-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+.shift-page-actions .btn {
+    box-sizing: border-box;
+    height: 38px;
+    padding: 0 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    font-size: 13px;
+}
+.shift-page-actions .btn i {
+    font-size: 13px;
+    line-height: 1;
+}
+
+/* ================================================================
+   CARD SHIFT
+   ================================================================ */
+.shift-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+}
+@media (max-width: 720px) {
+    .shift-cards-grid { grid-template-columns: 1fr; }
+}
+.shift-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+    transition: box-shadow .15s ease, border-color .15s ease;
+}
+.shift-card:hover {
+    border-color: var(--gold);
+}
+.shift-card-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+.shift-card-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--gold-pale);
+    color: var(--gold-deep);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+}
+.shift-card-title-wrap { flex: 1; min-width: 0; }
+.shift-card-title {
+    font-family: "Poppins", sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+}
+.shift-card-days {
+    font-size: 12.5px;
+    color: var(--text-faint);
+    margin-top: 2px;
+}
+.shift-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line);
+}
+.shift-card-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+}
+.shift-card-stat-label { color: var(--text-dim); }
+.shift-card-stat-value { color: var(--text); font-weight: 700; }
