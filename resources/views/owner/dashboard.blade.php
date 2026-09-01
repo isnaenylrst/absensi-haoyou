@@ -119,7 +119,7 @@
                 {{ __('nav.karyawan') }}
             </a>
 
-            <div class="nav-group {{ request()->routeIs(['approval', 'jadwal-kerja', 'izin', 'kunjungan-klien']) ? 'open' : '' }}" id="navKehadiran">
+            <div class="nav-group {{ request()->routeIs(['approval', 'jadwal-kerja', 'presensi', 'kunjungan-klien', 'kunjungan-klien-saya', 'leave-requests.*']) ? 'open' : '' }}" id="navKehadiran">
                 <div class="nav-item" onclick="toggleGroup()">
                     <i class="fa-solid fa-clock nav-ico"></i>
                     Kehadiran
@@ -127,20 +127,41 @@
                 </div>
 
                 <div class="nav-sub">
-                    <a href="{{ route('jadwal-kerja') }}" class="nav-sub-item {{ request()->routeIs('jadwal-kerja') ? 'active' : '' }}">
-                        <span class="nav-sub-ico"><i class="fa-solid fa-calendar-days"></i></span>
-                        <span class="nav-sub-label">Jadwal Kerja</span>
-                    </a>
+                    @if(auth()->user()->role === 'owner')
+                        {{-- ===== VERSI OWNER: kelola/approve semua karyawan ===== --}}
+                        <a href="{{ route('jadwal-kerja') }}" class="nav-sub-item {{ request()->routeIs('jadwal-kerja') ? 'active' : '' }}">
+                            <span class="nav-sub-ico"><i class="fa-solid fa-calendar-days"></i></span>
+                            <span class="nav-sub-label">Jadwal Kerja</span>
+                        </a>
 
-                    <a href="{{ route('leave-requests.index') }}" class="nav-sub-item {{ request()->routeIs('leave-requests.*') ? 'active' : '' }}">
-                        <span class="nav-sub-ico"><i class="fa-solid fa-plane-departure"></i></span>
-                        <span class="nav-sub-label">Izin &amp; Cuti</span>
-                    </a>
+                        <a href="{{ route('leave-requests.index') }}" class="nav-sub-item {{ request()->routeIs('leave-requests.*') ? 'active' : '' }}">
+                            <span class="nav-sub-ico"><i class="fa-solid fa-plane-departure"></i></span>
+                            <span class="nav-sub-label">Izin &amp; Cuti</span>
+                        </a>
 
-                    <a href="{{ route('kunjungan-klien') }}" class="nav-sub-item {{ request()->routeIs('kunjungan-klien') ? 'active' : '' }}">
-                        <span class="nav-sub-ico"><i class="fa-solid fa-map-location-dot"></i></span>
-                        <span class="nav-sub-label">Kunjungan Klien</span>
-                    </a>
+                        <a href="{{ route('kunjungan-klien') }}" class="nav-sub-item {{ request()->routeIs('kunjungan-klien') ? 'active' : '' }}">
+                            <span class="nav-sub-ico"><i class="fa-solid fa-map-location-dot"></i></span>
+                            <span class="nav-sub-label">Kunjungan Klien</span>
+                        </a>
+                    @else
+                        {{-- ===== VERSI ADMIN: sama seperti karyawan lain, untuk diri sendiri ===== --}}
+                        @can('access-presensi')
+                            <a href="{{ route('presensi') }}" class="nav-sub-item {{ request()->routeIs('presensi') ? 'active' : '' }}">
+                                <span class="nav-sub-ico"><i class="fa-solid fa-clipboard-check"></i></span>
+                                <span class="nav-sub-label">Presensi</span>
+                            </a>
+                        @endcan
+
+                        <a href="{{ route('leave-requests.index') }}" class="nav-sub-item {{ request()->routeIs('leave-requests.*') ? 'active' : '' }}">
+                            <span class="nav-sub-ico"><i class="fa-solid fa-plane-departure"></i></span>
+                            <span class="nav-sub-label">Izin &amp; Cuti</span>
+                        </a>
+
+                        <a href="{{ route('kunjungan-klien-saya') }}" class="nav-sub-item {{ request()->routeIs('kunjungan-klien-saya') ? 'active' : '' }}">
+                            <span class="nav-sub-ico"><i class="fa-solid fa-map-location-dot"></i></span>
+                            <span class="nav-sub-label">Kunjungan Klien</span>
+                        </a>
+                    @endif
                 </div>
             </div>
 
