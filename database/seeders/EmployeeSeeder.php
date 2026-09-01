@@ -16,11 +16,6 @@ class EmployeeSeeder extends Seeder
     {
         $branch = Branch::where('name', 'Haoyou Educator')->firstOrFail();
 
-        // ============================================================
-        // TODO: ganti seluruh data di bawah dengan data karyawan asli.
-        // Contoh 2 baris ini hanya acuan format (1 tetap, 1 part time).
-        // employee_code harus unik per karyawan.
-        // ============================================================
         $employees = [
             [
                 'employee_code' => 'EMP0001',
