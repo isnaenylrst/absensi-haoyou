@@ -95,19 +95,10 @@ Route::middleware('auth')->group(function () {
         ->name('payslips.download-pdf');
 
     // ==================================================
-    // OWNER ONLY
+    // KARYAWAN — OWNER & ADMIN
     // ==================================================
-    Route::middleware('role:owner')->group(function () {
+    Route::middleware('role:owner,admin')->group(function () {
 
-        // ----------------------------------------------
-        // Profil Owner
-        // ----------------------------------------------
-        Route::put('/profil', [ProfileController::class, 'update'])
-            ->name('profil.update');
-
-        // ----------------------------------------------
-        // Karyawan
-        // ----------------------------------------------
         Route::get('karyawan-export', [EmployeeController::class, 'exportCsv'])
             ->name('karyawan.export');
 
@@ -127,6 +118,18 @@ Route::middleware('auth')->group(function () {
 
         Route::post('karyawan/{karyawan}/toggle-status', [EmployeeController::class, 'toggleStatus'])
             ->name('karyawan.toggle-status');
+    });
+
+    // ==================================================
+    // OWNER ONLY
+    // ==================================================
+    Route::middleware('role:owner')->group(function () {
+
+        // ----------------------------------------------
+        // Profil Owner
+        // ----------------------------------------------
+        Route::put('/profil', [ProfileController::class, 'update'])
+            ->name('profil.update');
 
         // ----------------------------------------------
         // Jadwal Kerja

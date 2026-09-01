@@ -241,6 +241,20 @@
                 <span>Beranda</span>
             </a>
 
+            {{-- =================================================
+                KARYAWAN — KHUSUS ADMIN
+            ================================================== --}}
+
+            @if(auth()->user()->isAdmin())
+                <a
+                    href="{{ route('karyawan.index') }}"
+                    class="nav-item {{ request()->routeIs('karyawan.*') ? 'active' : '' }}"
+                >
+                    <i class="fa-solid fa-users nav-ico"></i>
+                    <span>Karyawan</span>
+                </a>
+            @endif
+
 
             {{-- =================================================
                 KEHADIRAN

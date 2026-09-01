@@ -45,9 +45,9 @@
         .tb-avatar-menu-item:hover { background: #F7F8FA; }
         .tb-avatar-menu-danger { color: #D34D3C; }
 
-        /* ===== Ikon Mode Gelap/Terang — tanpa background, cuma beda warna dari ikon lain ===== */
-        #themeIconSun { color: #FFD24C; }  /* kuning emas, beda dari putih polos gear/lonceng */
-        #themeIconMoon { color: #C9B8FF; } /* ungu muda */
+        /* ===== Ikon Mode Gelap/Terang ===== */
+        #themeIconSun { color: #FFD24C; }
+        #themeIconMoon { color: #C9B8FF; }
 
         /* ===== Mode Gelap ===== */
         :root {
@@ -85,7 +85,7 @@
     @stack('styles')
 </head>
 
-<body data-role="owner">
+<body data-role="{{ auth()->user()->role }}">
 
 <script>
     (function () {
@@ -99,7 +99,7 @@
 <div class="app" id="absensiApp">
 
     {{-- =====================================================
-        SIDEBAR (OWNER)
+        SIDEBAR (OWNER & ADMIN)
     ====================================================== --}}
     <aside class="sidebar">
 
@@ -110,11 +110,9 @@
         <nav class="navlist">
 
             <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-
-           <i class="fa-solid fa-house nav-ico"></i>
+                <i class="fa-solid fa-house nav-ico"></i>
                 {{ __('nav.beranda') }}
             </a>
-
 
             <a href="{{ route('karyawan.index') }}" class="nav-item {{ request()->routeIs('karyawan.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-users nav-ico"></i>
@@ -129,18 +127,12 @@
                 </div>
 
                 <div class="nav-sub">
-                    {{-- <a href="{{ route('approval') }}" class="nav-sub-item {{ request()->routeIs('approval') ? 'active' : '' }}">
-                        <span class="nav-sub-ico"><i class="fa-solid fa-clipboard-check"></i></span>
-                        <span class="nav-sub-label">Approval Presensi</span>
-                        <span class="nav-sub-badge">2</span>
-                    </a> --}}
-
                     <a href="{{ route('jadwal-kerja') }}" class="nav-sub-item {{ request()->routeIs('jadwal-kerja') ? 'active' : '' }}">
                         <span class="nav-sub-ico"><i class="fa-solid fa-calendar-days"></i></span>
                         <span class="nav-sub-label">Jadwal Kerja</span>
                     </a>
-                    
-<a href="{{ route('leave-requests.index') }}" class="nav-sub-item {{ request()->routeIs('leave-requests.*') ? 'active' : '' }}">
+
+                    <a href="{{ route('leave-requests.index') }}" class="nav-sub-item {{ request()->routeIs('leave-requests.*') ? 'active' : '' }}">
                         <span class="nav-sub-ico"><i class="fa-solid fa-plane-departure"></i></span>
                         <span class="nav-sub-label">Izin &amp; Cuti</span>
                     </a>
@@ -152,17 +144,35 @@
                 </div>
             </div>
 
-<a href="{{ route('payroll.index') }}" class="nav-item {{ request()->routeIs('payroll.*') ? 'active' : '' }}">
-                <i class="fa-solid fa-sack-dollar nav-ico"></i>
-                Payroll
-            </a>
-            
-            </a>
+            {{-- =================================================
+                GAJI SAYA — KHUSUS ADMIN (bukan owner)
+            ================================================== --}}
+            @if(auth()->user()->role !== 'owner')
+                <a href="{{ route('payslips.index') }}" class="nav-item {{ request()->routeIs('payslips.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-sack-dollar nav-ico"></i>
+                    Gaji Saya
+                </a>
+            @endif
 
-            <a href="{{ route('pengaturan.edit') }}" class="nav-item {{ request()->routeIs('pengaturan.*') ? 'active' : '' }}">
-                <i class="fa-solid fa-gear nav-ico"></i>
-                {{ __('nav.pengaturan') }}
-            </a>
+            {{-- =================================================
+                PAYROLL — KHUSUS OWNER
+            ================================================== --}}
+            @if(auth()->user()->role === 'owner')
+                <a href="{{ route('payroll.index') }}" class="nav-item {{ request()->routeIs('payroll.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-sack-dollar nav-ico"></i>
+                    Payroll
+                </a>
+            @endif
+
+            {{-- =================================================
+                PENGATURAN — KHUSUS OWNER
+            ================================================== --}}
+            @if(auth()->user()->role === 'owner')
+                <a href="{{ route('pengaturan.edit') }}" class="nav-item {{ request()->routeIs('pengaturan.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-gear nav-ico"></i>
+                    {{ __('nav.pengaturan') }}
+                </a>
+            @endif
 
         </nav>
 
@@ -206,16 +216,18 @@
                     </div>
                 </div>
 
-                {{-- ===== Mode Gelap/Terang — polos tanpa background, dibedakan lewat warna ikon ===== --}}
+                {{-- ===== Mode Gelap/Terang ===== --}}
                 <button type="button" class="tb-icon" id="themeToggle" title="Mode Gelap/Terang" style="border:none; cursor:pointer;">
                     <i class="fa-solid fa-sun" id="themeIconSun"></i>
                     <i class="fa-solid fa-moon" id="themeIconMoon" style="display:none;"></i>
                 </button>
 
-                {{-- ===== Pengaturan (langsung ke halaman) ===== --}}
-                <a href="{{ route('pengaturan.edit') }}" class="tb-icon" title="{{ __('nav.pengaturan') }}">
-                    <i class="fa-solid fa-gear"></i>
-                </a>
+                {{-- ===== Pengaturan (shortcut ikon) — KHUSUS OWNER ===== --}}
+                @if(auth()->user()->role === 'owner')
+                    <a href="{{ route('pengaturan.edit') }}" class="tb-icon" title="{{ __('nav.pengaturan') }}">
+                        <i class="fa-solid fa-gear"></i>
+                    </a>
+                @endif
 
                 {{-- ===== Avatar (Profil & Keluar) ===== --}}
                 <div class="tb-avatar-wrap">

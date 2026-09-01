@@ -150,6 +150,19 @@
     </div>
 </div>
 
+@if(auth()->user()->role === 'owner')
+<div class="form-section-title">Akses Sistem</div>
+
+<div class="field">
+    <label>Peran Akun</label>
+    <select name="role_akun">
+        <option value="karyawan" @selected(old('role_akun', $employee->user->role ?? 'karyawan') === 'karyawan')>Karyawan (akses standar)</option>
+        <option value="admin" @selected(old('role_akun', $employee->user->role ?? 'karyawan') === 'admin')>Admin (bisa kelola data Karyawan)</option>
+    </select>
+    <p class="hint" style="margin-bottom:0;">Admin bisa Tambah/Edit/Hapus data Karyawan seperti Owner, tapi tidak bisa akses Pengaturan, Payroll, atau Jadwal Kerja.</p>
+</div>
+@endif
+
 @if(! isset($employee))
     <p class="hint">Akun login (username + password sementara) akan dibuat otomatis setelah karyawan disimpan.</p>
 @endif

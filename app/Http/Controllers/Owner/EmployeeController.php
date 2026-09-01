@@ -7,6 +7,7 @@ use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -38,8 +39,9 @@ class EmployeeController extends Controller
     public function store(Request $request)
     {
         $data = $this->validated($request);
+        $roleAkun = $this->resolveRoleAkun($request);
 
-        $result = DB::transaction(function () use ($data) {
+        $result = DB::transaction(function () use ($data, $roleAkun) {
             $employee = Employee::create([
                 ...$data,
                 'employee_code' => $this->nextEmployeeCode(),
@@ -52,7 +54,7 @@ class EmployeeController extends Controller
                 'employee_id' => $employee->id,
                 'username' => $username,
                 'password_hash' => Hash::make($plainPassword),
-                'role' => 'karyawan',
+                'role' => $roleAkun,
                 'status_akun' => 'aktif',
             ]);
 
@@ -74,6 +76,13 @@ class EmployeeController extends Controller
     {
         $data = $this->validated($request, $karyawan->id);
         $karyawan->update($data);
+
+        $currentUser = $this->authUser();
+
+        if ($currentUser && $currentUser->role === 'owner' && $karyawan->user && $karyawan->user->role !== 'owner') {
+            $roleAkun = $this->resolveRoleAkun($request);
+            $karyawan->user->update(['role' => $roleAkun]);
+        }
 
         return redirect()->route('karyawan.index')->with('status', 'Data karyawan diperbarui.');
     }
@@ -333,5 +342,25 @@ class EmployeeController extends Controller
             $username = $base . $i++;
         }
         return $username;
+    }
+
+    private function resolveRoleAkun(Request $request): string
+    {
+        $currentUser = $this->authUser();
+
+        if (! $currentUser || $currentUser->role !== 'owner') {
+            return 'karyawan';
+        }
+
+        $role = $request->input('role_akun', 'karyawan');
+
+        return in_array($role, ['karyawan', 'admin'], true) ? $role : 'karyawan';
+    }
+
+    private function authUser(): ?User
+    {
+        $user = Auth::user();
+
+        return $user instanceof User ? $user : null;
     }
 }
