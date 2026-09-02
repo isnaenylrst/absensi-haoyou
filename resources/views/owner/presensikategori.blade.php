@@ -325,28 +325,54 @@
       </div>
 
       @if ($attendances->hasPages())
-        <div class="pagination-bar" style="display:flex; justify-content:center; align-items:center; gap:10px; margin-top:16px;">
-          @if ($attendances->onFirstPage())
-            <span class="pg-arrow pg-arrow-disabled" aria-label="Sebelumnya">
-              <i class="fa-solid fa-chevron-left"></i>
-            </span>
-          @else
-            <a href="{{ $attendances->previousPageUrl() }}" class="pg-arrow" aria-label="Sebelumnya">
-              <i class="fa-solid fa-chevron-left"></i>
-            </a>
-          @endif
+        @php
+          $current = $attendances->currentPage();
+          $last = $attendances->lastPage();
+          $window = 1; // jumlah halaman di kiri & kanan halaman aktif yang ditampilkan penuh
 
-          <span class="pg-current">{{ $attendances->currentPage() }}</span>
+          $pages = collect([1]);
+          for ($p = $current - $window; $p <= $current + $window; $p++) {
+              if ($p > 1 && $p < $last) {
+                  $pages->push($p);
+              }
+          }
+          if ($last > 1) {
+              $pages->push($last);
+          }
+          $pages = $pages->unique()->sort()->values();
+        @endphp
 
-          @if ($attendances->hasMorePages())
-            <a href="{{ $attendances->nextPageUrl() }}" class="pg-arrow" aria-label="Selanjutnya">
-              <i class="fa-solid fa-chevron-right"></i>
-            </a>
-          @else
-            <span class="pg-arrow pg-arrow-disabled" aria-label="Selanjutnya">
-              <i class="fa-solid fa-chevron-right"></i>
-            </span>
-          @endif
+        <div class="pg-bar">
+          <div class="pg-info">
+            Menampilkan <b>{{ $attendances->firstItem() }}</b> &ndash; <b>{{ $attendances->lastItem() }}</b>
+            dari <b>{{ $attendances->total() }}</b> data
+          </div>
+
+          <div class="pg-nav">
+            @if ($attendances->onFirstPage())
+              <span class="pg-btn disabled" aria-label="Sebelumnya"><i class="fa-solid fa-chevron-left"></i></span>
+            @else
+              <a href="{{ $attendances->previousPageUrl() }}" class="pg-btn" aria-label="Sebelumnya"><i class="fa-solid fa-chevron-left"></i></a>
+            @endif
+
+            @foreach ($pages as $i => $page)
+              @if ($i > 0 && $page - $pages[$i - 1] > 1)
+                <span class="pg-ellipsis">&hellip;</span>
+              @endif
+
+              @if ($page == $current)
+                <span class="pg-btn active">{{ $page }}</span>
+              @else
+                <a href="{{ $attendances->url($page) }}" class="pg-btn">{{ $page }}</a>
+              @endif
+            @endforeach
+
+            @if ($attendances->hasMorePages())
+              <a href="{{ $attendances->nextPageUrl() }}" class="pg-btn" aria-label="Selanjutnya"><i class="fa-solid fa-chevron-right"></i></a>
+            @else
+              <span class="pg-btn disabled" aria-label="Selanjutnya"><i class="fa-solid fa-chevron-right"></i></span>
+            @endif
+          </div>
         </div>
       @endif
     </div>

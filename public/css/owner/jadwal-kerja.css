@@ -1,14 +1,4 @@
 /* ========================================================
-   jadwal-kerja.css
-   Page-specific styles for Jadwal Kerja (owner).
-   Base look (colors, .btn, .card, .table, .toolbar, .field,
-   .pilltabs, .kv, .toast, dark-mode vars, etc.) all come from
-   the global dashboard.css — do not redefine them here, it
-   only causes drift and, in the case of overflow-x on
-   html/body, silently breaks position:sticky on .topbar.
-   ======================================================== */
-
-/* ========================================================
    1. BUTTONS — additions not in global
    ======================================================== */
 
@@ -27,7 +17,7 @@
 }
 
 /* ========================================================
-   2. TABLE — jadwal-kerja specific table variant
+   2. TABLE — jadwal/presensi specific table variant
    ======================================================== */
 
 .jadwal-approval-table {
@@ -44,9 +34,32 @@
     white-space: nowrap !important;
     vertical-align: middle;
 }
+.jadwal-action-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
 
 /* ========================================================
-   3. TOOLBAR — inline select input not in global
+   3. BADGE & TEXT UTILITIES — not covered by global
+   ======================================================== */
+
+.badge-orange {
+    background: var(--orange-soft, #fce9da);
+    color: var(--orange, #e8863a);
+}
+.badge-gray-dark {
+    background: #e7e7e5;
+    color: #4b4a45;
+}
+.text-rust {
+    color: var(--rust);
+    font-weight: 700;
+}
+
+/* ========================================================
+   4. TOOLBAR — inline select input not in global
    ======================================================== */
 
 .field-input-inline {
@@ -65,7 +78,7 @@
 }
 
 /* ========================================================
-   4. RINGKASAN PRESENSI (summary chips)
+   5. RINGKASAN PRESENSI (summary chips)
    ======================================================== */
 
 .pb-summary {
@@ -103,7 +116,7 @@
 }
 
 /* ========================================================
-   5. EMPTY STATE
+   6. EMPTY STATE
    ======================================================== */
 
 .empty-state {
@@ -115,7 +128,7 @@
 }
 
 /* ========================================================
-   6. MODAL — DETAIL RIWAYAT PRESENSI
+   7. MODAL — DETAIL RIWAYAT / DETAIL PRESENSI
    ======================================================== */
 
 .modal-overlay {
@@ -152,6 +165,60 @@
 .modal-overlay.show .modal-box {
     transform: translateY(0);
 }
+.modal-photo-panel {
+    display: flex;
+    flex-direction: column;
+    width: 260px;
+    flex-shrink: 0;
+    align-self: stretch;
+    background: var(--line-soft);
+}
+.modal-photo-cell {
+    position: relative;
+    flex: 1;
+    min-height: 160px;
+    overflow: hidden;
+}
+.modal-photo-cell + .modal-photo-cell {
+    border-top: 1px solid var(--paper);
+}
+.modal-photo-cell img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.modal-photo-empty {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-faint);
+}
+.modal-photo-empty-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    text-align: center;
+}
+.modal-photo-tag {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    z-index: 2;
+    transform: translateX(-50%);
+    padding: 4px 9px;
+    background: rgba(255, 255, 255, 0.94);
+    border-radius: 6px;
+    color: var(--text-dim);
+    font-size: 10px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
 .modal-content {
     display: flex;
     flex: 1;
@@ -167,6 +234,12 @@
     gap: 16px;
     padding-right: 40px;
     padding-bottom: 10px;
+}
+.modal-employee-block {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    gap: 12px;
 }
 .modal-employee-name {
     color: var(--text);
@@ -211,9 +284,93 @@
     transform: rotate(90deg);
     box-shadow: 0 4px 12px rgba(220, 38, 38, 0.12);
 }
+.modal-info-list {
+    padding: 16px 0;
+}
+.modal-info-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 0;
+    border-top: 1px solid #f8f8f6;
+    font-size: 13px;
+}
+.modal-info-row:first-child {
+    border-top: none;
+}
+.modal-info-label {
+    flex-shrink: 0;
+    color: var(--text-faint);
+}
+.modal-info-value {
+    color: var(--text);
+    font-weight: 500;
+    text-align: right;
+    word-break: break-word;
+}
+.modal-info-value.mono {
+    font-variant-numeric: tabular-nums;
+}
+.modal-block.notes,
+.modal-block.override-status {
+    margin-bottom: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line-soft);
+}
+.modal-block-label {
+    margin-bottom: 4px;
+    color: var(--text-faint);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+.modal-block.notes p {
+    margin: 0;
+    color: var(--text);
+    font-size: 12.5px;
+    line-height: 1.5;
+    word-break: break-word;
+}
+.modal-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 16px;
+    position: sticky;
+    bottom: -22px;
+    background: var(--paper);
+}
+.modal-action-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 12px;
+    border-radius: 9px;
+    font-family: "Poppins", sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+.modal-action-btn.line {
+    background: #fff;
+    border: 1px solid var(--line);
+    color: var(--text);
+}
+.modal-action-btn.line:hover {
+    background: var(--line-soft);
+}
+.modal-action-btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 
 /* ========================================================
-   7. SHIFT PAGE ACTIONS (Tambah / Edit Shift buttons row)
+   8. SHIFT PAGE ACTIONS (Tambah / Edit Shift buttons row)
    ======================================================== */
 
 .shift-page-actions {
@@ -239,7 +396,68 @@
 }
 
 /* ========================================================
-   8. RESPONSIVE
+   9. PAGINATION BAR
+   ======================================================== */
+
+.pg-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 16px 20px;
+    background: var(--paper);
+    border-top: 1px solid var(--line);
+}
+.pg-info {
+    font-size: 13px;
+    color: var(--text-dim);
+}
+.pg-info b {
+    color: var(--text);
+    font-weight: 700;
+}
+.pg-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.pg-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-decoration: none;
+    cursor: pointer;
+    transition: 0.15s;
+}
+.pg-btn:hover {
+    background: var(--line-soft);
+    color: var(--text);
+}
+.pg-btn.active {
+    background: var(--blue);
+    color: #fff;
+}
+.pg-btn.disabled {
+    opacity: 0.35;
+    pointer-events: none;
+}
+.pg-ellipsis {
+    color: var(--text-faint);
+    font-size: 13px;
+    padding: 0 4px;
+}
+
+/* ========================================================
+   10. RESPONSIVE
    ======================================================== */
 
 @media (max-width: 900px) {
@@ -249,6 +467,10 @@
     .modal-box {
         flex-direction: column;
         max-height: 92vh;
+    }
+    .modal-photo-panel {
+        width: 100%;
+        height: 220px;
     }
 }
 
@@ -285,6 +507,23 @@
     .modal-content {
         padding: 16px;
     }
+    .modal-photo-panel {
+        height: 180px;
+    }
+    .modal-actions {
+        flex-direction: column;
+    }
+    .modal-action-btn {
+        width: 100%;
+    }
+    .pg-bar {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+    .pg-nav {
+        justify-content: center;
+    }
 }
 
 @media (max-width: 380px) {
@@ -303,7 +542,7 @@
 }
 
 /* ========================================================
-   9. DARK MODE — only for selectors that still exist above
+   11. DARK MODE — only for selectors that still exist above
    (theme vars/toggle live in global dashboard.css)
    ======================================================== */
 
@@ -316,6 +555,16 @@ body.dark-mode .field-input-inline {
 body.dark-mode table tr:hover td {
     background: var(--line-soft);
 }
+body.dark-mode .modal-photo-panel {
+    background: var(--line-soft);
+}
+body.dark-mode .modal-photo-cell + .modal-photo-cell {
+    border-top-color: var(--paper);
+}
+body.dark-mode .modal-photo-tag {
+    background: rgba(30, 33, 38, 0.9);
+    color: var(--text);
+}
 body.dark-mode .modal-close {
     background: var(--line-soft);
     border-color: var(--line);
@@ -326,9 +575,27 @@ body.dark-mode .modal-close:hover {
     border-color: rgba(211, 77, 60, 0.4);
     color: #f2867a;
 }
+body.dark-mode .modal-info-row {
+    border-top-color: var(--line-soft);
+}
+body.dark-mode .modal-action-btn.line {
+    background: var(--line-soft);
+    border-color: var(--line);
+    color: var(--text);
+}
+body.dark-mode .modal-action-btn.line:hover {
+    background: var(--line);
+}
+body.dark-mode .pg-bar {
+    background: var(--paper);
+    border-color: var(--line);
+}
+body.dark-mode .pg-btn:hover {
+    background: var(--line-soft);
+}
 
 /* ================================================================
-   10. MODAL: TAMBAH & EDIT SHIFT
+   12. MODAL: TAMBAH & EDIT SHIFT
    ================================================================ */
 #modalTambahShift.modal-overlay,
 #modalEditShift.modal-overlay {
