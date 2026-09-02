@@ -145,6 +145,9 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/owner/attendance/override', [JadwalKerjaController::class, 'overrideAttendanceForDate'])
             ->name('owner.attendance.status.override');
+            
+        Route::get('/owner/presensi/{kategori}', [JadwalKerjaController::class, 'presensiKategori'])
+            ->name('owner.presensi.kategori');
 
         // ----------------------------------------------
         // Kunjungan Klien - Owner

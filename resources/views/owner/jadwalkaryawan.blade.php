@@ -6,7 +6,6 @@
     <link rel="stylesheet" href="{{ asset('/css/owner/jadwal-kerja.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
 @endpush
 
 @section('content')
@@ -35,22 +34,17 @@
         @endforelse
       </div>
 
-      <!-- ===== Approval Presensi ===== -->
-      <div class="card-title" style="margin-top:22px; margin-bottom:12px;">Approval Presensi</div>
+      <!-- ===== Ringkasan Presensi ===== -->
+      <div class="card-title" style="margin-top:22px; margin-bottom:12px;">Ringkasan Presensi</div>
 
       <form method="GET" action="{{ route('jadwal-kerja') }}" class="toolbar" id="filterForm">
-        <input type="hidden" name="tab" value="tetap">
-        <div class="toolbar-left">
+        <div class="toolbar-left" style="flex-wrap:wrap; gap:8px;">
           <div class="search-box">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9AA0A8" stroke-width="2">
               <circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>
             </svg>
             <input type="text" name="q" id="filterSearch" placeholder="Cari nama karyawan..." value="{{ $filters['q'] ?? '' }}">
           </div>
-
-          <input type="text" id="filterDateRange" class="field-input-inline" placeholder="Pilih rentang tanggal" autocomplete="off" style="min-width:190px;">
-          <input type="hidden" name="tanggal_mulai" id="tanggalMulaiInput" value="{{ $filters['tanggal_mulai'] ?? now()->toDateString() }}">
-          <input type="hidden" name="tanggal_akhir" id="tanggalAkhirInput" value="{{ $filters['tanggal_akhir'] ?? now()->toDateString() }}">
 
           <select name="branch_id" class="field-input-inline">
             <option value="">Semua Cabang</option>
@@ -61,370 +55,120 @@
             @endforeach
           </select>
 
-          <select name="status" class="field-input-inline">
-            <option value="">Semua Status</option>
-            <option value="tepat_waktu" @selected(($filters['status'] ?? null) === 'tepat_waktu')>Tepat Waktu</option>
-            <option value="terlambat" @selected(($filters['status'] ?? null) === 'terlambat')>Terlambat</option>
-            <option value="tidak_checkout" @selected(($filters['status'] ?? null) === 'tidak_checkout')>Tidak Checkout</option>
-            <option value="cuti" @selected(($filters['status'] ?? null) === 'cuti')>Cuti</option>
-            <option value="alpa" @selected(($filters['status'] ?? null) === 'alpa')>Alpa</option>
-            <option value="belum_absen" @selected(($filters['status'] ?? null) === 'belum_absen')>Belum Absen</option>
-            <option value="luar_radius" @selected(($filters['status'] ?? null) === 'luar_radius')>Di Luar Radius</option>
+          <select name="bulan" class="field-input-inline">
+            @foreach ($daftarBulan as $angka => $nama)
+              <option value="{{ $angka }}" @selected($bulanTerpilih === $angka)>{{ $nama }}</option>
+            @endforeach
           </select>
+          <select name="tahun" class="field-input-inline">
+            @foreach ($daftarTahun as $tahunOpt)
+              <option value="{{ $tahunOpt }}" @selected($tahunTerpilih === $tahunOpt)>{{ $tahunOpt }}</option>
+            @endforeach
+          </select>
+
+          <button type="submit" class="btn btn-line btn-sm">Terapkan Filter</button>
         </div>
       </form>
 
-      <div id="approvalSection">
-      @section('approval')
-        <div class="pb-summary" style="margin-bottom:18px;">
-          @php
-            $statusAktif = $filters['status'] ?? null;
-            $chipStatuses = [
-                'tepat_waktu'    => ['label' => 'Tepat waktu', 'class' => 'ok'],
-                'terlambat'      => ['label' => 'Terlambat', 'class' => 'late'],
-                'tidak_checkout' => ['label' => 'Tidak checkout', 'class' => 'out'],
-                'cuti'           => ['label' => 'Cuti', 'class' => 'cuti'],
-                'alpa'           => ['label' => 'Alpa', 'class' => ''],
-                'luar_radius'    => ['label' => 'Di luar radius', 'class' => 'radius'],
-            ];
-          @endphp
-          @foreach ($chipStatuses as $statusValue => $chip)
-            <div
-              class="pb-summary-chip {{ $chip['class'] }} {{ $statusAktif === $statusValue ? 'active' : '' }}"
-              data-status="{{ $statusValue }}"
-              role="button"
-              tabindex="0"
-              style="cursor:pointer;"
-            >
-              <div class="pb-num">{{ $summary[$statusValue] }}</div>
-              <div class="pb-label">{{ $chip['label'] }}</div>
-            </div>
-          @endforeach
-        </div>
+      @php
+        $queryUntukKategori = array_filter([
+            'mode'      => 'bulanan',
+            'bulan'     => $bulanTerpilih,
+            'tahun'     => $tahunTerpilih,
+            'branch_id' => $filters['branch_id'] ?? null,
+            'q'         => $filters['q'] ?? null,
+        ]);
+      @endphp
+      <div class="pb-summary" style="margin-bottom:18px;">
+        <a href="{{ route('owner.presensi.kategori', array_merge(['kategori' => 'masuk'], $queryUntukKategori)) }}"
+           class="pb-summary-chip ok" style="text-decoration:none; display:block;">
+          <div class="pb-num">{{ $summaryCards['masuk'] }}</div>
+          <div class="pb-label">Masuk</div>
+        </a>
+        <a href="{{ route('owner.presensi.kategori', array_merge(['kategori' => 'cuti'], $queryUntukKategori)) }}"
+           class="pb-summary-chip cuti" style="text-decoration:none; display:block;">
+          <div class="pb-num">{{ $summaryCards['cuti'] }}</div>
+          <div class="pb-label">Cuti</div>
+        </a>
+        <a href="{{ route('owner.presensi.kategori', array_merge(['kategori' => 'alpa'], $queryUntukKategori)) }}"
+           class="pb-summary-chip" style="text-decoration:none; display:block;">
+          <div class="pb-num">{{ $summaryCards['alpa'] }}</div>
+          <div class="pb-label">Alpa</div>
+        </a>
+      </div>
 
-        <div class="quota-chip">
-          Menampilkan <b>{{ $attendances->count() }}</b> dari <b>{{ $attendances->total() }}</b> data
-        </div>
+      <!-- ===== Riwayat Bulanan ===== -->
+      <div class="card-title" style="margin-top:22px; margin-bottom:12px;">Riwayat Bulanan</div>
 
-        <div class="card">
-          <div class="table-wrap">
-            <table class="jadwal-approval-table">
+      <div class="quota-chip" style="margin-bottom:14px;">
+        Menampilkan <b>{{ $riwayat->count() }}</b> karyawan &middot; periode <b>{{ $daftarBulan[$bulanTerpilih] }} {{ $tahunTerpilih }}</b>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table class="jadwal-approval-table">
+            <tr>
+              <th>Karyawan</th>
+              <th>Cabang</th>
+              <th style="text-align:center;">Hadir</th>
+              <th style="text-align:center;">Telat</th>
+              <th style="text-align:center;">Tidak Checkout</th>
+              <th style="text-align:center;">Cuti</th>
+              <th style="text-align:center;">Alpa</th>
+              <th style="text-align:center;">Aksi</th>
+            </tr>
+
+            @forelse ($riwayat as $r)
               <tr>
-                <th>Karyawan</th>
-                <th>Tanggal</th>
-                <th>Tipe</th>
-                <th>Cabang</th>
-                <th>Shift / Jadwal</th>
-                <th>Masuk</th>
-                <th>Pulang</th>
-                <th>Radius</th>
-                <th style="text-align: center;">Status</th>
-                <th style="text-align: center;">Aksi</th>
+                <td>{{ $r->nama }}</td>
+                <td>{{ $r->cabang }}</td>
+                <td style="text-align:center;">{{ $r->hadir }}</td>
+                <td style="text-align:center;">{{ $r->telat }}</td>
+                <td style="text-align:center;">{{ $r->tidak_checkout }}</td>
+                <td style="text-align:center;">{{ $r->cuti }}</td>
+                <td style="text-align:center;">{{ $r->alpa }}</td>
+                <td class="jadwal-action-cell">
+                  <button type="button" class="btn btn-line btn-xs" onclick="openRiwayatModal('riwayat-{{ $r->id }}')">Detail</button>
+                </td>
               </tr>
 
-              @forelse ($attendances as $attendance)
-                @php
-                  $employee = $attendance->employee;
-                  $isTetap = $employee->employee_type === 'tetap';
-                  $sudahAbsen = $attendance->sudah_absen ?? true;
-
-                  $jadwalLabel = $isTetap
-                      ? ($attendance->shift?->name ?? '—')
-                      : ($attendance->partTimeSchedule?->activity ?? $attendance->activity ?? '—');
-
-                  $distance = $attendance->distance_m;
-                  $isOutOfRadius = $distance !== null && $distance > 100;
-
-                  // Label "Terlambat X jam Y menit" sudah dihitung final di controller
-                  // (resolveStatus() / manual override) dan disimpan di $attendance->late_label,
-                  // sudah memperhitungkan tolerance_minutes shift. Tidak dihitung ulang di sini
-                  // supaya tidak ada dua sumber kebenaran yang bisa out-of-sync.
-                  $lateLabel = $attendance->late_label ?? 'Terlambat';
-
-                  // Peta status -> label & warna badge. Mencakup ke-5 status yang mungkin ada
-                  // di kolom attendances.status: tepat_waktu, terlambat, tidak_checkout, cuti, alpa.
-                  $statusMap = [
-                      'tepat_waktu'    => ['label' => 'Tepat Waktu', 'class' => 'badge-green'],
-                      'terlambat'      => ['label' => $lateLabel, 'class' => 'badge-rust'],
-                      'tidak_checkout' => ['label' => 'Tidak Checkout', 'class' => 'badge-orange'],
-                      'cuti'           => ['label' => 'Cuti', 'class' => 'badge-blue'],
-                      'alpa'           => ['label' => 'Alpa', 'class' => 'badge-gray-dark'],
-                  ];
-
-                  $statusInfo = $sudahAbsen
-                      ? ($statusMap[$attendance->status] ?? [
-                          'label' => ucfirst(str_replace('_', ' ', $attendance->status ?? '-')),
-                          'class' => 'badge-gray',
-                      ])
-                      : ['label' => $attendance->status_label ?? 'Belum melakukan absensi', 'class' => 'badge-gray'];
-
-                  $initials = $employee->initials();
-                  $avatarColors = ['#8B5CF6', '#2E6FDB', '#E8863A', '#D34D9C', '#2F8A5B', '#D34D3C'];
-                  $avatarColor = $avatarColors[$employee->id % count($avatarColors)];
-
-                  // Baris "cuti" (placeholder LeaveRequest) DAN baris "alpa"/"belum absen"
-                  // (tidak ada record attendance sama sekali) sama-sama punya id null.
-                  // Butuh key unik sendiri (bukan $attendance->id) supaya tombol Detail &
-                  // <template> modal tetap bisa dipasangkan dengan benar.
-                  $modalKey = $attendance->id ?? 'row-'.$employee->id.'-'.$attendance->tanggal->format('Ymd');
-                @endphp
-                <tr>
-                  <td class="row-name">
-                    <div class="avatar-dot" style="background:{{ $avatarColor }};">{{ $initials }}</div>
-                    {{ $employee->full_name }}
-                  </td>
-                  <td class="mono">{{ $attendance->tanggal->translatedFormat('d M Y') }}</td>
-                  <td>
-                    <span class="badge {{ $isTetap ? 'badge-blue' : 'badge-gray' }}">
-                      {{ $isTetap ? 'Tetap' : 'Part Time' }}
-                    </span>
-                  </td>
-                  <td>{{ $employee->branch->name ?? '—' }}</td>
-                  @if ($sudahAbsen)
-                    <td>{{ $jadwalLabel }}</td>
-                    <td class="mono">{{ $attendance->check_in?->format('H:i') ?? '—' }}</td>
-                    <td class="mono">{{ $attendance->check_out?->format('H:i') ?? '—' }}</td>
-                    <td class="mono">
-                      @if ($distance !== null)
-                        <span class="{{ $isOutOfRadius ? 'text-rust' : '' }}">{{ number_format($distance, 0) }} m</span>
-                      @else
-                        —
-                      @endif
-                    </td>
-                    <td>
-                      <span class="badge {{ $statusInfo['class'] }}">{{ $statusInfo['label'] }}</span>
-                      @if ($isOutOfRadius)
-                        <span class="badge badge-rust">Di Luar Radius</span>
-                      @endif
-                    </td>
-                  @else
-                    <td colspan="5" style="text-align:center; color:#9AA0A8; font-style:italic;">
-                      {{ $attendance->status_label }}
-                    </td>
-                  @endif
-                  <td class="jadwal-action-cell">
-                    <div class="jadwal-action-buttons">
-                    <button type="button" class="btn btn-gold btn-xs" onclick="openApprovalModal('{{ $modalKey }}')">
-                      Detail
-                    </button>
-                    </div>
-                  </td>
-                </tr>
-
-                @if ($sudahAbsen)
-                <template id="modal-data-{{ $modalKey }}">
-                  <button type="button" class="modal-close" onclick="closeApprovalModal()" aria-label="Tutup">
-                      <i class="fa-solid fa-xmark"></i>
-                  </button>
-
-                    <div class="modal-photo-panel">
-                      <div class="modal-photo-cell">
-                        <span class="modal-photo-tag">CHECK IN &middot; {{ $attendance->check_in?->format('H:i') ?? '—' }}</span>
-                        @if ($attendance->check_in_photo_url)
-                          <img src="{{ asset('storage/' . $attendance->check_in_photo_url) }}" alt="Foto check-in {{ $employee->full_name }}"
-                              onerror="this.replaceWith(Object.assign(document.createElement('div'), {className:'modal-photo-empty', innerHTML:'<div class=&quot;modal-photo-empty-inner&quot;><i class=&quot;ti ti-photo-off&quot; style=&quot;font-size:18px;&quot;></i>Gagal dimuat</div>'}))">
-                        @else
-                          <div class="modal-photo-empty">
-                            <div class="modal-photo-empty-inner">
-                              <i class="ti ti-photo" style="font-size:18px;"></i>
-                              Tidak ada foto
-                            </div>
-                          </div>
-                        @endif
-                      </div>
-
-                      <div class="modal-photo-cell">
-                        <span class="modal-photo-tag">CHECK OUT &middot; {{ $attendance->check_out?->format('H:i') ?? '—' }}</span>
-                        @if ($attendance->check_out_photo_url)
-                          <img src="{{ asset('storage/' . $attendance->check_out_photo_url) }}" alt="Foto check-out {{ $employee->full_name }}"
-                              onerror="this.replaceWith(Object.assign(document.createElement('div'), {className:'modal-photo-empty', innerHTML:'<div class=&quot;modal-photo-empty-inner&quot;><i class=&quot;ti ti-photo-off&quot; style=&quot;font-size:18px;&quot;></i>Gagal dimuat</div>'}))">
-                        @else
-                          <div class="modal-photo-empty">
-                            <div class="modal-photo-empty-inner">
-                              <i class="ti ti-photo" style="font-size:18px;"></i>
-                              Tidak ada foto
-                            </div>
-                          </div>
-                        @endif
-                      </div>
-                    </div>
-
-                    <div class="modal-content">
-                        <div class="modal-content-head">
-                          <div class="modal-employee-block">
-                              <div>
-                              <div class="modal-employee-name">{{ $employee->full_name }}</div>
-                              <div class="modal-employee-sub">{{ $employee->position ?? '-' }} &middot; {{ $isTetap ? 'Tetap' : 'Part Time' }}</div>
-                              </div>
-                          </div>
-                        </div>
-
-                      <div class="modal-info-list">
-                        <div class="modal-info-row">
-                          <span class="modal-info-label">Status</span>
-                          <span class="modal-info-value">
-                            <span class="badge {{ $statusInfo['class'] }}">{{ $statusInfo['label'] }}</span>
-                            @if ($isOutOfRadius)
-                              <span class="badge badge-rust">Di luar radius</span>
-                            @endif
-                          </span>
-                        </div>
-                        <div class="modal-info-row">
-                          <span class="modal-info-label">Tanggal</span>
-                          <span class="modal-info-value">{{ $attendance->tanggal->translatedFormat('d F Y') }}</span>
-                        </div>
-                        <div class="modal-info-row">
-                          <span class="modal-info-label">Shift</span>
-                          <span class="modal-info-value">{{ $jadwalLabel }}</span>
-                        </div>
-                        <div class="modal-info-row">
-                          <span class="modal-info-label">Jam masuk / pulang</span>
-                          <span class="modal-info-value mono">{{ $attendance->check_in?->format('H:i') ?? '—' }} &ndash; {{ $attendance->check_out?->format('H:i') ?? '—' }}</span>
-                        </div>
-                        <div class="modal-info-row">
-                          <span class="modal-info-label">Jarak dari kantor</span>
-                          <span class="modal-info-value {{ $isOutOfRadius ? 'text-rust' : '' }}">{{ $distance !== null ? number_format($distance, 0) . ' m' : '—' }}</span>
-                        </div>
-                      </div>
-
-                        @if ($attendance->activity)
-                        <div class="modal-block notes">
-                            <div class="modal-block-label">Aktivitas</div>
-                            <p>{{ $attendance->activity }}</p>
-                        </div>
-                        @endif
-
-                        {{-- Baris "cuti" bisa berupa placeholder dari LeaveRequest tanpa record
-                             Attendance asli (id null) — form override cuma valid untuk record
-                             Attendance sungguhan, jadi wajib dicek id-nya dulu. --}}
-                        @if ($attendance->id)
-                        <div class="modal-block override-status">
-                          <div class="modal-block-label">Ubah status secara manual</div>
-                          <form method="POST" action="{{ route('owner.attendance.status.update', $attendance->id) }}" class="modal-override-form" style="display:flex; gap:8px; align-items:stretch;">
-                            @csrf
-                            @method('PUT')
-                            <select name="status" class="field-input-inline" style="flex:1;">
-                              <option value="tepat_waktu" @selected($attendance->status === 'tepat_waktu')>Tepat Waktu</option>
-                              <option value="terlambat" @selected($attendance->status === 'terlambat')>Terlambat</option>
-                              <option value="tidak_checkout" @selected($attendance->status === 'tidak_checkout')>Tidak Checkout</option>
-                              <option value="cuti" @selected($attendance->status === 'cuti')>Cuti</option>
-                              <option value="alpa" @selected($attendance->status === 'alpa')>Alpa</option>
-                            </select>
-                            <button type="submit" class="btn btn-gold btn-xs" style="white-space:nowrap; flex-shrink:0;">Simpan Status</button>
-                          </form>
-                        </div>
-                        @endif
-
-                        <div class="modal-actions">
-                        @if ($attendance->check_in_lat && $attendance->check_in_lng)
-                            <a href="https://www.google.com/maps?q={{ $attendance->check_in_lat }},{{ $attendance->check_in_lng }}" target="_blank" class="modal-action-btn line">
-                            <i class="ti ti-map-pin" style="font-size:15px;"></i> Lihat lokasi di peta
-                            </a>
-                        @else
-                            <button type="button" class="modal-action-btn line" disabled>
-                            <i class="ti ti-map-pin" style="font-size:15px;"></i> Lihat lokasi di peta
-                            </button>
-                        @endif
-                        </div>
-                    </div>
-                </template>
-                @else
-                {{-- Baris "alpa" / "belum melakukan absensi": tidak ada record Attendance
-                     sama sekali, jadi modalnya lebih ringkas (tanpa foto/lokasi) dan form
-                     override-nya mengirim employee_id + tanggal ke route khusus yang akan
-                     MEMBUAT record Attendance baru, bukan meng-update yang sudah ada. --}}
-                <template id="modal-data-{{ $modalKey }}">
-                  <button type="button" class="modal-close" onclick="closeApprovalModal()" aria-label="Tutup">
-                      <i class="fa-solid fa-xmark"></i>
-                  </button>
-
-                  <div class="modal-content" style="padding-top:8px;">
-                    <div class="modal-content-head">
-                      <div class="modal-employee-block">
-                        <div>
-                          <div class="modal-employee-name">{{ $employee->full_name }}</div>
-                          <div class="modal-employee-sub">{{ $employee->position ?? '-' }} &middot; {{ $isTetap ? 'Tetap' : 'Part Time' }}</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="modal-info-list">
-                      <div class="modal-info-row">
-                        <span class="modal-info-label">Status</span>
-                        <span class="modal-info-value">
-                          <span class="badge badge-gray">{{ $attendance->status_label ?? 'Belum melakukan absensi' }}</span>
-                        </span>
-                      </div>
-                      <div class="modal-info-row">
-                        <span class="modal-info-label">Tanggal</span>
-                        <span class="modal-info-value">{{ $attendance->tanggal->translatedFormat('d F Y') }}</span>
-                      </div>
-                      <div class="modal-info-row">
-                        <span class="modal-info-label">Cabang</span>
-                        <span class="modal-info-value">{{ $employee->branch->name ?? '—' }}</span>
-                      </div>
-                    </div>
-
-                    <div class="modal-block override-status">
-                      <div class="modal-block-label">Ubah status secara manual</div>
-                      <form method="POST" action="{{ route('owner.attendance.status.override') }}" class="modal-override-form" style="display:flex; gap:8px; align-items:stretch;">
-                        @csrf
-                        <input type="hidden" name="employee_id" value="{{ $employee->id }}">
-                        <input type="hidden" name="tanggal" value="{{ $attendance->tanggal->format('Y-m-d') }}">
-                        <select name="status" class="field-input-inline" style="flex:1;">
-                          <option value="tepat_waktu" @selected($attendance->status === 'tepat_waktu')>Tepat Waktu</option>
-                          <option value="terlambat" @selected($attendance->status === 'terlambat')>Terlambat</option>
-                          <option value="tidak_checkout" @selected($attendance->status === 'tidak_checkout')>Tidak Checkout</option>
-                          <option value="cuti" @selected($attendance->status === 'cuti')>Cuti</option>
-                          <option value="alpa" @selected(($attendance->status ?? 'alpa') === 'alpa')>Alpa</option>
-                        </select>
-                        <button type="submit" class="btn btn-gold btn-xs" style="white-space:nowrap; flex-shrink:0;">Simpan Status</button>
-                      </form>
-                    </div>
+              <template id="modal-riwayat-{{ $r->id }}">
+                <button type="button" class="modal-close" onclick="closeRiwayatModal()" aria-label="Tutup">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+                <div class="modal-content" style="padding-top:8px;">
+                  <div class="modal-content-head">
+                    <div class="modal-employee-name">{{ $r->nama }}</div>
+                    <div class="modal-employee-sub">{{ $r->cabang }} &middot; {{ ucfirst($r->tipe) }}</div>
                   </div>
-                </template>
-                @endif
-                @empty
-                  <tr>
-                    <td colspan="10" class="empty-state">Tidak ada data presensi untuk filter ini.</td>
-                  </tr>
-                @endforelse
-            </table>
-          </div>
-
-          @if ($attendances->hasPages())
-            <div class="pagination-bar" style="display:flex; justify-content:center; align-items:center; gap:10px; margin-top:16px;">
-              @if ($attendances->onFirstPage())
-                <span class="pg-arrow pg-arrow-disabled" aria-label="Sebelumnya">
-                  <i class="fa-solid fa-chevron-left"></i>
-                </span>
-              @else
-                <a href="{{ $attendances->previousPageUrl() }}" class="pg-arrow" aria-label="Sebelumnya">
-                  <i class="fa-solid fa-chevron-left"></i>
-                </a>
-              @endif
-
-              <span class="pg-current">{{ $attendances->currentPage() }}</span>
-
-              @if ($attendances->hasMorePages())
-                <a href="{{ $attendances->nextPageUrl() }}" class="pg-arrow" aria-label="Selanjutnya">
-                  <i class="fa-solid fa-chevron-right"></i>
-                </a>
-              @else
-                <span class="pg-arrow pg-arrow-disabled" aria-label="Selanjutnya">
-                  <i class="fa-solid fa-chevron-right"></i>
-                </span>
-              @endif
-            </div>
-          @endif
+                  <div class="table-wrap" style="margin-top:12px;">
+                    <table class="jadwal-approval-table">
+                      <tr><th>Tanggal</th><th>Jadwal</th><th>Masuk</th><th>Keluar</th><th>Status</th></tr>
+                      @forelse ($r->detail as $d)
+                        <tr>
+                          <td class="mono">{{ \Carbon\Carbon::parse($d->tanggal)->translatedFormat('d M Y') }}</td>
+                          <td>{{ $d->jadwal }}</td>
+                          <td class="mono">{{ $d->jam_masuk ? \Carbon\Carbon::parse($d->jam_masuk)->format('H:i') : '—' }}</td>
+                          <td class="mono">{{ $d->jam_keluar ? \Carbon\Carbon::parse($d->jam_keluar)->format('H:i') : '—' }}</td>
+                          <td>{{ ucfirst(str_replace('_', ' ', $d->status ?? '-')) }}</td>
+                        </tr>
+                      @empty
+                        <tr><td colspan="5" class="empty-state">Belum ada record presensi bulan ini.</td></tr>
+                      @endforelse
+                    </table>
+                  </div>
+                </div>
+              </template>
+            @empty
+              <tr><td colspan="8" class="empty-state">Tidak ada data untuk bulan ini.</td></tr>
+            @endforelse
+          </table>
         </div>
-
-        <div class="modal-overlay" id="approvalModalOverlay" onclick="closeApprovalModal(event)">
-          <div class="modal-box" id="approvalModalBody" onclick="event.stopPropagation()"></div>
-        </div>
-      @show
       </div>
-      {{-- ===== akhir #approvalSection ===== --}}
+
+      <div class="modal-overlay" id="riwayatModalOverlay" onclick="closeRiwayatModal(event)">
+        <div class="modal-box" id="riwayatModalBody" onclick="event.stopPropagation()"></div>
+      </div>
     </div>
     {{-- ===== akhir subpage jdw-tetap ===== --}}
 
@@ -552,7 +296,6 @@
         </div>
     </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
 <script>
   // ===== Toast notifikasi =====
   let toastTimer;
@@ -586,132 +329,11 @@
     if (e.target === modalTambahShift) modalTambahShift.classList.remove('show');
   });
 
-  // ===== Modal detail presensi (approval) =====
-  function openApprovalModal(id) {
-    const source = document.getElementById('modal-data-' + id);
-    if (!source) return;
-    document.getElementById('approvalModalBody').innerHTML = source.innerHTML;
-    document.getElementById('approvalModalOverlay').classList.add('show');
-  }
-  function closeApprovalModal(e) {
-    const overlay = document.getElementById('approvalModalOverlay');
-    if (overlay) overlay.classList.remove('show');
-  }
-
-  // ================================================================
-  // AJAX filter + pagination untuk section Approval Presensi
-  // ================================================================
-  const approvalSection = document.getElementById('approvalSection');
+  // ===== Filter (search / cabang / bulan / tahun) =====
   const filterForm = document.getElementById('filterForm');
-
-  async function loadApproval(url, { pushState = true } = {}) {
-    approvalSection.classList.add('is-loading');
-    try {
-      const res = await fetch(url, {
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-      });
-      if (!res.ok) throw new Error('Gagal memuat data (' + res.status + ')');
-      const html = await res.text();
-      approvalSection.innerHTML = html;
-      if (pushState) {
-        history.pushState({ approval: true }, '', url);
-      }
-    } catch (err) {
-      showToast('Gagal memuat data presensi.');
-      console.error(err);
-    } finally {
-      approvalSection.classList.remove('is-loading');
-    }
-  }
-
-  // Submit form filter (search / dropdown / date range) -> AJAX, no reload
-  filterForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-    const params = new URLSearchParams(new FormData(filterForm)).toString();
-    loadApproval(filterForm.action + '?' + params);
-  });
-
-  // Auto-submit dropdown branch & status
-  filterForm.querySelectorAll('select[name="branch_id"], select[name="status"]').forEach((select) => {
+  filterForm.querySelectorAll('select[name="branch_id"], select[name="bulan"], select[name="tahun"]').forEach((select) => {
     select.addEventListener('change', () => filterForm.requestSubmit());
   });
-
-  // Klik link pagination di dalam approvalSection -> AJAX, no reload
-  approvalSection.addEventListener('click', function (e) {
-    const link = e.target.closest('a[href]');
-    if (link && link.closest('.pagination-bar')) {
-      e.preventDefault();
-      loadApproval(link.href);
-      return;
-    }
-
-    // Klik chip summary (Tepat waktu / Terlambat / dst) -> filter status, sama
-    // seperti pilih dari dropdown "Semua Status". Klik chip yang sedang aktif
-    // lagi -> filter dilepas (kembali ke "Semua Status").
-    const chip = e.target.closest('.pb-summary-chip[data-status]');
-    if (chip) {
-      applyStatusChipFilter(chip.dataset.status, chip.classList.contains('active'));
-    }
-  });
-
-  // Aksesibilitas: chip juga bisa diaktifkan lewat keyboard (Enter / Space).
-  approvalSection.addEventListener('keydown', function (e) {
-    if (e.key !== 'Enter' && e.key !== ' ') return;
-    const chip = e.target.closest('.pb-summary-chip[data-status]');
-    if (!chip) return;
-    e.preventDefault();
-    applyStatusChipFilter(chip.dataset.status, chip.classList.contains('active'));
-  });
-
-  function applyStatusChipFilter(statusValue, isCurrentlyActive) {
-    const statusSelect = filterForm.querySelector('select[name="status"]');
-    if (!statusSelect) return;
-    statusSelect.value = isCurrentlyActive ? '' : statusValue;
-    filterForm.requestSubmit();
-  }
-
-  // Tombol Back/Forward browser
-  window.addEventListener('popstate', function () {
-    loadApproval(location.href, { pushState: false });
-  });
-
-  // ===== Auto-submit filter search dengan debounce =====
-  let searchTimer;
-  const filterSearchInput = document.getElementById('filterSearch');
-  if (filterSearchInput) {
-    filterSearchInput.addEventListener('input', function () {
-      clearTimeout(searchTimer);
-      searchTimer = setTimeout(() => {
-        filterForm.requestSubmit();
-      }, 500);
-    });
-  }
-
-  // ===== Filter rentang tanggal (Flatpickr) =====
-  const dateRangeInput = document.getElementById('filterDateRange');
-  if (dateRangeInput) {
-    const mulaiInput = document.getElementById('tanggalMulaiInput');
-    const akhirInput = document.getElementById('tanggalAkhirInput');
-
-    flatpickr(dateRangeInput, {
-      mode: 'range',
-      dateFormat: 'Y-m-d',
-      altInput: true,
-      altFormat: 'd/m/Y',
-      defaultDate: [mulaiInput.value, akhirInput.value],
-      onClose: function (selectedDates, dateStr, instance) {
-        if (selectedDates.length === 2) {
-          mulaiInput.value = instance.formatDate(selectedDates[0], 'Y-m-d');
-          akhirInput.value = instance.formatDate(selectedDates[1], 'Y-m-d');
-          filterForm.requestSubmit();
-        } else if (selectedDates.length === 1) {
-          mulaiInput.value = instance.formatDate(selectedDates[0], 'Y-m-d');
-          akhirInput.value = instance.formatDate(selectedDates[0], 'Y-m-d');
-          filterForm.requestSubmit();
-        }
-      },
-    });
-  }
 
   // ===== Data shift untuk prefill form edit (semua shift, bukan cuma hari ini) =====
   const shiftData = {
@@ -742,7 +364,7 @@
       }
     }
   });
-  
+
   document.getElementById('btnTutupEditShift').addEventListener('click', () => {
     modalEditShift.classList.remove('show');
   });
@@ -782,6 +404,17 @@
     formEditShift.style.display = 'block';
     formEditShift.action = '/owner/shift/{{ old('shift_id') }}';
   @endif
+
+  // ===== Modal Detail Riwayat Bulanan =====
+  function openRiwayatModal(id) {
+    const source = document.getElementById('modal-' + id);
+    if (!source) return;
+    document.getElementById('riwayatModalBody').innerHTML = source.innerHTML;
+    document.getElementById('riwayatModalOverlay').classList.add('show');
+  }
+  function closeRiwayatModal(e) {
+    document.getElementById('riwayatModalOverlay').classList.remove('show');
+  }
 
   @if(session('success'))
     showToast('{{ session('success') }}');
