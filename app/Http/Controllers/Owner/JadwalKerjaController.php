@@ -32,31 +32,31 @@ class JadwalKerjaController extends Controller
         9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
     ];
 
-public function __invoke(Request $request)
-{
-    $filters = $request->only([
-        'q',
-        'branch_id',
-        'employee_type',
-    ]);
+    public function __invoke(Request $request)
+    {
+        $filters = $request->only([
+            'q',
+            'branch_id',
+            'employee_type',
+        ]);
 
-    $bulanTerpilih = (int) $request->input('bulan', now()->month);
-    $tahunTerpilih = (int) $request->input('tahun', now()->year);
+        $bulanTerpilih = (int) $request->input('bulan', now()->month);
+        $tahunTerpilih = (int) $request->input('tahun', now()->year);
 
-    return view('owner.jadwalkaryawan', [
-        'hariKerja'     => array_values(self::HARI_KERJA),
-        'shifts'        => $this->getShifts(),
-        'allShifts'     => $this->getAllShifts(),
-        'summaryCards'  => $this->getCategorySummary($filters, $bulanTerpilih, $tahunTerpilih),
-        'branches'      => Branch::orderBy('name')->get(),
-        'filters'       => $filters,
-        'riwayat'       => $this->getRiwayatAbsensi($bulanTerpilih, $tahunTerpilih),
-        'bulanTerpilih' => $bulanTerpilih,
-        'tahunTerpilih' => $tahunTerpilih,
-        'daftarBulan'   => self::NAMA_BULAN,
-        'daftarTahun'   => $this->getDaftarTahun(),
-    ]);
-}
+        return view('owner.jadwalkaryawan', [
+            'hariKerja'     => array_values(self::HARI_KERJA),
+            'shifts'        => $this->getShifts(),
+            'allShifts'     => $this->getAllShifts(),
+            'summaryCards'  => $this->getCategorySummary($filters, $bulanTerpilih, $tahunTerpilih),
+            'branches'      => Branch::orderBy('name')->get(),
+            'filters'       => $filters,
+            'riwayat'       => $this->getRiwayatAbsensi($bulanTerpilih, $tahunTerpilih),
+            'bulanTerpilih' => $bulanTerpilih,
+            'tahunTerpilih' => $tahunTerpilih,
+            'daftarBulan'   => self::NAMA_BULAN,
+            'daftarTahun'   => $this->getDaftarTahun(),
+        ]);
+    }
     public function presensiKategori(Request $request, string $kategori)
     {
         abort_unless(in_array($kategori, ['masuk', 'cuti', 'alpa'], true), 404);
@@ -111,9 +111,6 @@ public function __invoke(Request $request)
         ]);
     }
 
-    /**
-     * Simpan shift baru.
-     */
     public function storeShift(Request $request)
     {
         $validated = $request->validate([
@@ -139,9 +136,6 @@ public function __invoke(Request $request)
         return back()->with('success', 'Shift berhasil ditambahkan.');
     }
 
-    /**
-     * Update shift yang sudah ada.
-     */
     public function updateShift(Request $request, Shift $shift)
     {
         $validated = $request->validate([
@@ -210,9 +204,6 @@ public function __invoke(Request $request)
         return back()->with('success', 'Status presensi '.$employee->full_name.' berhasil diisi secara manual.');
     }
 
-    /**
-     * Card shift (ringkasan shift yang berlaku HARI INI + jumlah karyawan hadir hari ini).
-     */
     private function getShifts(): Collection
     {
         $hariIni = Shift::keyHari(Carbon::today());
@@ -241,9 +232,6 @@ public function __invoke(Request $request)
             });
     }
 
-    /**
-     * SEMUA shift (tanpa filter hari ini) — dipakai untuk dropdown modal Edit Shift.
-     */
     private function getAllShifts(): Collection
     {
         return Shift::orderBy('start_time')
@@ -260,9 +248,6 @@ public function __invoke(Request $request)
             });
     }
 
-    /**
-     * Format hari berlaku, contoh: Senin, Selasa, Rabu, Kamis, Jumat -> Senin–Jumat
-     */
     private function formatHariBerlaku(array $applicableDays): string
     {
         $urutan = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu'];
@@ -305,12 +290,6 @@ public function __invoke(Request $request)
             ->implode(', ');
     }
 
-    /**
-     * ================================================================
-     * PRESENSI: helper bersama untuk ringkasan card & halaman detail kategori
-     * ================================================================
-     * @return array{0: Carbon, 1: Carbon} [tanggalMulai, tanggalAkhir]
-     */
     private function resolveDateRange(array $filters): array
     {
         if (($filters['mode'] ?? null) === 'bulanan' && ! empty($filters['bulan']) && ! empty($filters['tahun'])) {
@@ -329,9 +308,6 @@ public function __invoke(Request $request)
         return [$tanggalMulai, $tanggalAkhir];
     }
 
-    /**
-     * Karyawan tetap yang sesuai filter pencarian nama & cabang.
-     */
     private function resolveEmployeesForFilters(array $filters): Collection
     {
         return Employee::query()
@@ -455,11 +431,8 @@ public function __invoke(Request $request)
         return $allRows->sortBy('tanggal')->values();
     }
 
-    /**
-     * @return array{masuk: int, cuti: int, alpa: int}
-     */
-private function getCategorySummary(array $filters, int $bulan, int $tahun): array
-{
+    private function getCategorySummary(array $filters, int $bulan, int $tahun): array
+    {
     $awalBulan = Carbon::create($tahun, $bulan, 1)->startOfMonth();
     $akhirBulan = $awalBulan->copy()->endOfMonth();
 
@@ -480,9 +453,6 @@ private function getCategorySummary(array $filters, int $bulan, int $tahun): arr
         return $this->buildAttendanceRows(Carbon::today(), Carbon::today(), $employees);
     }    
 
-    /**
-     * @return array{0: string, 1: int, 2: string} [status, late_minutes, late_label]
-     */
     private function resolveStatus(Attendance $attendance, bool $tanggalSudahLewat): array
     {
         if (! $attendance->check_in) {
@@ -521,9 +491,6 @@ private function getCategorySummary(array $filters, int $bulan, int $tahun): arr
         return ['tepat_waktu', 0, 'Tepat waktu'];
     }
 
-    /**
-     * Format menit telat jadi label "Terlambat X jam Y menit".
-     */
     private function formatLateLabel(int $lateMinutes): string
     {
         $hours = intdiv($lateMinutes, 60);
@@ -536,11 +503,6 @@ private function getCategorySummary(array $filters, int $bulan, int $tahun): arr
         return 'Terlambat '.implode(' ', $parts);
     }
 
-    /**
-     * ================================================================
-     * RIWAYAT ABSENSI BULANAN
-     * ================================================================
-     */
     private function getRiwayatAbsensi(int $bulan, int $tahun): Collection
     {
         $employees = Employee::query()
@@ -583,13 +545,13 @@ private function getCategorySummary(array $filters, int $bulan, int $tahun): arr
             })->values();
 
             // Hitung jumlah hari cuti (dipotong ke rentang bulan yang sedang dilihat).
-$cutiDays = $approvedLeavesByEmployee->get($employee->id, collect())
-    ->sum(function ($lr) use ($awalBulan, $akhirBulan) {
-        $mulai = Carbon::parse($lr->start_date)->max($awalBulan);
-        $akhir = Carbon::parse($lr->end_date)->min($akhirBulan);
+            $cutiDays = $approvedLeavesByEmployee->get($employee->id, collect())
+                ->sum(function ($lr) use ($awalBulan, $akhirBulan) {
+                    $mulai = Carbon::parse($lr->start_date)->max($awalBulan);
+                    $akhir = Carbon::parse($lr->end_date)->min($akhirBulan);
 
-        return $this->countHariKerja($mulai, $akhir);
-    });
+                    return $this->countHariKerja($mulai, $akhir);
+                });
 
             return (object) [
                 'id' => $employee->id,
@@ -606,11 +568,6 @@ $cutiDays = $approvedLeavesByEmployee->get($employee->id, collect())
         });
     }
 
-    /**
-     * ================================================================
-     * DAFTAR TAHUN (untuk dropdown filter)
-     * ================================================================
-     */
     private function getDaftarTahun(): array
     {
         $tahunTertua = Attendance::min('tanggal');
@@ -619,22 +576,19 @@ $cutiDays = $approvedLeavesByEmployee->get($employee->id, collect())
         return range(now()->year, $tahunAwal);
     }
 
-    /**
- * Hitung jumlah hari kerja (Senin–Sabtu) dalam rentang tanggal, inklusif.
- */
-private function countHariKerja(Carbon $mulai, Carbon $akhir): int
-{
-    if ($mulai->gt($akhir)) {
-        return 0;
-    }
-
-    $jumlah = 0;
-    for ($tanggal = $mulai->copy(); $tanggal->lte($akhir); $tanggal->addDay()) {
-        if (! $tanggal->isSunday()) {
-            $jumlah++;
+        private function countHariKerja(Carbon $mulai, Carbon $akhir): int
+    {
+        if ($mulai->gt($akhir)) {
+            return 0;
         }
-    }
 
-    return $jumlah;
-}
+        $jumlah = 0;
+        for ($tanggal = $mulai->copy(); $tanggal->lte($akhir); $tanggal->addDay()) {
+            if (! $tanggal->isSunday()) {
+                $jumlah++;
+            }
+        }
+
+        return $jumlah;
+    }
 }

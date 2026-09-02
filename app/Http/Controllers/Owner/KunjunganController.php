@@ -43,7 +43,6 @@ class KunjunganController extends Controller
 
         $branches = Branch::orderBy('name')->get();
 
-        // daftar jenis kunjungan yang benar-benar ada di data, untuk dropdown filter
         $visitTypes = ClientVisit::query()
             ->select('visit_type')
             ->distinct()

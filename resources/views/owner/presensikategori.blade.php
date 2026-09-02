@@ -23,7 +23,7 @@
         $modeAktif = $filters['mode'] ?? 'range';
     @endphp
 
-    <!-- ============ PRESENSI: {{ $judulKategori }} ============ -->
+    <!-- Presensi {{ $judulKategori }} -->
     <div class="crumb">
       Home <span>›</span> Kehadiran <span>›</span>
       <a href="{{ route('jadwal-kerja') }}">Jadwal Kerja</a> <span>›</span>
@@ -74,8 +74,6 @@
           @endforeach
         </select>
 
-        {{-- Sub-filter status cuma relevan untuk kategori "masuk" — kategori cuti/alpa
-             sudah pasti satu status yang sama untuk semua barisnya. --}}
         @if ($kategori === 'masuk')
         <select name="status" class="field-input-inline">
           <option value="">Semua Status</option>
@@ -139,9 +137,7 @@
               $avatarColors = ['#8B5CF6', '#2E6FDB', '#E8863A', '#D34D9C', '#2F8A5B', '#D34D3C'];
               $avatarColor = $avatarColors[$employee->id % count($avatarColors)];
 
-              // Baris tanpa record Attendance asli (cuti dari LeaveRequest, atau alpa/belum
-              // absen yang belum pernah punya record sama sekali) punya id null. Butuh key
-              // unik sendiri supaya tombol Detail & <template> modal tetap berpasangan benar.
+              // Key unik untuk modal detail
               $modalKey = $attendance->id ?? 'row-'.$employee->id.'-'.$attendance->tanggal->format('Ymd');
             @endphp
             <tr>
@@ -271,10 +267,7 @@
                 </div>
                 @endif
 
-                {{-- Form override status manual. Kalau baris ini punya record Attendance asli
-                     (id ada) -> update record itu. Kalau tidak (cuti dari LeaveRequest, atau
-                     alpa/belum absen yang belum pernah punya record) -> route khusus yang akan
-                     MEMBUAT record Attendance baru untuk employee+tanggal ini. --}}
+                {{-- Override status --}}
                 <div class="modal-block override-status">
                   <div class="modal-block-label">Ubah status secara manual</div>
                   @if ($attendance->id)
@@ -383,7 +376,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
 <script>
-  // ===== Toast notifikasi =====
+  // Toast
   let toastTimer;
   function showToast(msg){
     let toast = document.getElementById('appToast');
@@ -400,7 +393,7 @@
     toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
   }
 
-  // ===== Modal detail presensi =====
+  // Modal detail
   function openDetailModal(id) {
     const source = document.getElementById('modal-data-' + id);
     if (!source) return;
@@ -412,7 +405,7 @@
     if (overlay) overlay.classList.remove('show');
   }
 
-  // ===== Filter form =====
+  // Filter
   const filterForm = document.getElementById('filterForm');
   const modeInput = document.getElementById('modeInput');
   const rangeFields = document.getElementById('rangeFields');
@@ -422,8 +415,7 @@
     select.addEventListener('change', () => filterForm.requestSubmit());
   });
 
-  // Toggle Rentang Tanggal <-> Bulanan. Ganti visibilitas & hidden "mode" dulu;
-  // efeknya baru berlaku sesudah submit ("Terapkan Filter" atau ganti bulan/tahun).
+  // Mode filter
   document.getElementById('btnModeRange').addEventListener('click', () => {
     modeInput.value = 'range';
     rangeFields.style.display = '';
@@ -436,7 +428,7 @@
     filterForm.requestSubmit();
   });
 
-  // ===== Filter rentang tanggal (Flatpickr) =====
+  // Rentang tanggal
   const dateRangeInput = document.getElementById('filterDateRange');
   if (dateRangeInput) {
     const mulaiInput = document.getElementById('tanggalMulaiInput');
