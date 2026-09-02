@@ -52,19 +52,57 @@ class SettingController extends Controller
     }
 
     public function updateAturan(Request $request)
-    {
-        $data = $request->validate([
-            'late_deduction_per_minute' => ['required', 'numeric', 'min:0'],
-            'alpa_deduction_per_day' => ['required', 'numeric', 'min:0'],
-            'thr_start_year' => ['required', 'integer', 'min:1', 'max:10'],
-            'out_of_radius_policy' => ['required', 'in:ditinjau_manual,ditolak_otomatis'],
-            'photo_required' => ['sometimes', 'boolean'],
-        ]);
+{
+    $data = $request->validate([
+        'late_deduction_per_minute' => [
+            'required',
+            'numeric',
+            'min:0'
+        ],
 
-        $data['photo_required'] = $request->boolean('photo_required');
+        'alpa_deduction_per_day' => [
+            'required',
+            'numeric',
+            'min:0'
+        ],
 
-        AttendanceSetting::current()->update($data);
+        'meal_rate' => [
+            'required',
+            'numeric',
+            'min:0'
+        ],
 
-        return back()->with('status', 'Aturan potongan & kebijakan THR berhasil disimpan.');
-    }
+        'transport_rate' => [
+            'required',
+            'numeric',
+            'min:0'
+        ],
+
+        'thr_start_year' => [
+            'required',
+            'integer',
+            'min:1',
+            'max:10'
+        ],
+
+        'out_of_radius_policy' => [
+            'required',
+            'in:ditinjau_manual,ditolak_otomatis'
+        ],
+
+        'photo_required' => [
+            'sometimes',
+            'boolean'
+        ],
+    ]);
+
+    $data['photo_required'] = $request->boolean('photo_required');
+
+    AttendanceSetting::current()->update($data);
+
+    return back()->with(
+        'status',
+        'Aturan potongan, uang makan, uang bensin & kebijakan THR berhasil disimpan.'
+    );
+}
 }

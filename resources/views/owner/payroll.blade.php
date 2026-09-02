@@ -119,14 +119,44 @@ PERIODE
        name="periode"
        value="{{ $periodeValue }}">
 
-{{-- RIWAYAT --}}
-<a href="{{ route('payroll.history') }}"
-   class="btn btn-line btn-sm"
-   style="margin-left:auto;">
+</form>
 
-    Riwayat Payroll
-</a>
+{{-- ============================================================
+HARI EFEKTIF PERIODE INI
+============================================================ --}}
 
+<form action="{{ route('payroll.update-period') }}"
+      method="POST"
+      style="display:flex; align-items:center; gap:10px; margin-bottom:16px; padding:12px 16px; background:#fff; border:1px solid #EDEEF0; border-radius:10px;">
+    @csrf
+
+    <label style="font-size:12px; font-weight:700; color:#666; white-space:nowrap;">
+        Hari Efektif {{ $periodeLabel }}:
+    </label>
+
+    <input type="number"
+           name="hari_efektif"
+           min="0"
+           max="31"
+           value="{{ $hariEfektif }}"
+           class="cell-input"
+           style="width:70px;"
+           required>
+
+    <input type="hidden" name="periode" value="{{ $periodeValue }}">
+
+    <button type="submit" class="btn btn-gold btn-sm">Simpan Hari Efektif</button>
+
+    <span style="font-size:11px; color:#888;">
+        Beda tiap bulan — isi manual sesuai jumlah hari kerja bulan ini (Senin–Sabtu, dikurangi tanggal merah/cuti bersama bila perlu).
+    </span>
+</form>
+
+<div class="page-actions" style="display:flex; justify-content:flex-end; margin-bottom:16px;">
+    <a href="{{ route('payroll.history') }}" class="btn btn-line btn-sm">
+        Riwayat Payroll
+    </a>
+</div>
 
 </form>
 
@@ -251,14 +281,12 @@ INFORMASI PERHITUNGAN
 KARYAWAN TETAP
 ============================================================ --}}
 
-<div class="divider-label"
-     style="margin-top:0;">
-
-Karyawan Tetap — Gaji Bulanan
-
+<div class="divider-label" style="margin-top:0;">
+    Karyawan Tetap — Gaji Bulanan
 </div>
 
 <div class="table-wrap">
+
 <table class="paytable">
 
     <tr>
@@ -268,49 +296,64 @@ Karyawan Tetap — Gaji Bulanan
         <th>
             Gaji Pokok
             <br>
-            <span style="
-                font-weight:600;
-                text-transform:none;
-                font-size:10px;
-            ">
+            <span style="font-size:10px;">
                 /bulan
+            </span>
+        </th>
+
+        <th>
+            Hari Efektif
+            <br>
+            <span style="font-size:10px;">
+            </span>
+        </th>
+
+        <th>
+            Hari Hadir
+            <br>
+            <span style="font-size:10px;">
+                dari absensi
+            </span>
+        </th>
+
+        <th>
+            Gaji Pokok
+            <br>
+            <span style="font-size:10px;">
+                diterima
             </span>
         </th>
 
         <th>
             Uang Makan
             <br>
-            <span style="
-                font-weight:600;
-                text-transform:none;
-                font-size:10px;
-            ">
-                Rp10.000 /hari
+            <span style="font-size:10px;">
+                Rp{{ number_format($rateMakan, 0, ',', '.') }}/hari
             </span>
         </th>
 
         <th>
             Uang Bensin
             <br>
-            <span style="
-                font-weight:600;
-                text-transform:none;
-                font-size:10px;
-            ">
-                Rp10.000 /hari
+            <span style="font-size:10px;">
+                Rp{{ number_format($rateBensin, 0, ',', '.') }}/hari
             </span>
         </th>
 
         <th>
-            Hari Hadir
+            Bonus Kerajinan
         </th>
 
         <th>
-            Bonus
+            Bonus Kinerja
         </th>
 
         <th>
             Potongan Telat
+        </th>
+
+        <th>
+            THR
         </th>
 
         <th>
@@ -320,81 +363,48 @@ Karyawan Tetap — Gaji Bulanan
         <th></th>
 
     </tr>
+
+
     @forelse ($tetapEmployees as $employee)
 
         @php
-
             $pc = $employee->payrollComponent;
-
-            /*
-            |--------------------------------------------------------------------------
-            | UANG MAKAN
-            |--------------------------------------------------------------------------
-            */
-
-            $uangMakan =
-                10000 * $employee->hari_hadir;
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | UANG BENSIN
-            |--------------------------------------------------------------------------
-            */
-
-            $uangBensin =
-                10000 * $employee->hari_hadir;
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | GAJI POKOK
-            |--------------------------------------------------------------------------
-            */
 
             $gajiPokok =
                 (float) ($pc?->base_salary ?? 0);
 
+            $gajiPokokDiterima =
+                (float) ($employee->gaji_pokok_diterima ?? 0);
 
-            /*
-            |--------------------------------------------------------------------------
-            | BONUS
-            |--------------------------------------------------------------------------
-            */
+            $uangMakan =
+                (float) ($employee->uang_makan ?? 0);
 
-            $bonus =
-                (float) ($pc?->allowance ?? 0);
+            $uangBensin =
+                (float) ($employee->uang_bensin ?? 0);
 
-            /*
-            |--------------------------------------------------------------------------
-            | POTONGAN TELAT
-            |--------------------------------------------------------------------------
-            */
+            $bonusKerajinan =
+                (float) ($employee->bonus_kerajinan ?? 0);
+
+            $bonusKinerja =
+                (float) ($employee->bonus_kinerja ?? 0);
 
             $potonganTelat =
                 (float) ($employee->potongan_telat ?? 0);
 
-
-            /*
-            |--------------------------------------------------------------------------
-            | TOTAL
-            |--------------------------------------------------------------------------
-            */
+            $thr =
+                (float) ($employee->thr ?? 0);
 
             $total =
-                $gajiPokok
-                + $uangMakan
-                + $uangBensin
-                + $bonus
-                - $potonganTelat;
-
+                (float) ($employee->total_diterima ?? 0);
         @endphp
 
 
         <tr class="payrow">
 
-            <form action="{{ route('payroll.update', $employee) }}"
-                  method="POST">
+            <form
+                action="{{ route('payroll.update', $employee) }}"
+                method="POST"
+            >
 
                 @csrf
 
@@ -422,28 +432,38 @@ Karyawan Tetap — Gaji Bulanan
                 </td>
 
 
-                {{-- GAJI POKOK --}}
+                {{-- GAJI POKOK BULANAN --}}
                 <td>
 
-                    <input type="number"
-                           name="base_salary"
-                           class="cell-input"
-                           min="0"
-                           value="{{ $pc?->base_salary ?? 0 }}">
+                    <input
+                        type="number"
+                        name="base_salary"
+                        class="cell-input"
+                        min="0"
+                        step="1"
+                        value="{{ $gajiPokok }}"
+                    >
+
+                    <div style="
+                        font-size:10px;
+                        color:#888;
+                        margin-top:3px;
+                    ">
+                        Input Owner
+                    </div>
 
                 </td>
 
 
-                {{-- UANG MAKAN --}}
+                {{-- HARI EFEKTIF --}}
                 <td>
 
                     <div style="
-                        font-size:12px;
                         font-weight:700;
                         white-space:nowrap;
                     ">
 
-                        Rp {{ number_format($uangMakan, 0, ',', '.') }}
+                        {{ $employee->hari_efektif }} hari
 
                     </div>
 
@@ -453,7 +473,96 @@ Karyawan Tetap — Gaji Bulanan
                         margin-top:3px;
                     ">
 
-                        Rp10.000 × {{ $employee->hari_hadir }} hari
+                        Senin–Sabtu
+
+                    </div>
+
+                </td>
+
+
+                {{-- HARI HADIR --}}
+                <td>
+
+                    <div style="
+                        font-weight:700;
+                        white-space:nowrap;
+                    ">
+
+                        {{ $employee->hari_hadir }} hari
+
+                    </div>
+
+                    <div style="
+                        font-size:10px;
+                        color:#888;
+                        margin-top:3px;
+                    ">
+
+                        Dari absensi
+
+                    </div>
+
+                </td>
+
+
+                {{-- GAJI POKOK DITERIMA --}}
+                <td>
+
+                    <div style="
+                        font-weight:800;
+                        white-space:nowrap;
+                    ">
+
+                        Rp
+                        {{ number_format(
+                            $gajiPokokDiterima,
+                            0,
+                            ',',
+                            '.'
+                        ) }}
+
+                    </div>
+
+                    <div style="
+                        font-size:10px;
+                        color:#888;
+                        margin-top:3px;
+                    ">
+
+                        Gaji ÷ hari efektif × hari hadir
+
+                    </div>
+
+                </td>
+
+
+                {{-- UANG MAKAN --}}
+                <td>
+
+                    <div style="
+                        font-weight:700;
+                        white-space:nowrap;
+                    ">
+
+                        Rp
+                        {{ number_format(
+                            $uangMakan,
+                            0,
+                            ',',
+                            '.'
+                        ) }}
+
+                    </div>
+
+                    <div style="
+                        font-size:10px;
+                        color:#888;
+                        margin-top:3px;
+                    ">
+
+                        Rp{{ number_format($rateMakan, 0, ',', '.') }}
+                        ×
+                        {{ $employee->hari_hadir }}
 
                     </div>
 
@@ -464,12 +573,17 @@ Karyawan Tetap — Gaji Bulanan
                 <td>
 
                     <div style="
-                        font-size:12px;
                         font-weight:700;
                         white-space:nowrap;
                     ">
 
-                        Rp {{ number_format($uangBensin, 0, ',', '.') }}
+                        Rp
+                        {{ number_format(
+                            $uangBensin,
+                            0,
+                            ',',
+                            '.'
+                        ) }}
 
                     </div>
 
@@ -479,133 +593,157 @@ Karyawan Tetap — Gaji Bulanan
                         margin-top:3px;
                     ">
 
-                        Rp10.000 × {{ $employee->hari_hadir }} hari
+                        Rp{{ number_format($rateBensin, 0, ',', '.') }}
+                        ×
+                        {{ $employee->hari_hadir }}
 
                     </div>
 
                 </td>
 
 
-                {{-- HARI HADIR --}}
+                {{-- BONUS KERAJINAN --}}
                 <td>
 
-                    <input type="text"
-                           class="cell-input"
-                           style="width:60px;"
-                           value="{{ $employee->hari_hadir }} hari"
-                           disabled>
+                    <input
+                        type="number"
+                        name="bonus_kerajinan"
+                        class="cell-input"
+                        min="0"
+                        step="1"
+                        value="{{ $bonusKerajinan }}"
+                    >
+
+                    <div style="
+                        font-size:10px;
+                        color:#888;
+                        margin-top:3px;
+                    ">
+                        Input Owner
+                    </div>
 
                 </td>
 
 
-                {{-- BONUS --}}
+                {{-- BONUS KINERJA --}}
                 <td>
 
-                    <input type="number"
-                           name="allowance"
-                           class="cell-input"
-                           min="0"
-                           value="{{ $pc?->allowance ?? 0 }}">
+                    <input
+                        type="number"
+                        name="bonus_kinerja"
+                        class="cell-input"
+                        min="0"
+                        step="1"
+                        value="{{ $bonusKinerja }}"
+                    >
+
+                    <div style="
+                        font-size:10px;
+                        color:#888;
+                        margin-top:3px;
+                    ">
+                        Input Owner
+                    </div>
 
                 </td>
 
 
-                {{-- POTONGAN --}}
+                {{-- POTONGAN TELAT --}}
                 <td>
 
                     <div style="
-                        color:{{ $potonganTelat > 0 ? '#B45309' : '#666' }};
                         font-weight:700;
                         white-space:nowrap;
                     ">
 
-                        Rp {{ number_format($potonganTelat, 0, ',', '.') }}
+                        Rp
+                        {{ number_format(
+                            $potonganTelat,
+                            0,
+                            ',',
+                            '.'
+                        ) }}
 
                     </div>
 
-                    @if ($potonganTelat > 0)
+                    <div style="
+                        font-size:10px;
+                        color:#888;
+                        margin-top:3px;
+                    ">
 
-                        <div style="
-                            font-size:10px;
-                            color:#888;
-                            margin-top:3px;
-                        ">
+                        {{ $employee->total_telat_menit ?? 0 }}
+                        menit
 
-                            {{ $employee->total_telat_menit ?? 0 }}
-                            menit telat
+                    </div>
 
+                </td>
+
+
+               {{-- THR --}}
+                <td>
+
+                    @if ($employee->thr_aktif)
+
+                        <input
+                            type="number"
+                            name="thr_manual"
+                            class="cell-input"
+                            min="0"
+                            step="1"
+                            value="{{ $employee->payrollComponent->thr_manual ?? 0 }}"
+                            placeholder="0"
+                        >
+
+                        <div style="font-size:10px; color:#2F8A5B; margin-top:3px;">
+                            THR Aktif — isi hanya saat mau diberikan
                         </div>
 
                     @else
 
-                        <div style="
-                            font-size:10px;
-                            color:#888;
-                            margin-top:3px;
-                        ">
+                        <input type="text" class="cell-input" value="0" disabled>
 
-                            Tidak ada potongan
-
+                        <div style="font-size:10px; color:#888; margin-top:3px;">
+                            Belum Aktif — tahun kerja &lt; {{ $employee->hari_efektif > 0 ? '2' : '2' }}
                         </div>
 
                     @endif
 
                 </td>
+                    
 
 
                 {{-- TOTAL --}}
                 <td>
 
-                    <div class="row-total mono"
-                         style="
+                    <div
+                        class="row-total mono"
+                        style="
                             white-space:nowrap;
                             font-weight:800;
-                         ">
+                        "
+                    >
 
-                        Rp {{ number_format($total, 0, ',', '.') }}
+                        Rp
+                        {{ number_format(
+                            $total,
+                            0,
+                            ',',
+                            '.'
+                        ) }}
 
                     </div>
 
                 </td>
 
 
-                {{-- ACTION --}}
+                {{-- SIMPAN --}}
                 <td>
 
-                    <input type="hidden"
-                           name="meal_rate"
-                           value="10000">
-
-                    <input type="hidden"
-                           name="transport_rate"
-                           value="10000">
-
-                    <input type="hidden"
-                           name="hourly_rate"
-                           value="0">
-
-
-                    <label class="thr-check"
-                           style="
-                                display:block;
-                                margin-bottom:7px;
-                           ">
-
-                        <input type="checkbox"
-                               name="thr_active"
-                               value="1"
-                               {{ ($pc?->thr_active ?? false) ? 'checked' : '' }}>
-
-                        {{ ($pc?->thr_active ?? false)
-                            ? 'THR Aktif'
-                            : 'THR Belum'
-                        }}
-
-                    </label>
-
-
-                    <button type="submit"
-                            class="btn btn-line btn-sm">
+                    <button
+                        type="submit"
+                        class="btn btn-line btn-sm"
+                    >
 
                         Simpan
 
@@ -617,17 +755,18 @@ Karyawan Tetap — Gaji Bulanan
 
         </tr>
 
-
     @empty
 
         <tr>
 
-            <td colspan="9"
+            <td
+                colspan="13"
                 style="
                     text-align:center;
                     color:#9AA0A8;
                     padding:25px;
-                ">
+                "
+            >
 
                 Belum ada karyawan tetap.
 
@@ -638,6 +777,7 @@ Karyawan Tetap — Gaji Bulanan
     @endforelse
 
 </table>
+
 </div>
 
 {{-- ============================================================

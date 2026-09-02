@@ -175,6 +175,8 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/payroll/publish', [PayrollController::class, 'publishAll'])
             ->name('payroll.publish');
+        
+        Route::post('/payroll/periode', [PayrollController::class, 'updatePeriod'])->name('payroll.update-period');
     });
 });
 

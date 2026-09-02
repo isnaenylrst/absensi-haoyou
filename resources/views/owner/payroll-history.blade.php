@@ -37,8 +37,13 @@
             <tr>
                 <th>Karyawan</th>
                 <th>Hari Hadir</th>
-                <th>Total Pendapatan</th>
-                <th>Total Potongan</th>
+                <th>Gaji Pokok</th>
+                <th>Uang Makan</th>
+                <th>Uang Bensin</th>
+                <th>Bonus Kerajinan</th>
+                <th>Bonus Kinerja</th>
+                <th>Potongan Telat</th>
+                <th>THR</th>
                 <th>Total Diterima</th>
                 <th>Diterbitkan</th>
             </tr>
@@ -50,18 +55,23 @@
                         <div class="row-updated">{{ $slip->employee->employee_code }}</div>
                     </td>
                     <td>{{ $slip->hari_hadir }}</td>
-                    <td class="mono">Rp {{ number_format($slip->total_pendapatan, 0, ',', '.') }}</td>
-                    <td class="mono">Rp {{ number_format($slip->total_potongan, 0, ',', '.') }}</td>
+                    <td class="mono">Rp {{ number_format($slip->gaji_pokok, 0, ',', '.') }}</td>
+                    <td class="mono">Rp {{ number_format($slip->uang_makan, 0, ',', '.') }}</td>
+                    <td class="mono">Rp {{ number_format($slip->uang_bensin, 0, ',', '.') }}</td>
+                    <td class="mono">Rp {{ number_format($slip->bonus_kerajinan, 0, ',', '.') }}</td>
+                    <td class="mono">Rp {{ number_format($slip->bonus_kinerja, 0, ',', '.') }}</td>
+                    <td class="mono">Rp {{ number_format($slip->potongan_telat, 0, ',', '.') }}</td>
+                    <td class="mono">Rp {{ number_format($slip->thr, 0, ',', '.') }}</td>
                     <td class="row-total mono">Rp {{ number_format($slip->total_diterima, 0, ',', '.') }}</td>
                     <td class="row-updated">{{ $slip->published_at?->translatedFormat('d M Y, H:i') }}</td>
                 </tr>
             @empty
-                <tr><td colspan="6" style="text-align:center; color:#9AA0A8;">Tidak ada slip untuk periode ini.</td></tr>
+                <tr><td colspan="11" style="text-align:center; color:#9AA0A8;">Tidak ada slip untuk periode ini.</td></tr>
             @endforelse
 
             @if ($payslips->isNotEmpty())
                 <tr>
-                    <td colspan="4" style="text-align:right; font-weight:700;">Total Diterima Keseluruhan</td>
+                    <td colspan="9" style="text-align:right; font-weight:700;">Total Diterima Keseluruhan</td>
                     <td class="row-total mono" style="font-weight:800;">
                         Rp {{ number_format($payslips->sum('total_diterima'), 0, ',', '.') }}
                     </td>

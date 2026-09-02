@@ -77,7 +77,7 @@
         JIKA SLIP SUDAH DITERBITKAN
         ======================================================== --}}
 
-        @if ($payslip && $rincian)
+       @if ($payslip)
 
             <div
                 class="divider-label"
@@ -402,9 +402,7 @@
 
                 </div>
 
-
-
-                {{-- =================================================
+                                {{-- =================================================
                 UANG BENSIN KARYAWAN TETAP
                 ================================================= --}}
 
@@ -453,31 +451,24 @@
 
 
                 {{-- =================================================
-                TUNJANGAN KEHADIRAN
+                BONUS KERAJINAN
                 ================================================= --}}
 
-                @if (($rincian['tunjangan'] ?? 0) > 0)
+                @if (($rincian['bonus_kerajinan'] ?? 0) > 0)
 
                     <div class="pay-row">
 
                         <div>
-
                             <div class="pay-label">
-                                Tunjangan Kehadiran
+                                Bonus Kerajinan
                             </div>
-
-                            <div class="pay-sub">
-                                Bonus tanpa alpa &amp;
-                                tanpa telat &gt; 3x
-                            </div>
-
                         </div>
 
                         <div class="pay-val pay-pos">
 
                             Rp
                             {{ number_format(
-                                $rincian['tunjangan'],
+                                $rincian['bonus_kerajinan'],
                                 0,
                                 ',',
                                 '.'
@@ -490,6 +481,71 @@
                 @endif
 
 
+
+                {{-- =================================================
+                BONUS KINERJA
+                ================================================= --}}
+
+                @if (($rincian['bonus_kinerja'] ?? 0) > 0)
+
+                    <div class="pay-row">
+
+                        <div>
+                            <div class="pay-label">
+                                Bonus Kinerja
+                            </div>
+                        </div>
+
+                        <div class="pay-val pay-pos">
+
+                            Rp
+                            {{ number_format(
+                                $rincian['bonus_kinerja'],
+                                0,
+                                ',',
+                                '.'
+                            ) }}
+
+                        </div>
+
+                    </div>
+
+                @endif
+
+
+
+                {{-- =================================================
+                THR
+                ================================================= --}}
+
+                @if (($rincian['thr'] ?? 0) > 0)
+
+                    <div class="pay-row">
+
+                        <div>
+                            <div class="pay-label">
+                                THR
+                            </div>
+                            <div class="pay-sub">
+                                Tunjangan Hari Raya
+                            </div>
+                        </div>
+
+                        <div class="pay-val pay-pos">
+
+                            Rp
+                            {{ number_format(
+                                $rincian['thr'],
+                                0,
+                                ',',
+                                '.'
+                            ) }}
+
+                        </div>
+
+                    </div>
+
+                @endif
 
                 {{-- =================================================
                 POTONGAN
