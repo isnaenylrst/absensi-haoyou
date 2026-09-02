@@ -433,18 +433,31 @@ class JadwalKerjaController extends Controller
 
     private function getCategorySummary(array $filters, int $bulan, int $tahun): array
     {
-    $awalBulan = Carbon::create($tahun, $bulan, 1)->startOfMonth();
-    $akhirBulan = $awalBulan->copy()->endOfMonth();
+        $awalBulan = Carbon::create($tahun, $bulan, 1)->startOfMonth();
+        $akhirBulan = $awalBulan->copy()->endOfMonth();
+        $hariIni = now()->startOfDay();
+        if ($hariIni->lt($akhirBulan)) {
+            $akhirBulan = $hariIni;
+        }
 
-    $employees = $this->resolveEmployeesForFilters($filters);
-    $rows = $this->buildAttendanceRows($awalBulan, $akhirBulan, $employees);
+        // Kalau bulan yang dipilih ada di masa depan, tidak ada data yang bisa dihitung.
+        if ($awalBulan->gt($akhirBulan)) {
+            return [
+                'masuk' => 0,
+                'cuti'  => 0,
+                'alpa'  => 0,
+            ];
+        }
 
-    return [
-        'masuk' => $rows->filter(fn ($row) => $row->check_in !== null)->count(),
-        'cuti' => $rows->where('status', 'cuti')->count(),
-        'alpa' => $rows->filter(fn ($row) => $row->status === 'alpa' || ! $row->sudah_absen)->count(),
-    ];
-}
+        $employees = $this->resolveEmployeesForFilters($filters);
+        $rows = $this->buildAttendanceRows($awalBulan, $akhirBulan, $employees);
+
+        return [
+            'masuk' => $rows->filter(fn ($row) => $row->check_in !== null)->count(),
+            'cuti' => $rows->where('status', 'cuti')->count(),
+            'alpa' => $rows->filter(fn ($row) => $row->status === 'alpa' || ! $row->sudah_absen)->count(),
+        ];
+    }
 
     private function getPresensiHariIni(array $filters): Collection
     {
