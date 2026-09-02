@@ -570,32 +570,87 @@
 
             </tr>
 
-
-
             {{-- ====================================================
-            TUNJANGAN KEHADIRAN
+            BONUS KERAJINAN
             ==================================================== --}}
 
-            @if (($rincian['tunjangan'] ?? 0) > 0)
+            @if (($rincian['bonus_kerajinan'] ?? 0) > 0)
 
                 <tr>
 
                     <td class="label">
-
-                        Tunjangan Kehadiran
-
-                        <div class="sub">
-                            Bonus tanpa alpa &amp; tanpa telat &gt; 3x
-                        </div>
-
+                        Bonus Kerajinan
                     </td>
-
 
                     <td class="val val-pos">
 
                         Rp
                         {{ number_format(
-                            $rincian['tunjangan'],
+                            $rincian['bonus_kerajinan'],
+                            0,
+                            ',',
+                            '.'
+                        ) }}
+
+                    </td>
+
+                </tr>
+
+            @endif
+
+
+            {{-- ====================================================
+            BONUS KINERJA
+            ==================================================== --}}
+
+            @if (($rincian['bonus_kinerja'] ?? 0) > 0)
+
+                <tr>
+
+                    <td class="label">
+                        Bonus Kinerja
+                    </td>
+
+                    <td class="val val-pos">
+
+                        Rp
+                        {{ number_format(
+                            $rincian['bonus_kinerja'],
+                            0,
+                            ',',
+                            '.'
+                        ) }}
+
+                    </td>
+
+                </tr>
+
+            @endif
+
+
+            {{-- ====================================================
+            THR
+            ==================================================== --}}
+
+            @if (($rincian['thr'] ?? 0) > 0)
+
+                <tr>
+
+                    <td class="label">
+
+                        THR
+
+                        <div class="sub">
+                            Tunjangan Hari Raya
+                        </div>
+
+                    </td>
+
+                    <td class="val val-pos">
+
+                        Rp
+                        {{ number_format(
+                            $rincian['thr'],
                             0,
                             ',',
                             '.'
@@ -612,8 +667,7 @@
 
     </table>
 
-
-
+          
     {{-- ============================================================
     POTONGAN
     ============================================================

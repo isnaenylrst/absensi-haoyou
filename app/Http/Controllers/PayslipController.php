@@ -91,18 +91,21 @@ class PayslipController extends Controller
         $thrEstimasi = $thrRecord?->amount ?? ($payrollComponent->base_salary ?? 0);
 
         // ============================================================
-        // Pecah rincian pendapatan dari komponen gaji + hari hadir slip
+        // Rincian pendapatan KARYAWAN TETAP - diambil LANGSUNG dari
+        // angka yang sudah tersimpan di payslips (bukan dihitung ulang
+        // dari rate yang sedang berlaku sekarang), supaya slip gaji
+        // bulan lalu tidak ikut berubah kalau rate diubah Owner belakangan.
         // ============================================================
         $rincian = null;
-        if ($payslip && $payrollComponent) {
-            $hariHadir = $payslip->hari_hadir;
-
+        if ($payslip && $employee->employee_type === 'tetap') {
             $rincian = [
-                'gaji_pokok' => $payrollComponent->base_salary,
-                'uang_makan' => $payrollComponent->meal_rate * $hariHadir,
-                'uang_bensin' => $payrollComponent->transport_rate * $hariHadir,
-                'tunjangan' => $payrollComponent->allowance,
-                'potongan' => $payslip->total_potongan,
+                'gaji_pokok' => $payslip->gaji_pokok,
+                'uang_makan' => $payslip->uang_makan,
+                'uang_bensin' => $payslip->uang_bensin,
+                'bonus_kerajinan' => $payslip->bonus_kerajinan,
+                'bonus_kinerja' => $payslip->bonus_kinerja,
+                'thr' => $payslip->thr,
+                'potongan' => $payslip->potongan_telat,
             ];
         }
 
