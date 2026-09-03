@@ -98,31 +98,39 @@
 
 <div class="app" id="absensiApp">
 
+    {{-- Overlay untuk sidebar mobile --}}
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     {{-- =====================================================
         SIDEBAR (OWNER & ADMIN)
     ====================================================== --}}
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebarEl">
 
         <div class="brand">
             <img src="{{ asset('assets/img/logo.png') }}" alt="Haoyou" class="logo">
+
+            {{-- ===== Toggle Sidebar — di area logo/brand ===== --}}
+            <button type="button" class="sidebar-toggle-btn" id="sidebarToggle" title="Buka/Tutup Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
         </div>
 
         <nav class="navlist">
 
-            <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}" title="{{ __('nav.beranda') }}">
                 <i class="fa-solid fa-house nav-ico"></i>
-                {{ __('nav.beranda') }}
+                <span>{{ __('nav.beranda') }}</span>
             </a>
 
-            <a href="{{ route('karyawan.index') }}" class="nav-item {{ request()->routeIs('karyawan.*') ? 'active' : '' }}">
+            <a href="{{ route('karyawan.index') }}" class="nav-item {{ request()->routeIs('karyawan.*') ? 'active' : '' }}" title="{{ __('nav.karyawan') }}">
                 <i class="fa-solid fa-users nav-ico"></i>
-                {{ __('nav.karyawan') }}
+                <span>{{ __('nav.karyawan') }}</span>
             </a>
 
             <div class="nav-group {{ request()->routeIs(['approval', 'jadwal-kerja', 'presensi', 'kunjungan-klien', 'kunjungan-klien-saya', 'leave-requests.*']) ? 'open' : '' }}" id="navKehadiran">
-                <div class="nav-item" onclick="toggleGroup()">
+                <div class="nav-item" onclick="toggleGroup()" title="Kehadiran">
                     <i class="fa-solid fa-clock nav-ico"></i>
-                    Kehadiran
+                    <span>Kehadiran</span>
                     <i class="fa-solid fa-chevron-right nav-chevron"></i>
                 </div>
 
@@ -169,9 +177,9 @@
                 GAJI SAYA — KHUSUS ADMIN (bukan owner)
             ================================================== --}}
             @if(auth()->user()->role !== 'owner')
-                <a href="{{ route('payslips.index') }}" class="nav-item {{ request()->routeIs('payslips.*') ? 'active' : '' }}">
+                <a href="{{ route('payslips.index') }}" class="nav-item {{ request()->routeIs('payslips.*') ? 'active' : '' }}" title="Gaji Saya">
                     <i class="fa-solid fa-sack-dollar nav-ico"></i>
-                    Gaji Saya
+                    <span>Gaji Saya</span>
                 </a>
             @endif
 
@@ -179,9 +187,9 @@
                 PAYROLL — KHUSUS OWNER
             ================================================== --}}
             @if(auth()->user()->role === 'owner')
-                <a href="{{ route('payroll.index') }}" class="nav-item {{ request()->routeIs('payroll.*') ? 'active' : '' }}">
+                <a href="{{ route('payroll.index') }}" class="nav-item {{ request()->routeIs('payroll.*') ? 'active' : '' }}" title="Payroll">
                     <i class="fa-solid fa-sack-dollar nav-ico"></i>
-                    Payroll
+                    <span>Payroll</span>
                 </a>
             @endif
 
@@ -189,9 +197,9 @@
                 PENGATURAN — KHUSUS OWNER
             ================================================== --}}
             @if(auth()->user()->role === 'owner')
-                <a href="{{ route('pengaturan.edit') }}" class="nav-item {{ request()->routeIs('pengaturan.*') ? 'active' : '' }}">
+                <a href="{{ route('pengaturan.edit') }}" class="nav-item {{ request()->routeIs('pengaturan.*') ? 'active' : '' }}" title="{{ __('nav.pengaturan') }}">
                     <i class="fa-solid fa-gear nav-ico"></i>
-                    {{ __('nav.pengaturan') }}
+                    <span>{{ __('nav.pengaturan') }}</span>
                 </a>
             @endif
 
@@ -199,12 +207,18 @@
 
     </aside>
 
+    {{-- Tombol mengambang untuk buka sidebar saat tertutup (mobile) --}}
+    <button type="button" class="mobile-menu-fab" id="mobileMenuFab" title="Buka Menu">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
     {{-- =====================================================
         MAIN
     ====================================================== --}}
     <main class="main">
 
         <header class="topbar">
+
             <div class="org-select">
                 Haoyou Educator
                 <i class="fa-solid fa-chevron-down"></i>
@@ -310,6 +324,66 @@
             m.classList.remove('open');
         });
     });
+
+    /* =====================================================
+       TOGGLE SIDEBAR (BUKA/TUTUP) — RESPONSIVE SEMUA DEVICE
+    ====================================================== */
+
+    (function () {
+        const appEl = document.getElementById('absensiApp');
+        const sidebarEl = document.getElementById('sidebarEl');
+        const overlayEl = document.getElementById('sidebarOverlay');
+        const toggleBtn = document.getElementById('sidebarToggle');
+        const mobileFab = document.getElementById('mobileMenuFab');
+
+        function isMobile() {
+            return window.innerWidth <= 900;
+        }
+
+        function openMobileSidebar() {
+            sidebarEl.classList.add('mobile-open');
+            overlayEl.classList.add('show');
+        }
+
+        function closeMobileSidebar() {
+            sidebarEl.classList.remove('mobile-open');
+            overlayEl.classList.remove('show');
+        }
+
+        function toggleSidebar() {
+            if (isMobile()) {
+                sidebarEl.classList.contains('mobile-open') ? closeMobileSidebar() : openMobileSidebar();
+            } else {
+                appEl.classList.toggle('sidebar-collapsed');
+                localStorage.setItem(
+                    'absenly_sidebar',
+                    appEl.classList.contains('sidebar-collapsed') ? 'collapsed' : 'open'
+                );
+            }
+        }
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', toggleSidebar);
+        }
+
+        if (mobileFab) {
+            mobileFab.addEventListener('click', openMobileSidebar);
+        }
+
+        if (overlayEl) {
+            overlayEl.addEventListener('click', closeMobileSidebar);
+        }
+
+        if (!isMobile() && localStorage.getItem('absenly_sidebar') === 'collapsed') {
+            appEl.classList.add('sidebar-collapsed');
+        }
+
+        window.addEventListener('resize', function () {
+            if (!isMobile()) {
+                closeMobileSidebar();
+            }
+        });
+    })();
 
     // Mode Gelap/Terang
     const themeToggle = document.getElementById('themeToggle');

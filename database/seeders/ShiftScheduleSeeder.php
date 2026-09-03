@@ -10,25 +10,15 @@ use RuntimeException;
 
 class ShiftScheduleSeeder extends Seeder
 {
+    /**
+     * PRASYARAT: EmployeeSeeder & ShiftSeeder harus sudah dijalankan.
+     */
     public function run(): void
     {
-        $shiftPagi = Shift::where('name', 'Shift Pagi')->firstOrFail();
-        $shiftSiang = Shift::where('name', 'Shift Siang')->firstOrFail();
-
-        $hariKerja = ['senin', 'selasa', 'rabu', 'kamis', 'jumat'];
-
-        $shiftScheduleData = [
-            'EMP0001' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Owner
-            'EMP0002' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Admin
-            'EMP0003' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Admin
-            'EMP0010' => ['shift' => $shiftSiang, 'hari' => $hariKerja], // Cleaning Service
-            'EMP0011' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Teacher (tetap)
-            'EMP0012' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Course Consultant
-            'EMP0013' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Course Consultant
-            'EMP0014' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Course Consultant
-            'EMP0015' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Teacher (tetap)
-            'EMP0016' => ['shift' => $shiftPagi, 'hari' => $hariKerja], // Course Consultant
-        ];
+        // TODO: isi penugasan shift per karyawan yang sebenarnya.
+        // Contoh format:
+        // 'EMP0000' => ['shift' => Shift::where('name', 'Shift Pagi')->firstOrFail(), 'hari' => ['senin', 'selasa', 'rabu', 'kamis', 'jumat']],
+        $shiftScheduleData = [];
 
         foreach ($shiftScheduleData as $employeeCode => $data) {
             $employee = Employee::where('employee_code', $employeeCode)->firstOrFail();

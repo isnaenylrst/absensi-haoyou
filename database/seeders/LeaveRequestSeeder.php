@@ -15,21 +15,20 @@ class LeaveRequestSeeder extends Seeder
      */
     public function run(): void
     {
-        $owner = User::where('username', 'owner')->firstOrFail();
+        $owner = User::where('username', 'owner')->first();
 
         // TODO: isi dari riwayat pengajuan izin/cuti asli.
         $leaveRequests = [
-            [
-                'employee_code' => 'EMP0002',
-                'leave_type' => 'sakit',
-                'start_date' => '2026-08-03',
-                'end_date' => '2026-08-03',
-                'duration_days' => 1,
-                'reason' => 'Demam',
-                'status' => 'disetujui',
-                'approved_at' => '2026-08-03 09:00:00',
-            ],
-            // Tambahkan pengajuan izin/cuti lain di sini...
+            // [
+            //     'employee_code' => 'EMP0000',
+            //     'leave_type' => 'sakit',
+            //     'start_date' => '2026-01-01',
+            //     'end_date' => '2026-01-01',
+            //     'duration_days' => 1,
+            //     'reason' => '',
+            //     'status' => 'menunggu',
+            //     'approved_at' => null,
+            // ],
         ];
 
         foreach ($leaveRequests as $row) {
@@ -37,7 +36,7 @@ class LeaveRequestSeeder extends Seeder
 
             LeaveRequest::create([
                 'employee_id' => $employee->id,
-                'approved_by' => $row['status'] !== 'menunggu' ? $owner->id : null,
+                'approved_by' => $row['status'] !== 'menunggu' ? $owner?->id : null,
                 'leave_type' => $row['leave_type'],
                 'start_date' => $row['start_date'],
                 'end_date' => $row['end_date'],

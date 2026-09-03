@@ -211,12 +211,14 @@
 
 <div class="app" id="absensiApp">
 
+    {{-- Overlay untuk sidebar mobile --}}
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     {{-- =====================================================
         SIDEBAR KARYAWAN
     ====================================================== --}}
 
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebarEl">
 
         <div class="brand">
             <img
@@ -224,6 +226,16 @@
                 alt="Haoyou"
                 class="logo"
             >
+
+            {{-- ===== Toggle Sidebar — di area logo/brand ===== --}}
+            <button
+                type="button"
+                class="sidebar-toggle-btn"
+                id="sidebarToggle"
+                title="Buka/Tutup Menu"
+            >
+                <i class="fa-solid fa-bars"></i>
+            </button>
         </div>
 
         {{-- =====================================================
@@ -236,6 +248,7 @@
             <a
                 href="{{ route('dashboard') }}"
                 class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}"
+                title="Beranda"
             >
                 <i class="fa-solid fa-house nav-ico"></i>
                 <span>Beranda</span>
@@ -249,6 +262,7 @@
                 <a
                     href="{{ route('karyawan.index') }}"
                     class="nav-item {{ request()->routeIs('karyawan.*') ? 'active' : '' }}"
+                    title="Karyawan"
                 >
                     <i class="fa-solid fa-users nav-ico"></i>
                     <span>Karyawan</span>
@@ -269,6 +283,7 @@
                 <div
                     class="nav-item"
                     onclick="toggleGroup()"
+                    title="Kehadiran"
                 >
                     <i class="fa-solid fa-clock nav-ico"></i>
 
@@ -324,6 +339,7 @@
             <a
                 href="{{ route('payslips.index') }}"
                 class="nav-item {{ request()->routeIs('payslips.*') ? 'active' : '' }}"
+                title="Gaji Saya"
             >
 
                 <i class="fa-solid fa-sack-dollar nav-ico"></i>
@@ -336,6 +352,11 @@
 
     </aside>
 
+    {{-- Tombol mengambang untuk buka sidebar saat tertutup (mobile) --}}
+    <button type="button" class="mobile-menu-fab" id="mobileMenuFab" title="Buka Menu">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
 
     {{-- =====================================================
         MAIN
@@ -344,12 +365,11 @@
     <main class="main">
 
         {{-- =================================================
-            TOPBAR — Organisasi, ID, Notifikasi, Pengaturan,
-            Mode Gelap/Terang, Profil
+            TOPBAR — Toggle Sidebar, Organisasi, ID, Notifikasi,
+            Pengaturan, Mode Gelap/Terang, Profil
         ================================================== --}}
 
         <header class="topbar">
-
 
             {{-- ORGANIZATION --}}
             <div class="org-select">
@@ -580,6 +600,69 @@
             m.classList.remove('open');
         });
     });
+
+
+    /* =====================================================
+       TOGGLE SIDEBAR (BUKA/TUTUP) — RESPONSIVE SEMUA DEVICE
+    ====================================================== */
+
+    (function () {
+        const appEl = document.getElementById('absensiApp');
+        const sidebarEl = document.getElementById('sidebarEl');
+        const overlayEl = document.getElementById('sidebarOverlay');
+        const toggleBtn = document.getElementById('sidebarToggle');
+        const mobileFab = document.getElementById('mobileMenuFab');
+
+        function isMobile() {
+            return window.innerWidth <= 900;
+        }
+
+        function openMobileSidebar() {
+            sidebarEl.classList.add('mobile-open');
+            overlayEl.classList.add('show');
+        }
+
+        function closeMobileSidebar() {
+            sidebarEl.classList.remove('mobile-open');
+            overlayEl.classList.remove('show');
+        }
+
+        function toggleSidebar() {
+            if (isMobile()) {
+                sidebarEl.classList.contains('mobile-open') ? closeMobileSidebar() : openMobileSidebar();
+            } else {
+                appEl.classList.toggle('sidebar-collapsed');
+                localStorage.setItem(
+                    'absenly_sidebar',
+                    appEl.classList.contains('sidebar-collapsed') ? 'collapsed' : 'open'
+                );
+            }
+        }
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', toggleSidebar);
+        }
+
+        if (mobileFab) {
+            mobileFab.addEventListener('click', openMobileSidebar);
+        }
+
+        if (overlayEl) {
+            overlayEl.addEventListener('click', closeMobileSidebar);
+        }
+
+        // Pulihkan status collapsed di desktop dari kunjungan sebelumnya
+        if (!isMobile() && localStorage.getItem('absenly_sidebar') === 'collapsed') {
+            appEl.classList.add('sidebar-collapsed');
+        }
+
+        // Saat layar dibesarkan lagi ke ukuran desktop, tutup overlay mobile
+        window.addEventListener('resize', function () {
+            if (!isMobile()) {
+                closeMobileSidebar();
+            }
+        });
+    })();
 
 
     /* =====================================================

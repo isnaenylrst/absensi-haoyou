@@ -6,62 +6,59 @@ use App\Models\Attendance;
 use App\Models\Employee;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Storage;
 
 class AttendanceSeeder extends Seeder
 {
+    /**
+     * PRASYARAT: EmployeeSeeder & ShiftScheduleSeeder harus sudah dijalankan.
+     *
+     * TODO: isi dari riwayat presensi asli, atau generate ulang di sini
+     * berdasarkan data check-in/check-out yang sebenarnya.
+     */
     public function run(): void
     {
-        $mulai = Carbon::create(2026, 8, 1)->startOfDay();
-        $selesai = Carbon::create(2026, 8, 25)->endOfDay();
+        $attendances = [
+            // [
+            //     'employee_code' => 'EMP0000',
+            //     'tanggal' => '2026-01-01',
+            //     'check_in' => '2026-01-01 08:00:00',
+            //     'check_out' => '2026-01-01 17:00:00',
+            //     'check_in_lat' => null,
+            //     'check_in_lng' => null,
+            //     'distance_m' => null,
+            //     'status' => 'tepat_waktu',
+            //     'late_minutes' => 0,
+            // ],
+        ];
 
-        $employees = Employee::query()
-            ->where('employee_type', 'tetap')
-            ->with(['branch', 'shiftSchedules.shift'])
-            ->get();
+        foreach ($attendances as $row) {
+            $employee = Employee::where('employee_code', $row['employee_code'])
+                ->with(['shiftSchedules.shift'])
+                ->firstOrFail();
 
-        foreach ($employees as $employee) {
-            for ($tanggal = $mulai->copy(); $tanggal->lte($selesai); $tanggal->addDay()) {
-                if ($tanggal->isSunday() || $tanggal->lt($employee->join_date)) {
-                    continue;
-                }
+            $tanggal = Carbon::parse($row['tanggal']);
+            $dayNames = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu'];
+            $day = $dayNames[$tanggal->dayOfWeekIso - 1];
+            $shiftSchedule = $employee->shiftSchedules->firstWhere('day_of_week', $day);
 
-                $dayNames = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu'];
-                $day = $dayNames[$tanggal->dayOfWeekIso - 1];
-                $shiftSchedule = $employee->shiftSchedules->firstWhere('day_of_week', $day);
-
-                // Beberapa hari kosong agar data terasa seperti absensi nyata.
-                if (! $shiftSchedule || (($tanggal->day + $employee->id) % 7 === 0)) {
-                    continue;
-                }
-
-                $shift = $shiftSchedule->shift;
-                $isLate = (($tanggal->day + $employee->id) % 9 === 0);
-                $lateMinutes = $isLate ? 16 + (($tanggal->day + $employee->id) % 18) : 0;
-                $checkIn = Carbon::parse($tanggal->toDateString().' '.$shift->start_time)->addMinutes($lateMinutes);
-                $checkOut = Carbon::parse($tanggal->toDateString().' '.$shift->end_time)
-                    ->subMinutes((($tanggal->day + $employee->id) % 4) * 3);
-                $outOfRadius = (($tanggal->day + $employee->id) % 11 === 0);
-
-                Attendance::updateOrCreate(
-                    [
-                        'employee_id' => $employee->id,
-                        'tanggal' => $tanggal->toDateString(),
-                        'shift_id' => $shift->id,
-                    ],
-                    [
-                        'branch_id' => $employee->branch_id,
-                        'shift_schedule_id' => $shiftSchedule->id,
-                        'check_in' => $checkIn,
-                        'check_out' => $checkOut,
-                        'check_in_lat' => $outOfRadius ? -7.9510000 : -7.9501000,
-                        'check_in_lng' => $outOfRadius ? 112.6100000 : 112.6101000,
-                        'distance_m' => $outOfRadius ? 387 : 12 + (($tanggal->day + $employee->id) % 22),
-                        'status' => $isLate ? 'terlambat' : 'tepat_waktu',
-                        'late_minutes' => $lateMinutes,
-                    ]
-                );
-            }
+            Attendance::updateOrCreate(
+                [
+                    'employee_id' => $employee->id,
+                    'tanggal' => $tanggal->toDateString(),
+                    'shift_id' => $shiftSchedule?->shift_id,
+                ],
+                [
+                    'branch_id' => $employee->branch_id,
+                    'shift_schedule_id' => $shiftSchedule?->id,
+                    'check_in' => $row['check_in'],
+                    'check_out' => $row['check_out'],
+                    'check_in_lat' => $row['check_in_lat'] ?? null,
+                    'check_in_lng' => $row['check_in_lng'] ?? null,
+                    'distance_m' => $row['distance_m'] ?? null,
+                    'status' => $row['status'] ?? 'tepat_waktu',
+                    'late_minutes' => $row['late_minutes'] ?? 0,
+                ]
+            );
         }
     }
 }

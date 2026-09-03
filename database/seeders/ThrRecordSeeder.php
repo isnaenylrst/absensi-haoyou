@@ -15,8 +15,7 @@ class ThrRecordSeeder extends Seeder
     {
         // TODO: sesuaikan dengan masa kerja & kebijakan THR asli.
         $thr = [
-            'EMP0001' => ['year' => 2026, 'eligible' => true, 'amount' => 5000000],
-            // Tambahkan employee_code karyawan lain di sini...
+            // 'EMP0000' => ['year' => 2026, 'eligible' => true, 'amount' => 0],
         ];
 
         foreach ($thr as $employeeCode => $data) {

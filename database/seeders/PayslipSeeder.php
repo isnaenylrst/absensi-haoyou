@@ -15,16 +15,15 @@ class PayslipSeeder extends Seeder
     {
         // TODO: isi dari hasil rekap presensi & perhitungan gaji asli.
         $payslips = [
-            [
-                'employee_code' => 'EMP0001',
-                'period_month' => 8,
-                'period_year' => 2026,
-                'hari_hadir' => 22,
-                'total_pendapatan' => 5200000,
-                'total_potongan' => 0,
-                'total_diterima' => 5200000,
-            ],
-            // Tambahkan slip gaji karyawan lain di sini...
+            // [
+            //     'employee_code' => 'EMP0000',
+            //     'period_month' => 1,
+            //     'period_year' => 2026,
+            //     'hari_hadir' => 0,
+            //     'total_pendapatan' => 0,
+            //     'total_potongan' => 0,
+            //     'total_diterima' => 0,
+            // ],
         ];
 
         foreach ($payslips as $row) {

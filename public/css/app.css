@@ -38,9 +38,11 @@ body{
   position:fixed; top:0; left:0; height:100vh;
   overflow-y:auto;
   z-index:20;
+  transition: width .2s ease, transform .2s ease;
 }
 
 .brand {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -50,12 +52,53 @@ body{
     border-bottom: 1px solid #edeef1;
 }
 
+/* ===== TOGGLE SIDEBAR — anchored di area logo/brand (ikon garis tiga) ===== */
+.sidebar-toggle-btn{
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--gold-deep);
+  font-size: 16px;
+  z-index: 25;
+  transition: background .15s ease;
+}
+.sidebar-toggle-btn:hover{ background: var(--gold-pale); }
+
+/* tombol mengambang untuk membuka sidebar di mobile saat tertutup */
+.mobile-menu-fab{
+  display: none;
+  position: fixed;
+  top: 16px; left: 16px;
+  width: 40px; height: 40px;
+  border-radius: 11px;
+  background: var(--gold);
+  color: #fff;
+  border: none;
+  align-items: center; justify-content: center;
+  box-shadow: 0 8px 20px rgba(245,166,35,.35);
+  cursor: pointer;
+  z-index: 25;
+  font-size: 15px;
+  transition: opacity .2s ease;
+}
+.mobile-menu-fab:hover{ background: var(--gold-deep); }
+.sidebar.mobile-open ~ .mobile-menu-fab{ opacity: 0; pointer-events: none; }
+
 .logo {
     max-width: 90px;
     max-height: 90px;
     width: auto;
     height: auto;
     object-fit: contain;
+    transition: max-width .2s ease, max-height .2s ease;
 }
 
 .brand-sub{ font-size:10px; color:var(--text-faint); letter-spacing:.06em; text-transform:uppercase; margin-top:1px;}
@@ -142,6 +185,7 @@ body{
 .main{
   flex:1; min-width:0; display:flex; flex-direction:column;
   margin-left:246px; /* harus sama dengan width .sidebar */
+  transition: margin-left .2s ease;
 }
 
 /* ===== TOPBAR ===== */
@@ -149,20 +193,22 @@ body{
   background:linear-gradient(90deg, #F7AE2F, #F2A21F 55%, #EE9A14);
   padding:13px 30px; display:flex; align-items:center; justify-content:space-between;
   position:sticky; top:0; z-index:6;
+  gap:12px;
 }
 .org-select{
   display:flex; align-items:center; gap:8px; color:#fff; font-weight:700; font-size:13px;
   background:rgba(255,255,255,.14); padding:8px 13px; border-radius:9px; cursor:pointer;
+  white-space:nowrap;
 }
 .org-select i{ font-size:11px; }
-.topbar-right{ display:flex; align-items:center; gap:10px; }
+.topbar-right{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
 
 .tb-pill{ display:flex; align-items:center; gap:6px; background:rgba(255,255,255,.18); color:#fff; font-size:12px; font-weight:700; padding:7px 12px; border-radius:9px; cursor:pointer; }
 .tb-pill i{ font-size:10px; }
-.tb-icon{ width:34px; height:34px; border-radius:9px; background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; color:#fff; cursor:pointer; position:relative; font-size:14px; }
+.tb-icon{ width:34px; height:34px; border-radius:9px; background:rgba(255,255,255,.18); display:flex; align-items:center; justify-content:center; color:#fff; cursor:pointer; position:relative; font-size:14px; flex-shrink:0; }
 .tb-icon:hover{ background:rgba(255,255,255,.28); }
 .tb-badge{ position:absolute; top:-3px; right:-3px; width:15px; height:15px; border-radius:50%; background:var(--rust); color:#fff; font-size:9px; font-weight:800; display:flex; align-items:center; justify-content:center; border:2px solid #F2A21F; }
-.tb-avatar{ width:34px; height:34px; border-radius:9px; background:#fff; color:var(--gold-deep); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; cursor:pointer; }
+.tb-avatar{ width:34px; height:34px; border-radius:9px; background:#fff; color:var(--gold-deep); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; cursor:pointer; flex-shrink:0; }
 
 /* ===== CONTENT ===== */
 .content{ padding:22px 30px 60px; flex:1; }
@@ -170,10 +216,66 @@ body{
 ::-webkit-scrollbar{ width:9px; height:9px; }
 ::-webkit-scrollbar-thumb{ background:#E3D8C2; border-radius:20px; }
 
+/* =========================================================
+   SIDEBAR — MODE COLLAPSED (DESKTOP, icon-only)
+========================================================= */
+.app.sidebar-collapsed .sidebar{ width:78px; }
+.app.sidebar-collapsed .main{ margin-left:78px; }
+
+.app.sidebar-collapsed .brand-sub,
+.app.sidebar-collapsed .nav-item span,
+.app.sidebar-collapsed .nav-chevron,
+.app.sidebar-collapsed .nav-badge,
+.app.sidebar-collapsed .role-note{ display:none; }
+
+.app.sidebar-collapsed .nav-group .nav-sub{ display:none !important; max-height:0 !important; }
+.app.sidebar-collapsed .nav-item{ justify-content:center; padding:10px 0; gap:0; }
+.app.sidebar-collapsed .nav-ico{ width:auto; font-size:16px; }
+.app.sidebar-collapsed .logo{ max-width:34px; max-height:34px; }
+.app.sidebar-collapsed .brand{ padding:12px 8px 10px; }
+.app.sidebar-collapsed .sidebar-foot{ padding:10px 8px 14px; }
+.app.sidebar-collapsed .sidebar-toggle-btn{ right:6px; width:24px; height:24px; font-size:13px; }
+
+/* =========================================================
+   SIDEBAR OVERLAY (MOBILE)
+========================================================= */
+.sidebar-overlay{
+  display:none; position:fixed; inset:0; background:rgba(20,20,20,.42);
+  z-index:19; opacity:0; transition:opacity .2s ease;
+}
+.sidebar-overlay.show{ display:block; opacity:1; }
+
+/* =========================================================
+   RESPONSIVE — TABLET & MOBILE
+========================================================= */
 @media(max-width:900px){
-  .sidebar{ transform:translateX(-100%); transition:transform .2s ease; }
-  .sidebar.open{ transform:translateX(0); }
-  .main{ margin-left:0; }
+  .sidebar{
+    transform:translateX(-100%);
+    z-index:30;
+    width:246px !important; /* abaikan mode collapsed saat mobile */
+  }
+  .sidebar.mobile-open{ transform:translateX(0); box-shadow:0 0 40px rgba(0,0,0,.25); }
+  .main{ margin-left:0 !important; }
+
+  .app.sidebar-collapsed .nav-item span,
+  .app.sidebar-collapsed .nav-chevron{ display:flex; }
+  .app.sidebar-collapsed .nav-item{ justify-content:flex-start; padding:10px 12px; gap:11px; }
+  .app.sidebar-collapsed .logo{ max-width:90px; max-height:90px; }
+
+  /* di mobile tombol toggle di brand berfungsi sebagai tombol tutup */
+  .sidebar-toggle-btn{ right:14px; }
+
+  .mobile-menu-fab{ display:flex; }
+
+  .topbar{ padding:12px 16px; }
+  .content{ padding:16px 16px 50px; }
+}
+
+@media(max-width:560px){
+  .org-select span{ display:none; }
+  .org-select{ padding:8px 10px; }
+  .topbar-right{ gap:7px; }
+  .tb-icon, .tb-avatar{ width:32px; height:32px; }
 }
 
 /* ============================================================
@@ -220,6 +322,7 @@ body{
 .grid-2{ grid-template-columns:1.3fr 1fr; }
 .grid-2-even{ grid-template-columns:1fr 1fr; }
 @media(max-width:1100px){ .grid-4{grid-template-columns:repeat(2,1fr);} .grid-3{grid-template-columns:1fr 1fr;} .grid-2{grid-template-columns:1fr;} }
+@media(max-width:560px){ .grid-4{grid-template-columns:1fr;} .grid-3{grid-template-columns:1fr;} .grid-2-even{grid-template-columns:1fr;} }
 
 /* stat cards */
 .stat-card{ display:flex; flex-direction:column; gap:9px; }
@@ -334,4 +437,3 @@ tr:hover td{ background:#FCFBF8; }
 .row-total{ font-weight:800; white-space:nowrap; }
 .row-updated{ font-size:10px; color:var(--text-faint); margin-top:3px; }
 .thr-check{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--text-dim); }
-.owner-panel-note{ background:var(--green-soft); border:1px solid #CDEBD9; border-radius:10px; padding:12px 14px; font-size:12px; color:#215A3D; display:flex; gap:9px; margin-bottom:18px; line-height:1.5; }
