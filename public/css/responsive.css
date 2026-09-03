@@ -1,0 +1,199 @@
+/* =========================================
+   RESPONSIVE — Tablet & Mobile
+   Melengkapi JS toggle sidebar yang sudah ada
+   (.sidebar-toggle-btn, .mobile-menu-fab,
+   .sidebar-overlay, .mobile-open, .sidebar-collapsed)
+========================================= */
+
+/* ===== Tombol toggle di area brand/logo ===== */
+.sidebar-toggle-btn {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 6px;
+    margin-left: auto;
+}
+
+/* ===== Overlay gelap saat sidebar mobile terbuka ===== */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 999;
+}
+.sidebar-overlay.show {
+    display: block;
+}
+
+/* ===== Tombol mengambang (FAB) buka sidebar di mobile ===== */
+.mobile-menu-fab {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #ffbd08;
+    color: #fff;
+    border: none;
+    box-shadow: 0 6px 16px rgba(0,0,0,.25);
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    z-index: 500;
+    cursor: pointer;
+}
+.mobile-menu-fab:hover {
+    background: #DE8C0F;
+}
+
+/* =========================================
+   DESKTOP — sidebar collapsed (fitur tambahan
+   yang sudah kamu bangun, cuma tinggal di-styling)
+========================================= */
+@media (min-width: 901px) {
+    #absensiApp.sidebar-collapsed .sidebar {
+        width: 76px;
+    }
+    #absensiApp.sidebar-collapsed .sidebar .nav-item span,
+    #absensiApp.sidebar-collapsed .sidebar .nav-sub-label,
+    #absensiApp.sidebar-collapsed .sidebar .nav-badge,
+    #absensiApp.sidebar-collapsed .sidebar .nav-chevron,
+    #absensiApp.sidebar-collapsed .sidebar .nav-sub,
+    #absensiApp.sidebar-collapsed .sidebar .brand img {
+        display: none;
+    }
+    #absensiApp.sidebar-collapsed .sidebar .nav-item {
+        justify-content: center;
+    }
+}
+
+/* =========================================
+   TABLET (max-width: 1024px)
+========================================= */
+@media (max-width: 1024px) {
+    .form-row-3 {
+        grid-template-columns: 1fr 1fr;
+    }
+    .grid-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =========================================
+   MOBILE & TABLET KECIL (max-width: 900px)
+   — angka ini disamakan dengan isMobile() di JS kamu
+========================================= */
+@media (max-width: 900px) {
+
+    /* Sidebar jadi off-canvas: tersembunyi di kiri,
+       geser masuk saat class .mobile-open aktif */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 240px;
+        z-index: 1000;
+        transform: translateX(-100%);
+        transition: transform .25s ease;
+        overflow-y: auto;
+    }
+    #sidebarEl.mobile-open {
+        transform: translateX(0);
+    }
+
+    /* Konten utama full-width, tidak lagi digeser sidebar */
+    .main {
+        margin-left: 0 !important;
+        width: 100%;
+    }
+
+    /* Tombol collapse desktop tidak relevan di mobile — sembunyikan,
+       biar tidak dobel dengan FAB */
+    .sidebar-toggle-btn {
+        display: none;
+    }
+
+    /* Tombol FAB muncul di mobile */
+    .mobile-menu-fab {
+        display: flex;
+    }
+
+    /* Topbar: sembunyikan nama cabang biar muat, kecilkan padding */
+    .topbar {
+        padding: 10px 14px;
+    }
+    .org-select span {
+        display: none;
+    }
+    .topbar-right {
+        gap: 6px;
+    }
+
+    /* Konten: padding lebih kecil biar tidak sempit */
+    .content {
+        padding: 14px;
+    }
+
+    /* Semua grid form jadi 1 kolom */
+    .form-row, .form-row-3, .grid-2 {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    /* Kartu statistik (3 kotak sejajar di Beranda) jadi 1 kolom */
+    .content > div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Page-head (judul + tombol aksi) jadi bertumpuk */
+    .page-head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .page-actions {
+        flex-wrap: wrap;
+    }
+    .page-actions a, .page-actions button {
+        flex: 1;
+        justify-content: center;
+        font-size: 12px;
+        padding: 9px 10px;
+    }
+
+    /* Toolbar (Filter + search box Karyawan) bertumpuk */
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .search-box input {
+        width: 100%;
+    }
+
+    /* Form card, card umum: padding lebih kecil */
+    .form-card, .card, .import-card {
+        padding: 16px;
+    }
+
+    h1 {
+        font-size: 20px !important;
+    }
+}
+
+/* =========================================
+   HP SANGAT KECIL (max-width: 400px)
+========================================= */
+@media (max-width: 400px) {
+    .tb-avatar, .tb-icon {
+        width: 30px;
+        height: 30px;
+    }
+    .page-actions a span, .page-actions button span {
+        display: none;
+    }
+}
