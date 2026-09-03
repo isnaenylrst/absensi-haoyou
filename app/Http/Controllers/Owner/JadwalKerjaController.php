@@ -11,6 +11,7 @@ use App\Models\Shift;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class JadwalKerjaController extends Controller
@@ -55,8 +56,39 @@ class JadwalKerjaController extends Controller
             'tahunTerpilih' => $tahunTerpilih,
             'daftarBulan'   => self::NAMA_BULAN,
             'daftarTahun'   => $this->getDaftarTahun(),
+            'archiveFiles'  => $this->getArchiveFiles(),
         ]);
     }
+
+    /**
+     * Download file arsip attendance (hasil export sebelum soft-delete).
+     */
+    public function downloadArchive(string $filename)
+    {
+        $path = 'archives/'.$filename;
+
+        abort_unless(Storage::disk('local')->exists($path), 404, 'File arsip tidak ditemukan.');
+
+        return response()->download(Storage::disk('local')->path($path));
+    }
+
+    private function getArchiveFiles(): Collection
+    {
+        return collect(Storage::disk('local')->files('archives'))
+            ->filter(fn ($file) => str_ends_with($file, '.xlsx'))
+            ->map(function ($file) {
+                return (object) [
+                    'name' => basename($file),
+                    'size' => round(Storage::disk('local')->size($file) / 1024, 2).' KB',
+                    'date' => Carbon::createFromTimestamp(
+                        Storage::disk('local')->lastModified($file)
+                    )->format('d M Y H:i'),
+                ];
+            })
+            ->sortByDesc('date')
+            ->values();
+    }
+
     public function presensiKategori(Request $request, string $kategori)
     {
         abort_unless(in_array($kategori, ['masuk', 'cuti', 'alpa'], true), 404);
@@ -589,7 +621,7 @@ class JadwalKerjaController extends Controller
         return range(now()->year, $tahunAwal);
     }
 
-        private function countHariKerja(Carbon $mulai, Carbon $akhir): int
+    private function countHariKerja(Carbon $mulai, Carbon $akhir): int
     {
         if ($mulai->gt($akhir)) {
             return 0;

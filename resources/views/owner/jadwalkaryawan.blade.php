@@ -170,6 +170,35 @@
         <div class="modal-box" id="riwayatModalBody" onclick="event.stopPropagation()"></div>
       </div>
     </div>
+          <!-- ===== Arsip Attendance ===== -->
+      <div class="card-title" style="margin-top:22px; margin-bottom:12px;">Arsip Attendance</div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table class="jadwal-approval-table">
+            <tr>
+              <th>Nama File</th>
+              <th style="text-align:center;">Ukuran</th>
+              <th style="text-align:center;">Tanggal Dibuat</th>
+              <th style="text-align:center;">Aksi</th>
+            </tr>
+            @forelse ($archiveFiles as $file)
+              <tr>
+                <td>{{ $file->name }}</td>
+                <td style="text-align:center;">{{ $file->size }}</td>
+                <td style="text-align:center;">{{ $file->date }}</td>
+                <td style="text-align:center;">
+                  <a href="{{ route('owner.archive.download', $file->name) }}" class="btn btn-line btn-xs">
+                    <i class="fa-solid fa-download" style="margin-right:4px;"></i>Download
+                  </a>
+                </td>
+              </tr>
+            @empty
+              <tr><td colspan="4" class="empty-state">Belum ada file arsip.</td></tr>
+            @endforelse
+          </table>
+        </div>
+      </div>
     {{-- ===== akhir subpage jdw-tetap ===== --}}
 
     <!-- ============ MODAL: TAMBAH SHIFT ============ -->

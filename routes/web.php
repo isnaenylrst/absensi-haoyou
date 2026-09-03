@@ -152,6 +152,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/owner/presensi/{kategori}', [JadwalKerjaController::class, 'presensiKategori'])
             ->name('owner.presensi.kategori');
 
+        Route::get('/owner/jadwal-kerja/archive/download/{filename}', [JadwalKerjaController::class, 'downloadArchive'])
+            ->name('owner.archive.download');
+
         // ----------------------------------------------
         // Kunjungan Klien - Owner
         // ----------------------------------------------
