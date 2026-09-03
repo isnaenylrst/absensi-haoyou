@@ -8,5 +8,8 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Mengahus data attedance tiap 3 bulan sekali
+// Export lalu soft delete data attendance tiap bulan
 Schedule::command('attendance:prune')->monthly();
+
+// Hapus file arsip .xlsx yang sudah lebih dari 1 tahun
+Schedule::command('attendance:prune-archives')->monthly();

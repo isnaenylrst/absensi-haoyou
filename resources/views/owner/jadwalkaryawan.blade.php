@@ -170,6 +170,7 @@
         <div class="modal-box" id="riwayatModalBody" onclick="event.stopPropagation()"></div>
       </div>
     </div>
+    
           <!-- ===== Arsip Attendance ===== -->
       <div class="card-title" style="margin-top:22px; margin-bottom:12px;">Arsip Attendance</div>
 
