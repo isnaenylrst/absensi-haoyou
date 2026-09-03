@@ -23,6 +23,7 @@
     >
 
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/responsive.css') }}">
 
     {{-- CSS Dropdown Profile & Notifikasi --}}
     <style>
