@@ -1,0 +1,56 @@
+name: Deploy to Hostinger VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            # Pindah ke direktori project di VPS
+            cd ${{ secrets.VPS_PROJECT_PATH }}
+
+            # Hindari error dubious ownership di Git
+            git config --global --add safe.directory ${{ secrets.VPS_PROJECT_PATH }}
+
+            # Aktifkan maintenance mode (opsional, agar user tidak error saat deploy)
+            php artisan down || true
+
+            # Tarik perubahan terbaru dari GitHub
+            git reset --hard origin/main
+            git pull origin main
+
+            # Update dependencies PHP
+            composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+
+            # Build asset Vite (jika Node.js & NPM terpasang di VPS)
+            npm install
+            npm run build
+
+            # Jalankan migrasi database
+            php artisan migrate --force
+
+            # Cache route, view, dan config untuk performa maksimal
+            php artisan optimize:clear
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            # Pastikan permission folder storage dan bootstrap/cache benar
+            chmod -R 775 storage bootstrap/cache
+
+            # Matikan maintenance mode
+            php artisan up
+
+            echo "🚀 Deployment selesai dengan sukses!"
