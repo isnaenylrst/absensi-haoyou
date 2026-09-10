@@ -144,12 +144,8 @@ HARI EFEKTIF PERIODE INI
            required>
 
     <input type="hidden" name="periode" value="{{ $periodeValue }}">
-
     <button type="submit" class="btn btn-gold btn-sm">Simpan Hari Efektif</button>
 
-    <span style="font-size:11px; color:#888;">
-        Beda tiap bulan — isi manual sesuai jumlah hari kerja bulan ini (Senin–Sabtu, dikurangi tanggal merah/cuti bersama bila perlu).
-    </span>
 </form>
 
 <div class="page-actions" style="display:flex; justify-content:flex-end; margin-bottom:16px;">

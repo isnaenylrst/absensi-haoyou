@@ -208,11 +208,6 @@
 
     </aside>
 
-    {{-- Tombol mengambang untuk buka sidebar saat tertutup (mobile) --}}
-    <button type="button" class="mobile-menu-fab" id="mobileMenuFab" title="Buka Menu">
-        <i class="fa-solid fa-bars"></i>
-    </button>
-
     {{-- =====================================================
         MAIN
     ====================================================== --}}
@@ -220,9 +215,16 @@
 
         <header class="topbar">
 
-            <div class="org-select">
-                Haoyou Educator
-                <i class="fa-solid fa-chevron-down"></i>
+            <div class="topbar-left">
+                {{-- Tombol buka sidebar (mobile) — sejajar dengan nama organisasi --}}
+                <button type="button" class="mobile-menu-fab" id="mobileMenuFab" title="Buka Menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+
+                <div class="org-select">
+                    Haoyou Educator
+                    <i class="fa-solid fa-chevron-down"></i>
+                </div>
             </div>
 
             <div class="topbar-right">
