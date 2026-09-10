@@ -28,28 +28,9 @@
     display: block;
 }
 
-/* ===== Tombol mengambang (FAB) buka sidebar di mobile ===== */
-.mobile-menu-fab {
-    display: none;
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: #ffbd08;
-    color: #fff;
-    border: none;
-    box-shadow: 0 6px 16px rgba(0,0,0,.25);
-    align-items: center;
-    justify-content: center;
-    font-size: 19px;
-    z-index: 500;
-    cursor: pointer;
-}
-.mobile-menu-fab:hover {
-    background: #DE8C0F;
-}
+/* Posisi & warna dasar .mobile-menu-fab sudah didefinisikan di app.css
+   (kanan-bawah, bulat, z-index tinggi) — tidak diulang di sini supaya
+   tidak ada dua sumber style yang saling menimpa. */
 
 /* =========================================
    DESKTOP — sidebar collapsed (fitur tambahan
@@ -114,12 +95,12 @@
     }
 
     /* Tombol collapse desktop tidak relevan di mobile — sembunyikan,
-       biar tidak dobel dengan FAB */
+       biar tidak dobel dengan tombol menu di topbar */
     .sidebar-toggle-btn {
         display: none;
     }
 
-    /* Tombol FAB muncul di mobile */
+    /* Tombol menu (hamburger) muncul di topbar saat mobile */
     .mobile-menu-fab {
         display: flex;
     }
