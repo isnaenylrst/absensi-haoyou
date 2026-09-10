@@ -2,6 +2,64 @@
 
 @section('title', 'Izin & Cuti')
 
+@push('styles')
+<style>
+    /* =====================================================
+       Perbaikan KHUSUS halaman Izin & Cuti — dipaksa pakai
+       !important supaya tidak kalah sama CSS lama yang mungkin
+       masih ke-cache, dan TIDAK menyentuh halaman lain.
+    ===================================================== */
+
+    /* Topbar & body dipaksa pas selebar layar, tidak boleh lebih lebar */
+    html, body {
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+    }
+
+    .topbar {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .main,
+    .content {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+    }
+
+    /* Isi kartu form: semua elemen dipaksa tidak boleh melebihi lebar induknya */
+    .content .card,
+    .content .card * {
+        box-sizing: border-box !important;
+        max-width: 100% !important;
+    }
+
+    .content .card input,
+    .content .card select,
+    .content .card textarea {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    /* Tabel riwayat: 1 baris lurus, boleh digeser SENDIRI di dalam kotaknya saja
+       (bukan seluruh halaman ikut geser) */
+    .content .table-wrap {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    .content .table-wrap table {
+        width: max-content !important;
+        min-width: 100% !important;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="crumb">Home <span>›</span> Kehadiran <span>›</span> <b>Izin &amp; Cuti</b></div>
 <div class="page-title" style="margin-bottom:18px;">Izin &amp; Cuti</div>
