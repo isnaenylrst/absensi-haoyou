@@ -4,12 +4,7 @@
 
 @push('styles')
 <style>
-    /* =====================================================
-       Perbaikan KHUSUS halaman Izin & Cuti — dipaksa pakai
-       !important supaya tidak kalah sama CSS lama yang mungkin
-       masih ke-cache, dan TIDAK menyentuh halaman lain.
-    ===================================================== */
-
+ 
     /* Topbar & body dipaksa pas selebar layar, tidak boleh lebih lebar */
     html, body {
         max-width: 100% !important;
@@ -71,7 +66,9 @@
 @endif
 
 <div class="grid grid-2">
+
     {{-- Form Ajukan Izin/Cuti --}}
+
     <div class="card">
         <div class="card-title" style="margin-bottom:16px;">Ajukan Surat Izin / Cuti</div>
 
