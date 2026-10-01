@@ -116,6 +116,13 @@
             color: #D34D3C;
         }
 
+        .tb-avatar { 
+            overflow: hidden; padding: 0; 
+        }
+        .tb-avatar-img { 
+            width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; 
+        }
+
         .logout-form {
             margin: 0;
             padding: 0;
@@ -447,7 +454,11 @@
                         id="avatarToggle"
                         aria-label="Menu akun"
                     >
-                        {{ auth()->user()->employee->initials() ?? 'U' }}
+                        @if($photoUrl = auth()->user()->employee?->photoUrl())
+                            <img src="{{ $photoUrl }}" alt="Foto profil" class="tb-avatar-img">
+                        @else
+                            {{ auth()->user()->employee->initials() ?? 'U' }}
+                        @endif
                     </button>
 
 

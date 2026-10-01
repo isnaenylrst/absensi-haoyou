@@ -98,14 +98,31 @@
                     <input type="hidden" name="longitude" id="lngInput">
                     <input type="hidden" name="shift_id" id="shiftInput" value="{{ $shifts->first()->id ?? '' }}">
 
-                    <div class="shift-toggle">
-                        @foreach ($shifts as $s)
-                            <div class="shift-opt {{ $loop->first ? 'active' : '' }}" data-shift-id="{{ $s->id }}">
-                                <div class="shift-opt-label">{{ $s->name ?? 'Shift' }}</div>
-                                <div class="shift-opt-time">{{ substr($s->start_time, 0, 5) }} – {{ substr($s->end_time, 0, 5) }}</div>
+                    {{-- ===== PERUBAHAN 1: shift jadi dropdown kartu besar (kuning/putih) ===== --}}
+                    <div class="shift-dd" id="shiftDd">
+                        <button type="button" class="shift-dd-trigger" id="shiftDdTrigger" aria-haspopup="listbox" aria-expanded="false">
+                            <div class="shift-dd-current">
+                                <div class="shift-dd-label">Shift</div>
                             </div>
-                        @endforeach
+                            <svg class="shift-dd-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <path d="m6 9 6 6 6-6"/>
+                            </svg>
+                        </button>
+
+                        <div class="shift-dd-menu" id="shiftDdMenu" role="listbox">
+                            @foreach ($shifts as $s)
+                                <div class="shift-dd-item {{ $loop->first ? 'active' : '' }}"
+                                     role="option"
+                                     data-shift-id="{{ $s->id }}"
+                                     data-label="{{ $s->name ?? 'Shift' }}"
+                                     data-time="{{ substr($s->start_time, 0, 5) }} – {{ substr($s->end_time, 0, 5) }}">
+                                    <div class="shift-dd-label">{{ $s->name ?? 'Shift' }}</div>
+                                    <div class="shift-dd-time">{{ substr($s->start_time, 0, 5) }} – {{ substr($s->end_time, 0, 5) }}</div>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
+                    {{-- ===== akhir perubahan 1 ===== --}}
 
                     <div class="cam-btn-row">
                         <button type="button" id="btnCapture" class="btn btn-line">Ambil Foto</button>
@@ -286,15 +303,42 @@
     </div>
 
     <script>
-        // ===== Pilih shift =====
+        // ===== PERUBAHAN 2: Pilih shift lewat dropdown kartu =====
         const shiftInput = document.getElementById('shiftInput');
-        document.querySelectorAll('.shift-opt').forEach(opt => {
-            opt.addEventListener('click', () => {
-                opt.parentElement.querySelectorAll('.shift-opt').forEach(o => o.classList.remove('active'));
-                opt.classList.add('active');
-                if (shiftInput) shiftInput.value = opt.dataset.shiftId;
+        const shiftDd = document.getElementById('shiftDd');
+
+        if (shiftDd && shiftInput) {
+            const ddTrigger = document.getElementById('shiftDdTrigger');
+            const ddItems = shiftDd.querySelectorAll('.shift-dd-item');
+
+            function setDropdown(open) {
+                shiftDd.classList.toggle('open', open);
+                ddTrigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+            }
+
+            // Klik tulisan "Shift" = buka / tutup daftar
+            ddTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                setDropdown(!shiftDd.classList.contains('open'));
             });
-        });
+
+            // Klik salah satu shift = jadi kuning + isi input hidden shift_id + daftar menutup
+            ddItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    ddItems.forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    shiftInput.value = item.dataset.shiftId; // nilai yang dikirim ke server
+                    setDropdown(false);
+                });
+            });
+
+            // Klik di luar dropdown = daftar menutup
+            document.addEventListener('click', (e) => {
+                if (!shiftDd.contains(e.target)) setDropdown(false);
+            });
+        }
+        // ===== akhir perubahan 2 =====
 
         // ===== Kamera + GPS + Radar =====
         (function () {

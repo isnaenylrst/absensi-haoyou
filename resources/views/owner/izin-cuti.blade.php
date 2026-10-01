@@ -27,9 +27,8 @@
             @forelse ($allLeaveRequests as $leave)
                 <tr>
                     <td class="row-name">
-                        <div class="avatar-dot" style="background:#2E6FDB;">
-                            {{ strtoupper(substr($leave->employee->full_name, 0, 1)) }}{{ strtoupper(substr(strrchr($leave->employee->full_name, ' ') ?: '', 1, 1)) }}
-                        </div>
+                        {{-- PERUBAHAN: avatar inisial diganti komponen (foto kalau ada, inisial kalau tidak) --}}
+                        <x-avatar :employee="$leave->employee" :size="32" />
                         {{ $leave->employee->full_name }}
                     </td>
                     <td>{{ str_replace('_', ' ', ucfirst($leave->leave_type)) }}</td>

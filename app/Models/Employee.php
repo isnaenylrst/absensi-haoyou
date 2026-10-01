@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Storage;
 
 class Employee extends Model
 {
@@ -32,6 +33,7 @@ class Employee extends Model
         'can_submit_teaching_sessions',
         'join_date',
         'nik',
+        'photo_path',
     ];
 
     protected $casts = [
@@ -98,5 +100,10 @@ class Employee extends Model
         $colors = ['#3B6EF6', '#F2A21F', '#8B5CF6', '#2F8A5B', '#D34D3C', '#0EA5E9', '#EC4899'];
         $index = $this->id % count($colors);
         return $colors[$index];
+    }
+
+    public function photoUrl(): ?string
+    {
+    return $this->photo_path ? asset('storage/' . $this->photo_path) : null;
     }
 }

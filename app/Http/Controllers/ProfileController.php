@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
@@ -47,5 +48,38 @@ class ProfileController extends Controller
         $user->save();
 
         return back()->with('status', 'Password berhasil diubah.');
+    }
+
+    /** Semua role boleh upload/ganti foto profil sendiri */
+    public function updatePhoto(Request $request)
+    {
+        $request->validate([
+            'photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ]);
+
+        $employee = $request->user()->employee;
+
+        if ($employee->photo_path && Storage::disk('public')->exists($employee->photo_path)) {
+            Storage::disk('public')->delete($employee->photo_path);
+        }
+
+        $path = $request->file('photo')->store('profil-foto', 'public');
+        $employee->update(['photo_path' => $path]);
+
+        return back()->with('status', 'Foto profil berhasil diperbarui.');
+    }
+
+    /** Semua role boleh hapus foto profil sendiri */
+    public function removePhoto(Request $request)
+    {
+        $employee = $request->user()->employee;
+
+        if ($employee->photo_path && Storage::disk('public')->exists($employee->photo_path)) {
+            Storage::disk('public')->delete($employee->photo_path);
+        }
+
+        $employee->update(['photo_path' => null]);
+
+        return back()->with('status', 'Foto profil dihapus.');
     }
 }

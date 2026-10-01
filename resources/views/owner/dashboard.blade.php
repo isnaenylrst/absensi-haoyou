@@ -46,6 +46,9 @@
         .tb-avatar-menu-item:hover { background: #F7F8FA; }
         .tb-avatar-menu-danger { color: #D34D3C; }
 
+        .tb-avatar { overflow: hidden; padding: 0; }
+        .tb-avatar-img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+
         /* ===== Ikon Mode Gelap/Terang ===== */
         #themeIconSun { color: #FFD24C; }
         #themeIconMoon { color: #C9B8FF; }
@@ -270,12 +273,18 @@
                 {{-- ===== Avatar (Profil & Keluar) ===== --}}
                 <div class="tb-avatar-wrap">
                     <button type="button" class="tb-avatar" id="avatarToggle">
-                        {{ auth()->user()->employee->initials() ?? 'U' }}
+                        @if($photoUrl = auth()->user()->employee?->photoUrl())
+                            <img src="{{ $photoUrl }}" alt="Foto profil" class="tb-avatar-img">
+                        @else
+                            {{-- PERUBAHAN: pakai ?-> supaya aman kalau user tidak punya data karyawan --}}
+                            {{ auth()->user()->employee?->initials() ?? 'U' }}
+                        @endif
                     </button>
 
                     <div class="tb-avatar-menu" id="avatarMenu">
                         <div class="tb-avatar-menu-header">
-                            <div class="tb-avatar-menu-name">{{ auth()->user()->employee->full_name }}</div>
+                            {{-- PERUBAHAN: pakai ?-> dengan cadangan username --}}
+                            <div class="tb-avatar-menu-name">{{ auth()->user()->employee?->full_name ?? auth()->user()->username }}</div>
                             <div class="tb-avatar-menu-role">{{ auth()->user()->role }}</div>
                         </div>
                         <a href="{{ route('profil.edit') }}" class="tb-avatar-menu-item">

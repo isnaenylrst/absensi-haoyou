@@ -47,6 +47,11 @@ Route::middleware('auth')->group(function () {
     Route::put('/profil/password', [ProfileController::class, 'updatePassword'])
         ->name('profil.password');
 
+    Route::post('/profil/foto', [ProfileController::class, 'updatePhoto'])
+        ->name('profil.foto');
+    Route::delete('/profil/foto', [ProfileController::class, 'removePhoto'])
+        ->name('profil.foto.destroy');
+
     // ==================================================
     // PRESENSI KARYAWAN (khusus karyawan tetap)
     // ==================================================
@@ -175,6 +180,10 @@ Route::middleware('auth')->group(function () {
 
         Route::put('/pengaturan/aturan', [SettingController::class, 'updateAturan'])
             ->name('pengaturan.aturan');
+
+        Route::post('cabang', [SettingController::class, 'storeBranch'])->name('cabang.store');
+        Route::put('cabang/{branch}', [SettingController::class, 'updateBranch'])->name('cabang.update');
+        Route::delete('cabang/{branch}', [SettingController::class, 'destroyBranch'])->name('cabang.destroy');
 
         // ----------------------------------------------
         // Payroll

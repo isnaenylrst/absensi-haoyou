@@ -702,6 +702,8 @@ tr:hover td {
     cursor: not-allowed;
 }
 
+/* (lama) tombol shift — tidak dipakai lagi oleh presensi.blade.php,
+   dibiarkan supaya halaman lain yang mungkin memakainya tidak rusak */
 .shift-toggle {
     display: flex;
     gap: 10px;
@@ -730,6 +732,92 @@ tr:hover td {
     font-size: 11px;
     color: var(--text-dim);
     margin-top: 2px;
+}
+
+/* ================================================================
+   DROPDOWN SHIFT (kartu besar kuning/putih)
+   Dipakai oleh blok .shift-dd di presensi.blade.php
+   ================================================================ */
+.shift-dd {
+    margin-top: 14px;
+}
+
+/* Kartu atas = shift yang sedang dipilih (kuning) */
+.shift-dd-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    font-family: inherit;
+    color: var(--text);
+    text-align: center;
+    cursor: pointer;
+    transition: 0.15s;
+}
+.shift-dd-trigger:hover,
+.shift-dd.open .shift-dd-trigger {
+    border-color: var(--gold);
+}
+.shift-dd-trigger:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+}
+.shift-dd-current {
+    flex: 1;
+    min-width: 0;
+    padding-left: 16px; /* seimbangkan dengan lebar panah supaya teks tetap di tengah */
+}
+.shift-dd-label {
+    font-weight: 800;
+    font-size: 13px;
+}
+.shift-dd-time {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+}
+.shift-dd-arrow {
+    flex-shrink: 0;
+    color: var(--gold-deep);
+    transition: transform 0.2s ease;
+}
+.shift-dd.open .shift-dd-arrow {
+    transform: rotate(180deg);
+}
+
+/* Daftar pilihan (terbuka di bawah kartu atas) */
+.shift-dd-menu {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+.shift-dd.open .shift-dd-menu {
+    display: flex;
+}
+
+/* Kartu pilihan = putih, yang aktif = kuning */
+.shift-dd-item {
+    border: 1px solid var(--line);
+    background: var(--paper);
+    border-radius: 11px;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.15s;
+    min-width: 0;
+}
+.shift-dd-item:hover {
+    border-color: var(--gold);
+}
+.shift-dd-item.active {
+    border-color: var(--gold);
+    background: var(--gold-pale);
 }
 
 .note-box {
@@ -1389,6 +1477,9 @@ main,
         padding: 9px 8px;
         font-size: 11px;
     }
+    .shift-dd-label {
+        font-size: 12.5px;
+    }
 }
 
 /* ================================================================
@@ -1488,4 +1579,17 @@ body.dark-mode .toast {
 
 body.dark-mode ::-webkit-scrollbar-thumb {
     background: #3a3d44;
+}
+
+/* Dropdown shift di mode gelap */
+body.dark-mode .shift-dd-trigger {
+    color: var(--text);
+}
+body.dark-mode .shift-dd-item {
+    background: var(--line-soft);
+    border-color: var(--line);
+}
+body.dark-mode .shift-dd-item.active {
+    background: var(--gold-pale);
+    border-color: var(--gold);
 }

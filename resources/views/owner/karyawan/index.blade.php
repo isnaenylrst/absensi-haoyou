@@ -136,7 +136,7 @@
         table.tbl { width: 100%; min-width: 0; font-size: 9px; table-layout: fixed; }
         table.tbl th, table.tbl td { padding: 5px 6px; white-space: normal; word-wrap: break-word; overflow-wrap: break-word; }
         .emp-cell { gap: 4px; }
-        .avatar-badge { width: 20px; height: 20px; font-size: 8px; }
+        .avatar-badge { width: 20px !important; height: 20px !important; min-width: 20px !important; font-size: 8px !important; }
     }
 </style>
 @endpush
@@ -286,7 +286,7 @@
             <td>{{ $employees->firstItem() + $i }}</td>
             <td>
                 <div class="emp-cell">
-                    <div class="avatar-badge" style="background: {{ $emp->avatarColor() }};">{{ $emp->initials() }}</div>
+                    <x-avatar :employee="$emp" :size="34" />
                     <a href="{{ route('karyawan.edit', $emp) }}" class="emp-name">{{ $emp->full_name }}</a>
                 </div>
             </td>

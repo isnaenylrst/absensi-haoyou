@@ -99,6 +99,23 @@
             font-size: 12px; color: var(--text-faint); background: var(--line);
             padding: 10px 12px; border-radius: 9px; margin-top: 4px;
         }
+
+        /* ===== Foto Profil ===== */
+        .photo-row { display: flex; align-items: center; gap: 20px; }
+        .photo-preview {
+            width: 88px; height: 88px; border-radius: 50%;
+            background: var(--gold); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px; font-weight: 700; flex-shrink: 0;
+            overflow: hidden; border: 2px solid var(--line);
+        }
+        .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-actions { display: flex; flex-direction: column; gap: 8px; }
+        .photo-actions input[type="file"] { font-size: 12.5px; }
+        .btn-remove-photo {
+            background: none; border: none; color: var(--rust);
+            font-size: 12px; font-weight: 600; cursor: pointer; text-align: left; padding: 0;
+        }
     </style>
 </head>
 <body>
@@ -122,6 +139,40 @@
         @if (session('status'))
             <div class="alert alert-success">{{ session('status') }}</div>
         @endif
+        @if ($errors->has('photo'))
+            <div class="alert alert-error">{{ $errors->first('photo') }}</div>
+        @endif
+
+        {{-- ===== Foto Profil — semua role ===== --}}
+        <div class="card">
+            <h2>Foto Profil</h2>
+            <p class="hint">Format JPG/PNG/WebP, maksimal 2MB.</p>
+
+            <div class="photo-row">
+                <div class="photo-preview">
+                    @if($employee->photoUrl())
+                        <img src="{{ $employee->photoUrl() }}" alt="Foto profil">
+                    @else
+                        {{ $employee->initials() }}
+                    @endif
+                </div>
+
+                <div class="photo-actions">
+                    <form method="POST" action="{{ route('profil.foto') }}" enctype="multipart/form-data">
+                        @csrf
+                        <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" required>
+                        <button type="submit" class="btn-save" style="margin-top:8px; padding:8px 16px; font-size:12.5px;">Unggah Foto</button>
+                    </form>
+
+                    @if($employee->photo_path)
+                        <form method="POST" action="{{ route('profil.foto.destroy') }}" onsubmit="return confirm('Hapus foto profil?')">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="btn-remove-photo">Hapus Foto</button>
+                        </form>
+                    @endif
+                </div>
+            </div>
+        </div>
 
         {{-- ===== Data Pribadi (selalu read-only) ===== --}}
         <div class="card">

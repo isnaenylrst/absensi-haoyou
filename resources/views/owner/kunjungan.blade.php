@@ -89,17 +89,15 @@
               </tr>
 
               @forelse ($visits as $visit)
+                {{-- PERUBAHAN A: variabel $initials & $avatarColor dihapus (diurus komponen x-avatar) --}}
                 @php
                   $employee = $visit->employee;
                   $isReview = $visit->review_status === 'perlu_ditinjau';
-
-                  $initials = $employee->initials();
-                  $avatarColors = ['#8B5CF6', '#2E6FDB', '#E8863A', '#D34D9C', '#2F8A5B', '#D34D3C'];
-                  $avatarColor = $avatarColors[$employee->id % count($avatarColors)];
                 @endphp
                 <tr>
                   <td class="row-name">
-                    <div class="avatar-dot" style="background:{{ $avatarColor }};">{{ $initials }}</div>
+                    {{-- PERUBAHAN B: avatar inisial diganti komponen (foto kalau ada, inisial kalau tidak) --}}
+                    <x-avatar :employee="$employee" :size="32" />
                     {{ $employee->full_name }}
                   </td>
                   <td>{{ $visit->client_name }}</td>
@@ -145,10 +143,13 @@
                     <div class="modal-content">
                         <div class="modal-content-head">
                         <div class="modal-employee-block">
-                            {{-- <div class="avatar-dot" style="background:{{ $avatarColor }}; width:42px; height:42px; font-size:13px; border-radius:10px;">{{ $initials }}</div> --}}
-                            <div>
-                            <div class="modal-employee-name">{{ $employee->full_name }}</div>
-                            <div class="modal-employee-sub">{{ $employee->position ?? '-' }} &middot; {{ $employee->branch?->name ?? '-' }}</div>
+                            {{-- PERUBAHAN C: avatar karyawan di modal (foto / inisial) --}}
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <x-avatar :employee="$employee" :size="42" />
+                                <div>
+                                    <div class="modal-employee-name">{{ $employee->full_name }}</div>
+                                    <div class="modal-employee-sub">{{ $employee->position ?? '-' }} &middot; {{ $employee->branch?->name ?? '-' }}</div>
+                                </div>
                             </div>
                         </div>
                         </div>
