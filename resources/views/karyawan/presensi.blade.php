@@ -3,7 +3,55 @@
 @section('title', 'Presensi | Haoyou Educator')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('/css/karyawan/presensi.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/karyawan/presensi.css') }}?v={{ filemtime(public_path('css/karyawan/presensi.css')) }}">
+
+    <style>
+        .shift-dd { margin-top: 14px; }
+
+        .shift-dd .shift-dd-trigger {
+            -webkit-appearance: none !important;
+            appearance: none !important;
+            width: 100% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 10px;
+            padding: 12px !important;
+            background: var(--paper, #fff) !important;
+            border: 1px solid var(--gold, #f5a623) !important;
+            border-radius: 11px !important;
+            font-family: inherit;
+            font-size: 14px;
+            color: var(--text, #22262b) !important;
+            text-align: center;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .shift-dd .shift-dd-current { flex: 1; min-width: 0; padding-left: 16px; }
+        .shift-dd .shift-dd-label { font-weight: 800; font-size: 13px; }
+        .shift-dd .shift-dd-time { font-size: 11px; color: var(--text-dim, #6b7280); margin-top: 2px; }
+        .shift-dd .shift-dd-arrow { flex-shrink: 0; color: var(--gold-deep, #de8c0f); transition: transform .2s ease; }
+        .shift-dd.open .shift-dd-arrow { transform: rotate(180deg); }
+
+        .shift-dd .shift-dd-menu { display: none !important; flex-direction: column; gap: 8px; margin-top: 8px; }
+        .shift-dd.open .shift-dd-menu { display: flex !important; }
+
+        .shift-dd .shift-dd-item {
+            border: 1px solid var(--line, #edeef0);
+            background: var(--paper, #fff);
+            border-radius: 11px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .shift-dd .shift-dd-item.active {
+            border-color: var(--gold, #f5a623);
+            background: var(--gold-pale, #fff4de);
+        }
+    </style>
 @endpush
 
 @section('content')
