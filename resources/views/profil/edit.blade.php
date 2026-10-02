@@ -23,21 +23,28 @@
             --shadow: 0 1px 2px rgba(20,20,20,.03), 0 10px 26px -16px rgba(20,20,20,.14);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); }
+        html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+        body {
+            font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text);
+            -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
+        }
 
+        /* ===== Topbar ===== */
         .topbar {
             background: linear-gradient(90deg, var(--gold), #F2A21F);
             padding: 16px 30px;
             display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 10px;
+            width: 100%; max-width: 100%;
         }
-        .topbar-left { display: flex; align-items: center; gap: 16px; }
+        .topbar-left { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 16px; min-width: 0; }
         .topbar-left a {
             color: #fff; text-decoration: none; font-size: 13px; font-weight: 600;
             opacity: .85; display: flex; align-items: center; gap: 5px;
         }
         .topbar-left a:hover { opacity: 1; }
-        .topbar-brand { color: #fff; font-weight: 700; }
-        .topbar-right { display: flex; align-items: center; gap: 12px; }
+        .topbar-brand { color: #fff; font-weight: 700; white-space: nowrap; }
+        .topbar-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
         .badge {
             background: rgba(255,255,255,.25); color: #fff;
             font-size: 11px; font-weight: 700; padding: 4px 10px;
@@ -47,14 +54,16 @@
             background: #fff; color: var(--gold-deep); border: none;
             padding: 8px 16px; border-radius: 9px;
             font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 12.5px; cursor: pointer;
+            -webkit-appearance: none; appearance: none;
         }
 
-        .content { padding: 30px; max-width: 640px; margin: 0 auto; }
-        .page-title { font-size: 24px; font-weight: 700; margin-bottom: 22px; }
+        /* ===== Konten ===== */
+        .content { padding: 30px; max-width: 640px; width: 100%; margin: 0 auto; }
+        .page-title { font-size: 24px; font-weight: 700; margin-bottom: 22px; overflow-wrap: anywhere; }
 
         .alert {
             border-radius: 10px; padding: 11px 14px; font-size: 12.5px; font-weight: 600;
-            margin-bottom: 18px;
+            margin-bottom: 18px; overflow-wrap: anywhere;
         }
         .alert-success { background: var(--green-soft); color: var(--green); border: 1px solid #CDEBD9; }
         .alert-error { background: var(--rust-soft); color: var(--rust); border: 1px solid #F5CFC8; }
@@ -62,19 +71,23 @@
         .card {
             background: var(--paper); border: 1px solid var(--line); border-radius: 16px;
             padding: 24px; box-shadow: var(--shadow); margin-bottom: 20px;
+            width: 100%; max-width: 100%; min-width: 0;
         }
         .card h2 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
         .card .hint { font-size: 12.5px; color: var(--text-faint); margin-bottom: 18px; }
 
-        .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+        .info-row {
+            display: flex; justify-content: space-between; gap: 12px;
+            padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13.5px;
+        }
         .info-row:last-child { border-bottom: none; }
-        .info-row .label { color: var(--text-dim); }
-        .info-row .value { font-weight: 600; }
+        .info-row .label { color: var(--text-dim); flex-shrink: 0; }
+        .info-row .value { font-weight: 600; text-align: right; min-width: 0; overflow-wrap: anywhere; }
 
-        .field { margin-bottom: 16px; }
+        .field { margin-bottom: 16px; min-width: 0; }
         .field label { display: block; font-size: 12.5px; font-weight: 600; color: var(--text-dim); margin-bottom: 6px; }
         .field input, .field textarea {
-            width: 100%; padding: 11px 13px; border: 1px solid var(--line); border-radius: 10px;
+            width: 100%; max-width: 100%; padding: 11px 13px; border: 1px solid var(--line); border-radius: 10px;
             font-family: 'Poppins', sans-serif; font-size: 13.5px; color: var(--text);
             background: #FCFCFB; outline: none; transition: .15s;
         }
@@ -92,6 +105,8 @@
             background: var(--gold); color: #fff;
             font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 13.5px;
             cursor: pointer; transition: .15s;
+            -webkit-appearance: none; appearance: none;
+            touch-action: manipulation;
         }
         .btn-save:hover { background: var(--gold-deep); }
 
@@ -101,7 +116,7 @@
         }
 
         /* ===== Foto Profil ===== */
-        .photo-row { display: flex; align-items: center; gap: 20px; }
+        .photo-row { display: flex; align-items: center; gap: 20px; min-width: 0; }
         .photo-preview {
             width: 88px; height: 88px; border-radius: 50%;
             background: var(--gold); color: #fff;
@@ -110,11 +125,33 @@
             overflow: hidden; border: 2px solid var(--line);
         }
         .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
-        .photo-actions { display: flex; flex-direction: column; gap: 8px; }
-        .photo-actions input[type="file"] { font-size: 12.5px; }
+        .photo-actions { display: flex; flex-direction: column; gap: 8px; min-width: 0; flex: 1 1 auto; }
+        .photo-actions form { max-width: 100%; min-width: 0; }
+        .photo-actions input[type="file"] {
+            font-size: 12.5px; font-family: 'Poppins', sans-serif;
+            max-width: 100%; min-width: 0; width: 100%;
+        }
         .btn-remove-photo {
             background: none; border: none; color: var(--rust);
             font-size: 12px; font-weight: 600; cursor: pointer; text-align: left; padding: 0;
+        }
+
+        /* ===== Responsif HP ===== */
+        @media (max-width: 600px) {
+            .topbar { padding: 12px 16px; }
+            .topbar-left a { font-size: 12.5px; }
+            .btn-logout { padding: 7px 12px; }
+
+            .content { padding: 18px 16px; }
+            .page-title { font-size: 20px; margin-bottom: 16px; }
+            .card { padding: 18px 16px; border-radius: 14px; }
+
+            /* foto di atas, input file + tombol di bawahnya */
+            .photo-row { flex-direction: column; align-items: flex-start; gap: 14px; }
+            .photo-actions { width: 100%; }
+
+            /* 16px mencegah iOS auto-zoom saat input difokuskan */
+            .field input, .field textarea { font-size: 16px; }
         }
     </style>
 </head>
