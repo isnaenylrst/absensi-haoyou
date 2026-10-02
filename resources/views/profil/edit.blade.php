@@ -23,10 +23,10 @@
             --shadow: 0 1px 2px rgba(20,20,20,.03), 0 10px 26px -16px rgba(20,20,20,.14);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+        html { width: 100%; max-width: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         body {
+            width: 100%; max-width: 100%; overflow-x: hidden;
             font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text);
-            -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
         }
 
         /* ===== Topbar ===== */
@@ -58,7 +58,7 @@
         }
 
         /* ===== Konten ===== */
-        .content { padding: 30px; max-width: 640px; width: 100%; margin: 0 auto; }
+        .content { padding: 30px; max-width: 640px; width: 100%; margin: 0 auto; min-width: 0; }
         .page-title { font-size: 24px; font-weight: 700; margin-bottom: 22px; overflow-wrap: anywhere; }
 
         .alert {
@@ -71,7 +71,7 @@
         .card {
             background: var(--paper); border: 1px solid var(--line); border-radius: 16px;
             padding: 24px; box-shadow: var(--shadow); margin-bottom: 20px;
-            width: 100%; max-width: 100%; min-width: 0;
+            width: 100%; max-width: 100%; min-width: 0; overflow: hidden;
         }
         .card h2 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
         .card .hint { font-size: 12.5px; color: var(--text-faint); margin-bottom: 18px; }
@@ -125,12 +125,28 @@
             overflow: hidden; border: 2px solid var(--line);
         }
         .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
-        .photo-actions { display: flex; flex-direction: column; gap: 8px; min-width: 0; flex: 1 1 auto; }
-        .photo-actions form { max-width: 100%; min-width: 0; }
-        .photo-actions input[type="file"] {
-            font-size: 12.5px; font-family: 'Poppins', sans-serif;
-            max-width: 100%; min-width: 0; width: 100%;
+        .photo-actions { display: flex; flex-direction: column; gap: 8px; min-width: 0; flex: 1 1 0; }
+        .photo-actions form { width: 100%; max-width: 100%; min-width: 0; }
+
+        /* File picker kustom: input bawaan disembunyikan supaya lebarnya tidak merusak layout */
+        .file-pick {
+            position: relative; display: flex; align-items: center; gap: 10px;
+            width: 100%; max-width: 100%; min-width: 0; cursor: pointer;
         }
+        .file-native {
+            position: absolute; left: 0; top: 0; width: 1px; height: 1px;
+            opacity: 0; overflow: hidden; pointer-events: none;
+        }
+        .file-btn {
+            flex-shrink: 0; background: var(--line); color: var(--text);
+            font-size: 12.5px; font-weight: 600; padding: 7px 12px; border-radius: 8px;
+        }
+        .file-name {
+            flex: 1 1 0; min-width: 0; font-size: 12.5px; color: var(--text-dim);
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .btn-upload { margin-top: 8px; padding: 8px 16px; font-size: 12.5px; }
+
         .btn-remove-photo {
             background: none; border: none; color: var(--rust);
             font-size: 12px; font-weight: 600; cursor: pointer; text-align: left; padding: 0;
@@ -146,9 +162,8 @@
             .page-title { font-size: 20px; margin-bottom: 16px; }
             .card { padding: 18px 16px; border-radius: 14px; }
 
-            /* foto di atas, input file + tombol di bawahnya */
             .photo-row { flex-direction: column; align-items: flex-start; gap: 14px; }
-            .photo-actions { width: 100%; }
+            .photo-actions { width: 100%; flex: 0 0 auto; }
 
             /* 16px mencegah iOS auto-zoom saat input difokuskan */
             .field input, .field textarea { font-size: 16px; }
@@ -197,8 +212,13 @@
                 <div class="photo-actions">
                     <form method="POST" action="{{ route('profil.foto') }}" enctype="multipart/form-data">
                         @csrf
-                        <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" required>
-                        <button type="submit" class="btn-save" style="margin-top:8px; padding:8px 16px; font-size:12.5px;">Unggah Foto</button>
+                        <label class="file-pick">
+                            <input type="file" id="photoFile" name="photo" class="file-native"
+                                   accept="image/jpeg,image/png,image/webp" required>
+                            <span class="file-btn">Pilih File</span>
+                            <span class="file-name" id="fileName">Belum ada file</span>
+                        </label>
+                        <button type="submit" class="btn-save btn-upload">Unggah Foto</button>
                     </form>
 
                     @if($employee->photo_path)
@@ -315,5 +335,16 @@
             </form>
         </div>
     </div>
+
+    <script>
+        (function () {
+            var input = document.getElementById('photoFile');
+            var label = document.getElementById('fileName');
+            if (!input || !label) return;
+            input.addEventListener('change', function () {
+                label.textContent = input.files && input.files.length ? input.files[0].name : 'Belum ada file';
+            });
+        })();
+    </script>
 </body>
 </html>
