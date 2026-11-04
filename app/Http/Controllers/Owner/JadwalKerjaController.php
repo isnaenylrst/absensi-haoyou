@@ -575,21 +575,22 @@ class JadwalKerjaController extends Controller
             ->whereDate('end_date', '>=', $awalBulan->toDateString())
             ->get()
             ->groupBy('employee_id');
+        
+        $hariIni = now()->toDateString();
 
-        return $employees->map(function (Employee $employee) use ($attendancesBulanIni, $approvedLeavesByEmployee, $awalBulan, $akhirBulan) {
+        return $employees->map(function (Employee $employee) use ($attendancesBulanIni, $approvedLeavesByEmployee, $awalBulan, $akhirBulan, $hariIni) {
             $records = $attendancesBulanIni->get($employee->id, collect());
 
-            $detail = $records->map(function (Attendance $attendance) {
+            $detail = $records->map(function (Attendance $attendance) use ($hariIni) {
                 return (object) [
                     'tanggal' => $attendance->tanggal,
                     'jam_masuk' => $attendance->check_in,
                     'jam_keluar' => $attendance->check_out,
-                    'status' => $attendance->status,
+                    'status' => $this->effectiveStatus($attendance, $hariIni),
                     'jadwal' => $attendance->shift?->name ?? '—',
                 ];
             })->values();
 
-            // Hitung jumlah hari cuti (dipotong ke rentang bulan yang sedang dilihat).
             $cutiDays = $approvedLeavesByEmployee->get($employee->id, collect())
                 ->sum(function ($lr) use ($awalBulan, $akhirBulan) {
                     $mulai = Carbon::parse($lr->start_date)->max($awalBulan);
@@ -603,11 +604,11 @@ class JadwalKerjaController extends Controller
                 'nama' => $employee->full_name,
                 'tipe' => $employee->employee_type,
                 'cabang' => $employee->branch->name ?? '—',
-                'hadir' => $records->where('status', 'tepat_waktu')->count(),
-                'telat' => $records->where('status', 'terlambat')->count(),
-                'tidak_checkout' => $records->where('status', 'tidak_checkout')->count(),
+                'hadir' => $detail->where('status', 'tepat_waktu')->count(),
+                'telat' => $detail->where('status', 'terlambat')->count(),
+                'tidak_checkout' => $detail->where('status', 'tidak_checkout')->count(),
                 'cuti' => $cutiDays,
-                'alpa' => $records->where('status', 'alpa')->count(),
+                'alpa' => $detail->where('status', 'alpa')->count(),
                 'detail' => $detail,
             ];
         });
@@ -635,5 +636,21 @@ class JadwalKerjaController extends Controller
         }
 
         return $jumlah;
+    }
+
+    /**
+     * Status efektif sebuah record: hormati override manual,
+     * selain itu pakai logika yang sama dengan halaman kategori.
+     */
+    private function effectiveStatus(Attendance $attendance, string $hariIni): string
+    {
+        if ($attendance->manual_override) {
+            return $attendance->status ?? 'alpa';
+        }
+
+        $sudahLewat = Carbon::parse($attendance->tanggal)->toDateString() < $hariIni;
+        [$status] = $this->resolveStatus($attendance, $sudahLewat);
+
+        return $status;
     }
 }
