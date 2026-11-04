@@ -9,6 +9,7 @@ use App\Models\ThrRecord;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -16,8 +17,9 @@ class PayslipController extends Controller
 {
     /**
      * Halaman "Gaji Saya" - KHUSUS karyawan, read-only.
+     * Pilih periode lewat ?periode=YYYY-MM. Default: slip terbaru yang sudah ada.
      */
-    public function index(): View|RedirectResponse
+    public function index(Request $request): View|RedirectResponse
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
@@ -27,56 +29,90 @@ class PayslipController extends Controller
             return view('owner.gaji-saya-locked');
         }
 
-        $data = $this->buildPayslipData($employee, now()->month, now()->year);
+        $payslip = $this->resolvePayslip($employee, $request->query('periode'));
+
+        $data = $this->buildPayslipData($employee, $payslip);
 
         return view('karyawan.gaji-saya', $data);
     }
 
     /**
-     * Download slip gaji bulan berjalan sebagai PDF.
+     * Download slip gaji (sesuai periode yang dipilih) sebagai PDF.
      */
-    public function downloadPdf(): Response
+    public function downloadPdf(Request $request): Response
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
         abort_unless($user->role !== 'owner', 403);
 
         $employee = $user->employee;
-        $data = $this->buildPayslipData($employee, now()->month, now()->year);
 
-        abort_if(!$data['payslip'], 404, 'Slip gaji periode ini belum diterbitkan.');
+        $payslip = $this->resolvePayslip($employee, $request->query('periode'), false);
+
+        abort_if(!$payslip, 404, 'Slip gaji periode ini belum diterbitkan.');
+
+        $data = $this->buildPayslipData($employee, $payslip);
 
         $pdf = Pdf::loadView('pdf.slip-gaji', $data)->setPaper('a4', 'portrait');
 
-        $filename = 'Slip-Gaji-'.$employee->employee_code.'-'.now()->format('m-Y').'.pdf';
+        $filename = 'Slip-Gaji-'.$employee->employee_code.'-'
+            .str_pad($payslip->period_month, 2, '0', STR_PAD_LEFT).'-'
+            .$payslip->period_year.'.pdf';
 
         return $pdf->download($filename);
     }
 
     /**
-     * Hitung semua data yang dibutuhkan halaman Gaji Saya & PDF slip gaji,
-     * supaya tidak duplikat logic antara index() dan downloadPdf().
+     * Tentukan slip yang dipilih.
+     * - Ada ?periode=YYYY-MM valid & slipnya ada -> slip itu.
+     * - Selain itu -> slip terbaru (kalau $fallbackLatest = true).
      */
-    private function buildPayslipData($employee, int $month, int $year): array
+    private function resolvePayslip($employee, ?string $periode, bool $fallbackLatest = true): ?Payslip
     {
-        $payslip = Payslip::where('employee_id', $employee->id)
-            ->where('period_month', $month)
-            ->where('period_year', $year)
-            ->first();
+        if ($periode && preg_match('/^(\d{4})-(0[1-9]|1[0-2])$/', $periode, $m)) {
+            $slip = Payslip::where('employee_id', $employee->id)
+                ->where('period_year', (int) $m[1])
+                ->where('period_month', (int) $m[2])
+                ->first();
 
+            if ($slip || !$fallbackLatest) {
+                return $slip;
+            }
+        }
+
+        if (!$fallbackLatest) {
+            // Tanpa parameter periode: PDF mengunduh slip terbaru
+            return $this->latestPayslip($employee);
+        }
+
+        return $this->latestPayslip($employee);
+    }
+
+    private function latestPayslip($employee): ?Payslip
+    {
+        return Payslip::where('employee_id', $employee->id)
+            ->orderByDesc('period_year')
+            ->orderByDesc('period_month')
+            ->first();
+    }
+
+    /**
+     * Hitung semua data yang dibutuhkan halaman Gaji Saya & PDF slip gaji.
+     */
+    private function buildPayslipData($employee, ?Payslip $payslip): array
+    {
         $payrollComponent = PayrollComponent::where('employee_id', $employee->id)->first();
 
+        // Tahun acuan THR: tahun slip yang dipilih, kalau tidak ada pakai tahun sekarang
+        $thrYear = $payslip?->period_year ?? now()->year;
+
         $thrRecord = ThrRecord::where('employee_id', $employee->id)
-            ->where('year', $year)
+            ->where('year', $thrYear)
             ->first();
 
         $settings = AttendanceSetting::current();
 
-        // ============================================================
-        // Hitung masa kerja & kelayakan THR (pakai DateInterval bawaan
-        // PHP via ->diff(), BUKAN diffInYears()/diffInMonths() - supaya
-        // hasilnya selalu angka bulat, bukan desimal panjang).
-        // ============================================================
+        // Masa kerja & kelayakan THR (selalu berdasarkan hari ini)
         $joinDate = Carbon::parse($employee->join_date);
         $now = Carbon::now();
         $diff = $joinDate->diff($now);
@@ -91,12 +127,13 @@ class PayslipController extends Controller
         $thrEstimasi = $thrRecord?->amount ?? ($payrollComponent->base_salary ?? 0);
 
         // ============================================================
-        // Rincian pendapatan KARYAWAN TETAP - diambil LANGSUNG dari
-        // angka yang sudah tersimpan di payslips (bukan dihitung ulang
-        // dari rate yang sedang berlaku sekarang), supaya slip gaji
-        // bulan lalu tidak ikut berubah kalau rate diubah Owner belakangan.
+        // Rincian KARYAWAN TETAP - diambil dari angka yang tersimpan
+        // di payslips, supaya slip lama tidak berubah kalau rate diubah.
         // ============================================================
         $rincian = null;
+        $tarifMakan = 0;
+        $tarifBensin = 0;
+
         if ($payslip && $employee->employee_type === 'tetap') {
             $rincian = [
                 'gaji_pokok' => $payslip->gaji_pokok,
@@ -107,18 +144,82 @@ class PayslipController extends Controller
                 'thr' => $payslip->thr,
                 'potongan' => $payslip->potongan_telat,
             ];
+
+            // Tarif per hari diturunkan dari nilai slip (bukan rate sekarang)
+            if ($payslip->hari_hadir > 0) {
+                $tarifMakan = (float) $payslip->uang_makan / $payslip->hari_hadir;
+                $tarifBensin = (float) $payslip->uang_bensin / $payslip->hari_hadir;
+            } else {
+                $tarifMakan = (float) ($payrollComponent->meal_rate ?? 0);
+                $tarifBensin = (float) ($payrollComponent->transport_rate ?? 0);
+            }
         }
+
+        // ============================================================
+        // Rincian PART TIME - dari slip yang tersimpan.
+        // Fallback ke payroll component hanya jika slip semuanya 0.
+        // ============================================================
+        $partTime = null;
+        if ($payslip && $employee->employee_type === 'part_time') {
+            $fee = (float) $payslip->gaji_pokok;
+            $makan = (float) $payslip->uang_makan;
+            $bensin = (float) $payslip->uang_bensin;
+
+            if ($fee + $makan + $bensin == 0) {
+                $fee = (float) ($payrollComponent->base_salary ?? 0);
+                $makan = (float) ($payrollComponent->meal_rate ?? 0);
+                $bensin = (float) ($payrollComponent->transport_rate ?? 0);
+            }
+
+            $partTime = [
+                'fee' => $fee,
+                'makan' => $makan,
+                'bensin' => $bensin,
+                'total' => $fee + $makan + $bensin,
+            ];
+        }
+
+        // ============================================================
+        // Riwayat semua slip (untuk dropdown & tabel riwayat)
+        // ============================================================
+        $riwayat = Payslip::where('employee_id', $employee->id)
+            ->orderByDesc('period_year')
+            ->orderByDesc('period_month')
+            ->get()
+            ->map(function (Payslip $p) use ($employee) {
+                $tgl = Carbon::createFromDate($p->period_year, $p->period_month, 1);
+
+                return [
+                    'key' => sprintf('%04d-%02d', $p->period_year, $p->period_month),
+                    'label' => $tgl->translatedFormat('F Y'),
+                    'total' => $p->total_diterima,
+                    'published_at' => $p->published_at,
+                ];
+            });
+
+        $periodeKey = $payslip
+            ? sprintf('%04d-%02d', $payslip->period_year, $payslip->period_month)
+            : null;
+
+        $periodeLabel = $payslip
+            ? Carbon::createFromDate($payslip->period_year, $payslip->period_month, 1)->translatedFormat('F Y')
+            : now()->translatedFormat('F Y');
 
         return [
             'employee' => $employee,
             'payslip' => $payslip,
             'payrollComponent' => $payrollComponent,
             'rincian' => $rincian,
+            'partTime' => $partTime,
+            'tarifMakan' => $tarifMakan,
+            'tarifBensin' => $tarifBensin,
             'thrEligible' => $thrEligible,
             'thrEstimasi' => $thrEstimasi,
             'masaKerjaTahun' => $masaKerjaTahun,
             'masaKerjaBulan' => $masaKerjaBulan,
-            'periodeLabel' => Carbon::createFromDate($year, $month, 1)->translatedFormat('F Y'),
+            'periodeLabel' => $periodeLabel,
+            'periodeKey' => $periodeKey,
+            'riwayat' => $riwayat,
         ];
     }
 }
