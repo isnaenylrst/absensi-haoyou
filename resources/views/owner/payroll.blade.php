@@ -154,8 +154,6 @@ HARI EFEKTIF PERIODE INI
     </a>
 </div>
 
-</form>
-
 {{-- ============================================================
 INFORMASI PERIODE
 ============================================================ --}}
@@ -200,6 +198,14 @@ SUCCESS MESSAGE
 
     {{ session('success') }}
 
+</div>
+@endif
+
+@if ($errors->any())
+<div style="display:block; padding:10px 14px; margin-bottom:16px; border-radius:8px; background:#FDECEC; border:1px solid #F5B5B5; color:#B3261E; font-size:12.5px; font-weight:600;">
+    @foreach ($errors->all() as $error)
+        <div>{{ $error }}</div>
+    @endforeach
 </div>
 @endif
 

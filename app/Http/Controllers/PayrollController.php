@@ -777,31 +777,19 @@ class PayrollController extends Controller
      * RESOLVE PERIODE
      * ============================================================
      */
-    private function resolvePeriode(
-        Request $request
-    ): Carbon {
+    private function resolvePeriode(Request $request): Carbon 
+    {
 
-        $periode =
-            $request->query('periode');
-
+        $periode = $request->input('periode');
 
         if ($periode) {
-
             try {
-
-                return Carbon::createFromFormat(
-                    'Y-m',
-                    $periode
-                )->startOfMonth();
-
+                return Carbon::createFromFormat('Y-m', $periode)->startOfMonth();
             } catch (\Exception $e) {
                 //
             }
         }
-
-
-        return Carbon::now()
-            ->startOfMonth();
+        return Carbon::now()->startOfMonth();
     }
 
 
