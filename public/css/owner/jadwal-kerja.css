@@ -750,3 +750,154 @@ body.dark-mode .pg-btn:hover {
     padding-top: 14px;
     border-top: 1px solid #eee;
 }
+
+.hl-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+    margin-bottom: 18px;
+}
+
+.hl-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 16px;
+}
+
+.hl-count {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(245,162,31,.15);
+    color: #c77a0a;
+}
+
+.hl-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.6fr auto;
+    gap: 12px;
+    align-items: start;
+    margin-bottom: 18px;
+}
+
+.hl-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    opacity: .7;
+    margin-bottom: 6px;
+}
+
+.hl-field .hl-opt {
+    font-weight: 400;
+    opacity: .8;
+}
+
+.hl-field input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 12px;
+    font: inherit;
+    font-size: 13px;
+    color: inherit;
+    background: transparent;
+    border: 1px solid rgba(128,128,128,.3);
+    border-radius: 10px;
+}
+
+.hl-field input:focus {
+    outline: none;
+    border-color: #F5A21F;
+    box-shadow: 0 0 0 3px rgba(245,162,31,.18);
+}
+
+.hl-error {
+    color: #dc2626;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.hl-submit {
+    margin-top: 22px;
+    white-space: nowrap;
+}
+
+.hl-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.hl-chip {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 999px;
+    background: rgba(220,38,38,.1);
+    color: #dc2626;
+}
+
+.hl-note {
+    margin-top: 16px;
+    font-size: 12px;
+    line-height: 1.55;
+    opacity: .65;
+}
+
+/* Responsive */
+@media (max-width: 1000px) {
+    .hl-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hl-form {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .hl-submit {
+        margin-top: 0;
+    }
+}
+
+@media (max-width: 560px) {
+    .hl-form {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Modal detail riwayat: layar penuh */
+#riwayatModalOverlay {
+    padding: 0 !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+}
+
+#riwayatModalOverlay .modal-box {
+    width: 100% !important;
+    max-width: none !important;
+    height: 100% !important;
+    max-height: none !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-sizing: border-box;
+    padding: 28px 40px !important;
+    overflow-y: auto;
+}
+
+#riwayatModalBody .modal-close {
+    position: fixed;
+    top: 16px;
+    right: 24px;
+    z-index: 5;
+}
+
+/* Hari Minggu / tanggal merah di detail riwayat */
+.jadwal-approval-table tr.row-libur td {
+    background: rgba(220,38,38,.1);
+    color: #dc2626;
+}

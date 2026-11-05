@@ -25,7 +25,7 @@ class PresensiController extends Controller
     {
     }
 
-    public function __invoke(): View
+    public function __invoke(Request $request): View
     {
         $employee = Employee::with('branch')->findOrFail(Auth::user()->employee_id);
         $now = Carbon::now();
@@ -43,21 +43,61 @@ class PresensiController extends Controller
             ->whereNotNull('shift_id')
             ->first();
 
+        // Riwayat: minggu yang dilihat (default minggu ini, bisa mundur lewat ?minggu=Y-m-d)
+        $thisWeek = $now->copy()->startOfWeek();
+        $weekStart = $this->resolveWeekStart($request->query('minggu'), $thisWeek);
+        $weekEnd = $weekStart->copy()->endOfWeek();
+        $isCurrentWeek = $weekStart->isSameDay($thisWeek);
+        $weeksAgo = (int) floor($thisWeek->diffInDays($weekStart, true) / 7);
+
         $weekAttendances = Attendance::where('employee_id', $employee->id)
-            ->whereBetween('tanggal', [
-                $now->copy()->startOfWeek()->toDateString(),
-                $now->copy()->endOfWeek()->toDateString(),
-            ])
+            ->whereBetween('tanggal', [$weekStart->toDateString(), $weekEnd->toDateString()])
             ->whereNotNull('shift_id')
             ->orderByDesc('tanggal')
             ->get();
+
+        // Tombol "sebelumnya" hanya aktif kalau masih ada presensi di minggu-minggu sebelumnya
+        $earliest = Attendance::where('employee_id', $employee->id)
+            ->whereNotNull('shift_id')
+            ->min('tanggal');
+
+        $prevWeek = ($earliest && Carbon::parse($earliest)->startOfWeek()->lt($weekStart))
+            ? $weekStart->copy()->subWeek()->toDateString()
+            : null;
+
+        $nextWeek = $isCurrentWeek ? null : $weekStart->copy()->addWeek()->toDateString();
 
         return view('karyawan.presensi', [
             'employee' => $employee,
             'shifts' => $shifts,
             'todayAttendance' => $todayAttendance,
             'weekAttendances' => $weekAttendances,
+            'weekStart' => $weekStart,
+            'weekEnd' => $weekEnd,
+            'isCurrentWeek' => $isCurrentWeek,
+            'weeksAgo' => $weeksAgo,
+            'prevWeek' => $prevWeek,
+            'nextWeek' => $nextWeek,
         ]);
+    }
+
+    /**
+     * Ubah parameter ?minggu=Y-m-d menjadi hari Senin minggu tsb.
+     * Input tidak valid atau di masa depan -> minggu ini.
+     */
+    private function resolveWeekStart(mixed $param, Carbon $thisWeek): Carbon
+    {
+        if (! is_string($param) || ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $param)) {
+            return $thisWeek->copy();
+        }
+
+        try {
+            $date = Carbon::createFromFormat('Y-m-d', $param)->startOfWeek();
+        } catch (\Throwable) {
+            return $thisWeek->copy();
+        }
+
+        return $date->gt($thisWeek) ? $thisWeek->copy() : $date;
     }
 
     public function checkIn(Request $request): RedirectResponse

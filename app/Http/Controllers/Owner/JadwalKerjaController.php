@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\Branch;
 use App\Models\Employee;
+use App\Models\Holiday;
 use App\Models\LeaveRequest;
 use App\Models\Shift;
 use Carbon\Carbon;
@@ -57,6 +58,79 @@ class JadwalKerjaController extends Controller
             'daftarBulan'   => self::NAMA_BULAN,
             'daftarTahun'   => $this->getDaftarTahun(),
             'archiveFiles'  => $this->getArchiveFiles(),
+            'tanggalMerah'  => $this->getTanggalMerah($bulanTerpilih, $tahunTerpilih),
+            'hariMinggu'    => $this->getHariMinggu($bulanTerpilih, $tahunTerpilih),
+        ]);
+    }
+
+    /**
+     * Simpan tanggal merah. Bisa 1 tanggal, atau rentang (mis. cuti bersama beberapa hari)
+     * kalau "tanggal_akhir" diisi. Kalau tanggalnya sudah ada, keterangannya ditimpa.
+     */
+    public function storeHoliday(Request $request)
+    {
+        $validated = $request->validate([
+            'tanggal' => ['required', 'date'],
+            'tanggal_akhir' => ['nullable', 'date', 'after_or_equal:tanggal'],
+            'keterangan' => ['required', 'string', 'max:100'],
+        ], [
+            'tanggal.required' => 'Tanggal wajib diisi.',
+            'tanggal_akhir.after_or_equal' => 'Tanggal akhir tidak boleh sebelum tanggal mulai.',
+            'keterangan.required' => 'Keterangan wajib diisi.',
+        ]);
+
+        $mulai = Carbon::parse($validated['tanggal'])->startOfDay();
+        $akhir = Carbon::parse($validated['tanggal_akhir'] ?? $validated['tanggal'])->startOfDay();
+
+        if (abs($mulai->diffInDays($akhir)) > 30) {
+            return back()
+                ->withInput()
+                ->withErrors(['tanggal_akhir' => 'Rentang maksimal 31 hari.']);
+        }
+
+        $jumlah = 0;
+        for ($tanggal = $mulai->copy(); $tanggal->lte($akhir); $tanggal->addDay()) {
+            Holiday::updateOrCreate(
+                ['tanggal' => $tanggal->toDateString()],
+                ['keterangan' => $validated['keterangan']]
+            );
+            $jumlah++;
+        }
+
+        // Pindah ke bulan & tahun tanggal yang baru disimpan, supaya langsung kelihatan di halaman.
+        return redirect()
+            ->route('jadwal-kerja', ['bulan' => $mulai->month, 'tahun' => $mulai->year])
+            ->with('success', $jumlah.' tanggal merah berhasil disimpan.');
+    }
+
+    public function destroyHoliday(Holiday $holiday)
+    {
+        $holiday->delete();
+
+        return back()->with('success', 'Tanggal merah berhasil dihapus.');
+    }
+
+    /**
+     * Halaman detail riwayat bulanan satu karyawan (halaman terpisah,
+     * supaya sidebar & top bar tetap tampil).
+     */
+    public function riwayatDetail(Request $request, Employee $employee)
+    {
+        abort_unless($employee->employee_type === 'tetap', 404);
+
+        $bulanTerpilih = max(1, min(12, (int) $request->input('bulan', now()->month)));
+        $tahunTerpilih = (int) $request->input('tahun', now()->year);
+
+        $riwayat = $this->getRiwayatAbsensi($bulanTerpilih, $tahunTerpilih, $employee->id)->first();
+        abort_unless($riwayat, 404);
+
+        return view('owner.jadwalriwayat', [
+            'r'             => $riwayat,
+            'tanggalMerah'  => $this->getTanggalMerah($bulanTerpilih, $tahunTerpilih)->where('bulan_ini', true)->values(),
+            'bulanTerpilih' => $bulanTerpilih,
+            'tahunTerpilih' => $tahunTerpilih,
+            'daftarBulan'   => self::NAMA_BULAN,
+            'daftarTahun'   => $this->getDaftarTahun(),
         ]);
     }
 
@@ -351,6 +425,54 @@ class JadwalKerjaController extends Controller
             ->get();
     }
 
+    /**
+     * Peta tanggal merah pada rentang tertentu: ['Y-m-d' => 'keterangan'].
+     */
+    private function getHolidayMap(Carbon $mulai, Carbon $akhir): array
+    {
+        return Holiday::query()
+            ->whereBetween('tanggal', [$mulai->toDateString(), $akhir->toDateString()])
+            ->get()
+            ->mapWithKeys(fn (Holiday $h) => [$h->tanggal->toDateString() => $h->keterangan])
+            ->all();
+    }
+
+    /**
+     * Daftar tanggal merah untuk ditampilkan di halaman, mengikuti filter bulan & tahun terpilih.
+     */
+    private function getTanggalMerah(int $bulan, int $tahun): Collection
+    {
+        return Holiday::query()
+            ->whereYear('tanggal', $tahun)
+            ->whereMonth('tanggal', $bulan)
+            ->orderBy('tanggal')
+            ->get()
+            ->map(fn (Holiday $h) => (object) [
+                'id' => $h->id,
+                'tanggal' => $h->tanggal,
+                'keterangan' => $h->keterangan,
+                'bulan_ini' => true,
+            ]);
+    }
+
+    /**
+     * Daftar tanggal hari Minggu pada bulan terpilih (otomatis dari kalender).
+     */
+    private function getHariMinggu(int $bulan, int $tahun): Collection
+    {
+        $awal = Carbon::create($tahun, $bulan, 1)->startOfMonth();
+        $akhir = $awal->copy()->endOfMonth();
+
+        $minggu = collect();
+        for ($tanggal = $awal->copy(); $tanggal->lte($akhir); $tanggal->addDay()) {
+            if ($tanggal->isSunday()) {
+                $minggu->push($tanggal->copy());
+            }
+        }
+
+        return $minggu;
+    }
+
     private function buildAttendanceRows(Carbon $tanggalMulai, Carbon $tanggalAkhir, Collection $employees): Collection
     {
         $attendancesByEmployeeDate = Attendance::query()
@@ -368,6 +490,8 @@ class JadwalKerjaController extends Controller
             ->get()
             ->groupBy('employee_id');
 
+        $tanggalMerah = $this->getHolidayMap($tanggalMulai, $tanggalAkhir);
+
         $hariIni = now()->toDateString();
         $allRows = collect();
 
@@ -378,11 +502,18 @@ class JadwalKerjaController extends Controller
 
             $tanggalKey = $tanggal->toDateString();
             $tanggalSudahLewat = $tanggalKey < $hariIni;
+            $hariLibur = isset($tanggalMerah[$tanggalKey]);
 
             foreach ($employees as $employee) {
                 $attendance = $attendancesByEmployeeDate->get($employee->id.'|'.$tanggalKey)?->first();
 
                 if (! $attendance) {
+                    // Tanggal merah: tidak ada kewajiban absen, jadi tidak dihitung alpa / cuti.
+                    // (Kalau karyawan tetap absen di tanggal merah, barisnya tetap tampil.)
+                    if ($hariLibur) {
+                        continue;
+                    }
+
                     // Cek apakah tanggal ini masuk rentang cuti/izin yang sudah disetujui.
                     $leave = $approvedLeavesByEmployee->get($employee->id, collect())
                         ->first(function ($lr) use ($tanggalKey) {
@@ -496,7 +627,7 @@ class JadwalKerjaController extends Controller
         $employees = $this->resolveEmployeesForFilters($filters);
 
         return $this->buildAttendanceRows(Carbon::today(), Carbon::today(), $employees);
-    }    
+    }
 
     private function resolveStatus(Attendance $attendance, bool $tanggalSudahLewat): array
     {
@@ -536,6 +667,22 @@ class JadwalKerjaController extends Controller
         return ['tepat_waktu', 0, 'Tepat waktu'];
     }
 
+    /**
+     * Status efektif sebuah record: hormati override manual,
+     * selain itu pakai logika yang sama dengan halaman kategori.
+     */
+    private function effectiveStatus(Attendance $attendance, string $hariIni): string
+    {
+        if ($attendance->manual_override) {
+            return $attendance->status ?? 'alpa';
+        }
+
+        $sudahLewat = Carbon::parse($attendance->tanggal)->toDateString() < $hariIni;
+        [$status] = $this->resolveStatus($attendance, $sudahLewat);
+
+        return $status;
+    }
+
     private function formatLateLabel(int $lateMinutes): string
     {
         $hours = intdiv($lateMinutes, 60);
@@ -548,10 +695,16 @@ class JadwalKerjaController extends Controller
         return 'Terlambat '.implode(' ', $parts);
     }
 
-    private function getRiwayatAbsensi(int $bulan, int $tahun): Collection
+    /**
+     * Riwayat bulanan per karyawan tetap.
+     * Kalau $employeeId diisi, hanya karyawan itu yang dihitung dan 'detail' per tanggal
+     * (termasuk baris Hari Minggu / tanggal merah) ikut dibuat untuk halaman detail.
+     */
+    private function getRiwayatAbsensi(int $bulan, int $tahun, ?int $employeeId = null): Collection
     {
         $employees = Employee::query()
             ->where('employee_type', 'tetap')
+            ->when($employeeId, fn ($query, $id) => $query->where('id', $id))
             ->with('branch')
             ->orderBy('full_name')
             ->get();
@@ -575,28 +728,64 @@ class JadwalKerjaController extends Controller
             ->whereDate('end_date', '>=', $awalBulan->toDateString())
             ->get()
             ->groupBy('employee_id');
-        
+
+        $tanggalMerah = $this->getHolidayMap($awalBulan, $akhirBulan);
         $hariIni = now()->toDateString();
 
-        return $employees->map(function (Employee $employee) use ($attendancesBulanIni, $approvedLeavesByEmployee, $awalBulan, $akhirBulan, $hariIni) {
+        return $employees->map(function (Employee $employee) use ($attendancesBulanIni, $approvedLeavesByEmployee, $awalBulan, $akhirBulan, $hariIni, $tanggalMerah, $employeeId) {
             $records = $attendancesBulanIni->get($employee->id, collect());
 
-            $detail = $records->map(function (Attendance $attendance) use ($hariIni) {
+            // Status memakai status efektif (bukan status mentah di DB),
+            // supaya "tidak_checkout" ikut terhitung.
+            $detailAbsen = $records->map(function (Attendance $attendance) use ($hariIni, $tanggalMerah) {
+                $tanggal = Carbon::parse($attendance->tanggal);
+
                 return (object) [
-                    'tanggal' => $attendance->tanggal,
+                    'tanggal' => $tanggal,
                     'jam_masuk' => $attendance->check_in,
                     'jam_keluar' => $attendance->check_out,
                     'status' => $this->effectiveStatus($attendance, $hariIni),
                     'jadwal' => $attendance->shift?->name ?? '—',
+                    'libur' => $this->labelLibur($tanggal, $tanggalMerah),
                 ];
-            })->values();
+            });
 
+            // Detail per tanggal hanya dibuat untuk halaman detail satu karyawan.
+            // Hari Minggu & tanggal merah yang tidak ada record presensinya tetap dicatat
+            // (baris merah).
+            $detail = collect();
+            if ($employeeId !== null) {
+                $tanggalAdaRecord = $detailAbsen->map(fn ($d) => $d->tanggal->toDateString())->all();
+                $barisLibur = collect();
+                for ($tgl = $awalBulan->copy(); $tgl->lte($akhirBulan); $tgl->addDay()) {
+                    $label = $this->labelLibur($tgl, $tanggalMerah);
+
+                    if ($label !== null && ! in_array($tgl->toDateString(), $tanggalAdaRecord, true)) {
+                        $barisLibur->push((object) [
+                            'tanggal' => $tgl->copy(),
+                            'jam_masuk' => null,
+                            'jam_keluar' => null,
+                            'status' => null,
+                            'jadwal' => '—',
+                            'libur' => $label,
+                        ]);
+                    }
+                }
+
+                $detail = $detailAbsen
+                    ->concat($barisLibur)
+                    ->sortByDesc(fn ($d) => $d->tanggal->toDateString())
+                    ->values();
+            }
+
+            // Hitung jumlah hari cuti (dipotong ke rentang bulan yang sedang dilihat,
+            // Minggu dan tanggal merah tidak dihitung).
             $cutiDays = $approvedLeavesByEmployee->get($employee->id, collect())
-                ->sum(function ($lr) use ($awalBulan, $akhirBulan) {
+                ->sum(function ($lr) use ($awalBulan, $akhirBulan, $tanggalMerah) {
                     $mulai = Carbon::parse($lr->start_date)->max($awalBulan);
                     $akhir = Carbon::parse($lr->end_date)->min($akhirBulan);
 
-                    return $this->countHariKerja($mulai, $akhir);
+                    return $this->countHariKerja($mulai, $akhir, $tanggalMerah);
                 });
 
             return (object) [
@@ -604,14 +793,29 @@ class JadwalKerjaController extends Controller
                 'nama' => $employee->full_name,
                 'tipe' => $employee->employee_type,
                 'cabang' => $employee->branch->name ?? '—',
-                'hadir' => $detail->where('status', 'tepat_waktu')->count(),
-                'telat' => $detail->where('status', 'terlambat')->count(),
-                'tidak_checkout' => $detail->where('status', 'tidak_checkout')->count(),
+                'hadir' => $detailAbsen->where('status', 'tepat_waktu')->count(),
+                'telat' => $detailAbsen->where('status', 'terlambat')->count(),
+                'tidak_checkout' => $detailAbsen->where('status', 'tidak_checkout')->count(),
                 'cuti' => $cutiDays,
-                'alpa' => $detail->where('status', 'alpa')->count(),
+                'alpa' => $detailAbsen->where('status', 'alpa')->count(),
                 'detail' => $detail,
             ];
         });
+    }
+
+    /**
+     * Label libur untuk sebuah tanggal: keterangan tanggal merah kalau ada,
+     * kalau tidak "Hari Minggu" untuk hari Minggu, selain itu null.
+     */
+    private function labelLibur(Carbon $tanggal, array $tanggalMerah): ?string
+    {
+        $key = $tanggal->toDateString();
+
+        if (isset($tanggalMerah[$key])) {
+            return $tanggalMerah[$key];
+        }
+
+        return $tanggal->isSunday() ? 'Hari Minggu' : null;
     }
 
     private function getDaftarTahun(): array
@@ -619,10 +823,15 @@ class JadwalKerjaController extends Controller
         $tahunTertua = Attendance::min('tanggal');
         $tahunAwal = $tahunTertua ? Carbon::parse($tahunTertua)->year : now()->year;
 
-        return range(now()->year, $tahunAwal);
+        return range(now()->year + 1, min($tahunAwal, now()->year));
     }
 
-    private function countHariKerja(Carbon $mulai, Carbon $akhir): int
+    /**
+     * Hitung hari kerja pada rentang tanggal: Minggu dan tanggal merah tidak dihitung.
+     *
+     * @param array $tanggalMerah peta ['Y-m-d' => keterangan] dari getHolidayMap()
+     */
+    private function countHariKerja(Carbon $mulai, Carbon $akhir, array $tanggalMerah = []): int
     {
         if ($mulai->gt($akhir)) {
             return 0;
@@ -630,27 +839,13 @@ class JadwalKerjaController extends Controller
 
         $jumlah = 0;
         for ($tanggal = $mulai->copy(); $tanggal->lte($akhir); $tanggal->addDay()) {
-            if (! $tanggal->isSunday()) {
-                $jumlah++;
+            if ($tanggal->isSunday() || isset($tanggalMerah[$tanggal->toDateString()])) {
+                continue;
             }
+
+            $jumlah++;
         }
 
         return $jumlah;
-    }
-
-    /**
-     * Status efektif sebuah record: hormati override manual,
-     * selain itu pakai logika yang sama dengan halaman kategori.
-     */
-    private function effectiveStatus(Attendance $attendance, string $hariIni): string
-    {
-        if ($attendance->manual_override) {
-            return $attendance->status ?? 'alpa';
-        }
-
-        $sudahLewat = Carbon::parse($attendance->tanggal)->toDateString() < $hariIni;
-        [$status] = $this->resolveStatus($attendance, $sudahLewat);
-
-        return $status;
     }
 }

@@ -51,6 +51,21 @@
             border-color: var(--gold, #f5a623);
             background: var(--gold-pale, #fff4de);
         }
+
+        /* Navigasi riwayat per minggu */
+        .week-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+        .week-nav-btn {
+            flex-shrink: 0; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center;
+            border: 1px solid var(--line, #edeef0); border-radius: 11px; background: var(--paper, #fff);
+            color: var(--text, #22262b); font-size: 20px; line-height: 1; text-decoration: none;
+            touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+        }
+        a.week-nav-btn:hover { border-color: var(--gold, #f5a623); color: var(--gold-deep, #de8c0f); }
+        .week-nav-btn.disabled { opacity: .35; cursor: not-allowed; }
+        .week-nav-label { flex: 1; min-width: 0; text-align: center; }
+        .week-nav-title { font-weight: 800; font-size: 13px; }
+        .week-nav-range { font-size: 11px; color: var(--text-dim, #6b7280); margin-top: 2px; }
+        .week-nav-today { display: block; text-align: center; margin: -4px 0 12px; font-size: 12px; font-weight: 700; color: var(--gold-deep, #de8c0f); text-decoration: none; }
     </style>
 @endpush
 
@@ -294,9 +309,42 @@
                 </div>
             </div>
 
-            <div class="divider-label">
-                Riwayat absensi minggu ini
+            <div class="divider-label" id="riwayat">
+                Riwayat absensi
             </div>
+
+            <div class="week-nav">
+                @if ($prevWeek)
+                    <a class="week-nav-btn" href="{{ route('presensi', ['minggu' => $prevWeek]) }}#riwayat" aria-label="Minggu sebelumnya">&lsaquo;</a>
+                @else
+                    <span class="week-nav-btn disabled" aria-disabled="true">&lsaquo;</span>
+                @endif
+
+                <div class="week-nav-label">
+                    <div class="week-nav-title">
+                        @if ($isCurrentWeek)
+                            Minggu ini
+                        @elseif ($weeksAgo === 1)
+                            Minggu lalu
+                        @else
+                            {{ $weeksAgo }} minggu lalu
+                        @endif
+                    </div>
+                    <div class="week-nav-range">
+                        {{ $weekStart->translatedFormat('d M') }} &ndash; {{ $weekEnd->translatedFormat('d M Y') }}
+                    </div>
+                </div>
+
+                @if ($nextWeek)
+                    <a class="week-nav-btn" href="{{ route('presensi', ['minggu' => $nextWeek]) }}#riwayat" aria-label="Minggu berikutnya">&rsaquo;</a>
+                @else
+                    <span class="week-nav-btn disabled" aria-disabled="true">&rsaquo;</span>
+                @endif
+            </div>
+
+            @unless ($isCurrentWeek)
+                <a class="week-nav-today" href="{{ route('presensi') }}#riwayat">Kembali ke minggu ini</a>
+            @endunless
 
             <div class="table-wrap">
                 <table>
@@ -342,7 +390,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5">Belum ada riwayat minggu ini.</td></tr>
+                        <tr><td colspan="5">Belum ada riwayat presensi di minggu ini.</td></tr>
                     @endforelse
                 </table>
             </div>
