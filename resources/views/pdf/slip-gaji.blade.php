@@ -38,6 +38,7 @@
         table.rincian .val { text-align: right; font-weight: bold; }
         table.rincian .val-pos { color: #2F8A5B; }
         table.rincian .val-neg { color: #D34D3C; }
+        table.rincian .val-zero { color: #9AA0A8; }
 
         .section-label {
             font-size: 9px; text-transform: uppercase; letter-spacing: 1px;
@@ -137,6 +138,13 @@
 
         @else
 
+            @php
+                $bonusKerajinan = (float) ($rincian['bonus_kerajinan'] ?? 0);
+                $bonusKinerja   = (float) ($rincian['bonus_kinerja'] ?? 0);
+                $thrSlip        = (float) ($rincian['thr'] ?? 0);
+                $potonganTelat  = (float) ($rincian['potongan'] ?? 0);
+            @endphp
+
             <tr>
                 <td class="label">
                     Gaji Pokok
@@ -173,32 +181,37 @@
                 </td>
             </tr>
 
-            @if (($rincian['bonus_kerajinan'] ?? 0) > 0)
-                <tr>
-                    <td class="label">Bonus Kerajinan</td>
-                    <td class="val val-pos">
-                        Rp {{ number_format($rincian['bonus_kerajinan'], 0, ',', '.') }}
-                    </td>
-                </tr>
-            @endif
+            {{-- Bonus Kerajinan (selalu tampil) --}}
+            <tr>
+                <td class="label">
+                    Bonus Kerajinan
+                    <div class="sub">Bonus periode ini</div>
+                </td>
+                <td class="val {{ $bonusKerajinan > 0 ? 'val-pos' : 'val-zero' }}">
+                    Rp {{ number_format($bonusKerajinan, 0, ',', '.') }}
+                </td>
+            </tr>
 
-            @if (($rincian['bonus_kinerja'] ?? 0) > 0)
-                <tr>
-                    <td class="label">Bonus Kinerja</td>
-                    <td class="val val-pos">
-                        Rp {{ number_format($rincian['bonus_kinerja'], 0, ',', '.') }}
-                    </td>
-                </tr>
-            @endif
+            {{-- Bonus Kinerja (selalu tampil) --}}
+            <tr>
+                <td class="label">
+                    Bonus Kinerja
+                    <div class="sub">Bonus periode ini</div>
+                </td>
+                <td class="val {{ $bonusKinerja > 0 ? 'val-pos' : 'val-zero' }}">
+                    Rp {{ number_format($bonusKinerja, 0, ',', '.') }}
+                </td>
+            </tr>
 
-            @if (($rincian['thr'] ?? 0) > 0)
+            {{-- THR (hanya jika ada di slip) --}}
+            @if ($thrSlip > 0)
                 <tr>
                     <td class="label">
                         THR
                         <div class="sub">Tunjangan Hari Raya</div>
                     </td>
                     <td class="val val-pos">
-                        Rp {{ number_format($rincian['thr'], 0, ',', '.') }}
+                        Rp {{ number_format($thrSlip, 0, ',', '.') }}
                     </td>
                 </tr>
             @endif
@@ -208,20 +221,26 @@
     </table>
 
 
-    {{-- POTONGAN (hanya karyawan tetap) --}}
-    @if ($employee->employee_type !== 'part_time' && ($rincian['potongan'] ?? 0) > 0)
+    {{-- POTONGAN (hanya karyawan tetap, selalu tampil) --}}
+    @if ($employee->employee_type !== 'part_time')
 
         <div class="section-label">Potongan</div>
 
         <table class="rincian">
             <tr>
                 <td class="label">
-                    Potongan Keterlambatan
-                    <div class="sub">Total potongan periode ini</div>
+                    Potongan Telat
+                    <div class="sub">Total potongan keterlambatan periode ini</div>
                 </td>
-                <td class="val val-neg">
-                    − Rp {{ number_format($rincian['potongan'], 0, ',', '.') }}
-                </td>
+                @if ($potonganTelat > 0)
+                    <td class="val val-neg">
+                        − Rp {{ number_format($potonganTelat, 0, ',', '.') }}
+                    </td>
+                @else
+                    <td class="val val-zero">
+                        Rp 0
+                    </td>
+                @endif
             </tr>
         </table>
 

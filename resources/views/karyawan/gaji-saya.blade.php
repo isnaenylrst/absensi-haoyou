@@ -160,6 +160,13 @@
 
             @else
 
+                @php
+                    $bonusKerajinan = (float) ($rincian['bonus_kerajinan'] ?? 0);
+                    $bonusKinerja   = (float) ($rincian['bonus_kinerja'] ?? 0);
+                    $thrSlip        = (float) ($rincian['thr'] ?? 0);
+                    $potonganTelat  = (float) ($rincian['potongan'] ?? 0);
+                @endphp
+
                 <div class="pay-row">
                     <div>
                         <div class="pay-label">Gaji Pokok</div>
@@ -196,53 +203,61 @@
                     </div>
                 </div>
 
-                @if (($rincian['bonus_kerajinan'] ?? 0) > 0)
-                    <div class="pay-row">
-                        <div>
-                            <div class="pay-label">Bonus Kerajinan</div>
-                        </div>
-                        <div class="pay-val pay-pos">
-                            Rp {{ number_format($rincian['bonus_kerajinan'], 0, ',', '.') }}
-                        </div>
+                {{-- Bonus Kerajinan (selalu tampil) --}}
+                <div class="pay-row">
+                    <div>
+                        <div class="pay-label">Bonus Kerajinan</div>
+                        <div class="pay-sub">Bonus periode ini</div>
                     </div>
-                @endif
-
-                @if (($rincian['bonus_kinerja'] ?? 0) > 0)
-                    <div class="pay-row">
-                        <div>
-                            <div class="pay-label">Bonus Kinerja</div>
-                        </div>
-                        <div class="pay-val pay-pos">
-                            Rp {{ number_format($rincian['bonus_kinerja'], 0, ',', '.') }}
-                        </div>
+                    <div class="pay-val {{ $bonusKerajinan > 0 ? 'pay-pos' : '' }}"
+                         style="{{ $bonusKerajinan > 0 ? '' : 'color:#9AA0A8;' }}">
+                        Rp {{ number_format($bonusKerajinan, 0, ',', '.') }}
                     </div>
-                @endif
+                </div>
 
-                @if (($rincian['thr'] ?? 0) > 0)
+                {{-- Bonus Kinerja (selalu tampil) --}}
+                <div class="pay-row">
+                    <div>
+                        <div class="pay-label">Bonus Kinerja</div>
+                        <div class="pay-sub">Bonus periode ini</div>
+                    </div>
+                    <div class="pay-val {{ $bonusKinerja > 0 ? 'pay-pos' : '' }}"
+                         style="{{ $bonusKinerja > 0 ? '' : 'color:#9AA0A8;' }}">
+                        Rp {{ number_format($bonusKinerja, 0, ',', '.') }}
+                    </div>
+                </div>
+
+                {{-- THR (hanya tampil jika ada di slip) --}}
+                @if ($thrSlip > 0)
                     <div class="pay-row">
                         <div>
                             <div class="pay-label">THR</div>
                             <div class="pay-sub">Tunjangan Hari Raya</div>
                         </div>
                         <div class="pay-val pay-pos">
-                            Rp {{ number_format($rincian['thr'], 0, ',', '.') }}
+                            Rp {{ number_format($thrSlip, 0, ',', '.') }}
                         </div>
                     </div>
                 @endif
 
-                @if (($rincian['potongan'] ?? 0) > 0)
-                    <div class="divider-label">Potongan</div>
+                {{-- Potongan Telat (selalu tampil) --}}
+                <div class="divider-label">Potongan</div>
 
-                    <div class="pay-row">
-                        <div>
-                            <div class="pay-label">Potongan Keterlambatan</div>
-                            <div class="pay-sub">Total potongan periode ini</div>
-                        </div>
+                <div class="pay-row">
+                    <div>
+                        <div class="pay-label">Potongan Telat</div>
+                        <div class="pay-sub">Total potongan keterlambatan periode ini</div>
+                    </div>
+                    @if ($potonganTelat > 0)
                         <div class="pay-val pay-neg">
-                            − Rp {{ number_format($rincian['potongan'], 0, ',', '.') }}
+                            − Rp {{ number_format($potonganTelat, 0, ',', '.') }}
                         </div>
-                    </div>
-                @endif
+                    @else
+                        <div class="pay-val" style="color:#9AA0A8;">
+                            Rp 0
+                        </div>
+                    @endif
+                </div>
 
                 <div class="pay-total">
                     <div class="pay-label">Total Diterima</div>

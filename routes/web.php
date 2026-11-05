@@ -208,3 +208,4 @@ Route::middleware('auth')->group(function () {
 // ROOT
 // ======================================================
 Route::get('/', fn () => redirect()->route('login'));
+
