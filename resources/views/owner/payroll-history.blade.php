@@ -6,16 +6,21 @@
 <div class="crumb">Home <span>›</span> <a href="{{ route('payroll.index') }}">Payroll</a> <span>›</span> <b>Riwayat</b></div>
 <div class="page-title" style="margin-bottom:18px;">Riwayat Payroll</div>
 
+@if ($errors->any())
+    <div class="owner-panel-note" style="background:#FCEAE7; border-color:#F5CFC8;">
+        {{ $errors->first() }}
+    </div>
+@endif
+
 @if ($periods->isEmpty())
     <div class="owner-panel-note">
         Belum ada slip gaji yang diterbitkan. Terbitkan payroll dari halaman
         <a href="{{ route('payroll.index') }}">Payroll</a> terlebih dahulu.
     </div>
 @else
-    <form method="GET" action="{{ route('payroll.history') }}"
-          style="display:flex; align-items:center; gap:12px; margin-bottom:18px;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px; flex-wrap:wrap;">
         <label for="periode-riwayat" style="font-size:12px; font-weight:700; color:#666;">Periode:</label>
-        <select name="periode_select" id="periode-riwayat"
+        <select id="periode-riwayat"
                 onchange="const [y,m]=this.value.split('-'); window.location='{{ route('payroll.history') }}?year='+y+'&month='+m;"
                 style="padding:6px 10px; border:1px solid #ddd; border-radius:6px;">
             @foreach ($periods as $p)
@@ -25,11 +30,18 @@
                 </option>
             @endforeach
         </select>
-        <a href="{{ route('payroll.index', ['periode' => sprintf('%04d-%02d', $selectedYear, $selectedMonth)]) }}"
-           class="btn btn-line btn-sm" style="margin-left:auto;">
-            Lihat / Edit di Payroll
-        </a>
-    </form>
+
+        <div style="margin-left:auto; display:flex; gap:8px;">
+            <a href="{{ route('payroll.history.pdf', ['year' => $selectedYear, 'month' => $selectedMonth]) }}"
+               class="btn btn-gold btn-sm">
+                Unduh PDF
+            </a>
+            <a href="{{ route('payroll.index', ['periode' => sprintf('%04d-%02d', $selectedYear, $selectedMonth)]) }}"
+               class="btn btn-line btn-sm">
+                Lihat / Edit di Payroll
+            </a>
+        </div>
+    </div>
 
     <div class="divider-label" style="margin-top:0;">Slip Gaji — {{ $periodeLabel }}</div>
     <div class="table-wrap">

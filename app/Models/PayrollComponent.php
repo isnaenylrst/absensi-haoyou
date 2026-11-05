@@ -12,7 +12,7 @@ class PayrollComponent extends Model
 
     public $timestamps = false;
 
-    protected $fillable = [
+     protected $fillable = [
         'employee_id',
         'base_salary',
         'meal_rate',
@@ -23,10 +23,12 @@ class PayrollComponent extends Model
         'bonus_kinerja',
         'thr_manual',
         'thr_active',
+        'gaji_locked',
         'effective_date',
     ];
 
-    protected $casts = [
+
+     protected $casts = [
         'base_salary' => 'decimal:2',
         'meal_rate' => 'decimal:2',
         'transport_rate' => 'decimal:2',
@@ -36,10 +38,10 @@ class PayrollComponent extends Model
         'bonus_kinerja' => 'decimal:2',
         'thr_manual' => 'decimal:2',
         'thr_active' => 'boolean',
+        'gaji_locked' => 'boolean',
         'effective_date' => 'date',
         'updated_at' => 'datetime',
     ];
-
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);

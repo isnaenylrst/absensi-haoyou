@@ -203,14 +203,25 @@ Route::middleware('auth')->group(function () {
         Route::get('/payroll/history', [PayrollController::class, 'history'])
             ->name('payroll.history');
 
+        Route::get('/payroll/history/pdf', [PayrollController::class, 'historyPdf'])
+            ->name('payroll.history.pdf');
+
+         // Pengaturan gaji pokok (master, terkunci)
+        Route::get('/payroll/master', [PayrollController::class, 'master'])
+            ->name('payroll.master');
+
+        Route::patch('/payroll/master/{employee}', [PayrollController::class, 'updateMaster'])
+            ->name('payroll.master.update');
+
         Route::patch('/payroll/{employee}', [PayrollController::class, 'updateComponent'])
             ->name('payroll.update');
 
         Route::post('/payroll/publish', [PayrollController::class, 'publishAll'])
             ->name('payroll.publish');
-        
-        Route::post('/payroll/periode', [PayrollController::class, 'updatePeriod'])->name('payroll.update-period');
-    });
+
+        Route::post('/payroll/periode', [PayrollController::class, 'updatePeriod'])
+            ->name('payroll.update-period');
+});
 });
 
 // ======================================================
