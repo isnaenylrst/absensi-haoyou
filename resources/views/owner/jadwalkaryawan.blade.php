@@ -6,6 +6,37 @@
     <link rel="stylesheet" href="{{ asset('/css/owner/jadwal-kerja.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        .jadwal-approval-table tr.hl-now td { background:rgba(245,162,31,.12); font-weight:600; }
+        .hl-grid { display:grid; grid-template-columns:minmax(0,2fr) minmax(0,1fr); gap:18px; align-items:stretch; margin-bottom:18px; }
+        .hl-head { display:flex; justify-content:space-between; align-items:center; font-weight:700; font-size:15px; margin-bottom:16px; }
+        .hl-count { font-size:12px; font-weight:600; padding:4px 10px; border-radius:999px; background:rgba(245,162,31,.15); color:#c77a0a; }
+        .hl-form { display:grid; grid-template-columns:1fr 1fr 1.6fr auto; gap:12px; align-items:start; margin-bottom:18px; }
+        .hl-field label { display:block; font-size:12px; font-weight:600; opacity:.7; margin-bottom:6px; }
+        .hl-field .hl-opt { font-weight:400; opacity:.8; }
+        .hl-field input { width:100%; box-sizing:border-box; padding:9px 12px; font:inherit; font-size:13px; color:inherit; background:transparent; border:1px solid rgba(128,128,128,.3); border-radius:10px; }
+        .hl-field input:focus { outline:none; border-color:#F5A21F; box-shadow:0 0 0 3px rgba(245,162,31,.18); }
+        .hl-error { color:#dc2626; font-size:12px; margin-top:5px; }
+        .hl-submit { margin-top:22px; white-space:nowrap; }
+        .hl-chips { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:8px; }
+        .hl-chip { padding:6px 12px; font-size:12px; font-weight:600; border-radius:999px; background:rgba(220,38,38,.1); color:#dc2626; }
+        .hl-note { margin-top:16px; text-align:left; font-size:12px; line-height:1.55; opacity:.65; }
+        .hl-grid > .card { display:flex; flex-direction:column; min-width:0; }
+        .hl-minggu-body { flex:1; display:flex; flex-direction:column; justify-content:center; }
+        .hl-scroll { overflow-x:hidden; overflow-y:auto; max-height:calc(44px + 3 * 48px + 2px); border-radius:10px; }
+        .hl-table { width:100%; min-width:0 !important; table-layout:fixed; border-collapse:collapse; }
+        .hl-table th { position:sticky; top:0; z-index:1; height:44px; padding:0 14px; background:#f4f4f2; text-align:left; }
+        .hl-table td { height:48px; padding:0 14px; vertical-align:middle; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .hl-table th:nth-child(1), .hl-table td:nth-child(1) { width:46%; }
+        .hl-table th:nth-child(3), .hl-table td:nth-child(3) { width:64px; padding:0 8px; text-align:center; }
+        .hl-table .empty-state { height:48px; white-space:normal; }
+        @media (max-width:1000px) {
+            .hl-grid { grid-template-columns:1fr; }
+            .hl-form { grid-template-columns:1fr 1fr; }
+            .hl-submit { margin-top:0; }
+        }
+        @media (max-width:560px) { .hl-form { grid-template-columns:1fr; } }
+    </style>
 @endpush
 
 @section('content')
@@ -97,6 +128,85 @@
         </a>
       </div>
 
+      <!-- ===== Tanggal Merah & Hari Minggu ===== -->
+      <div class="card-title" style="margin-top:22px; margin-bottom:12px;">
+        Tanggal Merah &amp; Hari Minggu &middot; {{ $daftarBulan[$bulanTerpilih] }} {{ $tahunTerpilih }}
+      </div>
+
+      <div class="hl-grid">
+        <!-- Tanggal merah (input manual) -->
+        <div class="card">
+          <div class="hl-head"><span>Tanggal Merah {{ $daftarBulan[$bulanTerpilih] }} {{ $tahunTerpilih }}</span><span class="hl-count">{{ $tanggalMerah->count() }} tanggal</span></div>
+
+          <form method="POST" action="{{ route('owner.holiday.store') }}" class="hl-form">
+            @csrf
+            <div class="hl-field">
+              <label for="libur_tanggal">Tanggal</label>
+              <input type="date" id="libur_tanggal" name="tanggal" value="{{ old('tanggal') }}" required>
+              @error('tanggal')<div class="hl-error">{{ $message }}</div>@enderror
+            </div>
+
+            <div class="hl-field">
+              <label for="libur_tanggal_akhir">Sampai tanggal <span class="hl-opt">(opsional)</span></label>
+              <input type="date" id="libur_tanggal_akhir" name="tanggal_akhir" value="{{ old('tanggal_akhir') }}">
+              @error('tanggal_akhir')<div class="hl-error">{{ $message }}</div>@enderror
+            </div>
+
+            <div class="hl-field">
+              <label for="libur_keterangan">Keterangan</label>
+              <input type="text" id="libur_keterangan" name="keterangan" maxlength="100" placeholder="Contoh: Hari Natal" value="{{ old('keterangan') }}" required>
+              @error('keterangan')<div class="hl-error">{{ $message }}</div>@enderror
+            </div>
+
+            <button type="submit" class="btn btn-gold btn-sm hl-submit">+ Tambah</button>
+          </form>
+
+          <div class="hl-scroll">
+            <table class="jadwal-approval-table hl-table">
+              <tr>
+                <th>Tanggal</th>
+                <th>Keterangan</th>
+                <th style="text-align:center;">Aksi</th>
+              </tr>
+              @forelse ($tanggalMerah as $libur)
+                <tr>
+                  <td class="mono">{{ $libur->tanggal->locale('id')->translatedFormat('l, d F Y') }}</td>
+                  <td title="{{ $libur->keterangan }}">{{ $libur->keterangan }}</td>
+                  <td style="text-align:center;">
+                    <form method="POST" action="{{ route('owner.holiday.destroy', $libur->id) }}"
+                          onsubmit="return confirm('Hapus tanggal merah ini?')" style="display:inline;">
+                      @csrf
+                      @method('DELETE')
+                      <button type="submit" class="btn btn-line btn-xs" aria-label="Hapus"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                  </td>
+                </tr>
+              @empty
+                <tr><td colspan="3" class="empty-state">Belum ada tanggal merah di bulan ini.</td></tr>
+              @endforelse
+            </table>
+          </div>
+        </div>
+
+        <!-- Hari Minggu (otomatis) -->
+        <div class="card">
+          <div class="hl-head">
+            <span>Hari Minggu</span>
+            <span class="hl-count">{{ $hariMinggu->count() }} hari</span>
+          </div>
+          <div class="hl-minggu-body">
+            <div class="hl-chips">
+              @foreach ($hariMinggu as $minggu)
+                <span class="hl-chip">{{ $minggu->locale('id')->translatedFormat('d F Y') }}</span>
+              @endforeach
+            </div>
+            <div class="hl-note">
+              Hari Minggu dan tanggal merah tidak dihitung sebagai alpa maupun hari cuti.
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ===== Riwayat Bulanan ===== -->
       <div class="card-title" style="margin-top:22px; margin-bottom:12px;">Riwayat Bulanan</div>
 
@@ -128,37 +238,10 @@
                 <td style="text-align:center;">{{ $r->cuti }}</td>
                 <td style="text-align:center;">{{ $r->alpa }}</td>
                 <td class="jadwal-action-cell">
-                  <button type="button" class="btn btn-line btn-xs" onclick="openRiwayatModal('riwayat-{{ $r->id }}')">Detail</button>
+                  <a href="{{ route('owner.riwayat.detail', ['employee' => $r->id, 'bulan' => $bulanTerpilih, 'tahun' => $tahunTerpilih]) }}" class="btn btn-line btn-xs">Detail</a>
                 </td>
               </tr>
 
-              <template id="modal-riwayat-{{ $r->id }}">
-                <button type="button" class="modal-close" onclick="closeRiwayatModal()" aria-label="Tutup">
-                  <i class="fa-solid fa-xmark"></i>
-                </button>
-                <div class="modal-content" style="padding-top:8px;">
-                  <div class="modal-content-head">
-                    <div class="modal-employee-name">{{ $r->nama }}</div>
-                    <div class="modal-employee-sub">{{ $r->cabang }} &middot; {{ ucfirst($r->tipe) }}</div>
-                  </div>
-                  <div class="table-wrap" style="margin-top:12px;">
-                    <table class="jadwal-approval-table">
-                      <tr><th>Tanggal</th><th>Jadwal</th><th>Masuk</th><th>Keluar</th><th>Status</th></tr>
-                      @forelse ($r->detail as $d)
-                        <tr>
-                          <td class="mono">{{ \Carbon\Carbon::parse($d->tanggal)->translatedFormat('d M Y') }}</td>
-                          <td>{{ $d->jadwal }}</td>
-                          <td class="mono">{{ $d->jam_masuk ? \Carbon\Carbon::parse($d->jam_masuk)->format('H:i') : '—' }}</td>
-                          <td class="mono">{{ $d->jam_keluar ? \Carbon\Carbon::parse($d->jam_keluar)->format('H:i') : '—' }}</td>
-                          <td>{{ ucfirst(str_replace('_', ' ', $d->status ?? '-')) }}</td>
-                        </tr>
-                      @empty
-                        <tr><td colspan="5" class="empty-state">Belum ada record presensi bulan ini.</td></tr>
-                      @endforelse
-                    </table>
-                  </div>
-                </div>
-              </template>
             @empty
               <tr><td colspan="8" class="empty-state">Tidak ada data untuk bulan ini.</td></tr>
             @endforelse
@@ -166,12 +249,9 @@
         </div>
       </div>
 
-      <div class="modal-overlay" id="riwayatModalOverlay" onclick="closeRiwayatModal(event)">
-        <div class="modal-box" id="riwayatModalBody" onclick="event.stopPropagation()"></div>
-      </div>
     </div>
-    
-          <!-- ===== Arsip Attendance ===== -->
+
+      <!-- ===== Arsip Attendance ===== -->
       <div class="card-title" style="margin-top:22px; margin-bottom:12px;">Arsip Attendance</div>
 
       <div class="card">
@@ -435,19 +515,8 @@
     formEditShift.action = '/owner/shift/{{ old('shift_id') }}';
   @endif
 
-  // ===== Modal Detail Riwayat Bulanan =====
-  function openRiwayatModal(id) {
-    const source = document.getElementById('modal-' + id);
-    if (!source) return;
-    document.getElementById('riwayatModalBody').innerHTML = source.innerHTML;
-    document.getElementById('riwayatModalOverlay').classList.add('show');
-  }
-  function closeRiwayatModal(e) {
-    document.getElementById('riwayatModalOverlay').classList.remove('show');
-  }
-
   @if(session('success'))
-    showToast('{{ session('success') }}');
+    showToast(@json(session('success')));
   @endif
 </script>
 

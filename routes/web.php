@@ -160,6 +160,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/owner/jadwal-kerja/archive/download/{filename}', [JadwalKerjaController::class, 'downloadArchive'])
             ->name('owner.archive.download');
 
+        Route::post('/owner/hari-libur', [JadwalKerjaController::class, 'storeHoliday'])
+            ->name('owner.holiday.store');
+        
+        Route::delete('/owner/hari-libur/{holiday}', [JadwalKerjaController::class, 'destroyHoliday'])
+            ->name('owner.holiday.destroy');
+
+        Route::get('/owner/jadwal-kerja/riwayat/{employee}', [JadwalKerjaController::class, 'riwayatDetail'])
+            ->name('owner.riwayat.detail');
+
         // ----------------------------------------------
         // Kunjungan Klien - Owner
         // ----------------------------------------------
