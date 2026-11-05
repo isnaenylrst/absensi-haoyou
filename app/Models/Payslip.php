@@ -26,10 +26,14 @@ class Payslip extends Model
         'uang_bensin',
 
         'bonus_kerajinan',
+        'bonus_kerajinan_awal',
         'bonus_kinerja',
 
         'potongan_telat',
         'thr',
+
+        'tanggal_terlambat',
+        'tanggal_libur',
 
         'total_pendapatan',
         'total_potongan',
@@ -50,10 +54,14 @@ class Payslip extends Model
         'uang_bensin' => 'decimal:2',
 
         'bonus_kerajinan' => 'decimal:2',
+        'bonus_kerajinan_awal' => 'decimal:2',
         'bonus_kinerja' => 'decimal:2',
 
         'potongan_telat' => 'decimal:2',
         'thr' => 'decimal:2',
+
+        'tanggal_terlambat' => 'array',
+        'tanggal_libur' => 'array',
 
         'total_pendapatan' => 'decimal:2',
         'total_potongan' => 'decimal:2',

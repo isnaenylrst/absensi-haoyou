@@ -89,6 +89,86 @@
 
         @if ($payslip)
 
+            {{-- ====================================================
+            KETERANGAN PERIODE (khusus karyawan tetap)
+            ==================================================== --}}
+
+            @if ($keterangan)
+
+                <div style="background:#FAFAF7; border:1px solid #EDEEF0; border-radius:10px; padding:12px 14px; margin-bottom:6px;">
+
+                    <div class="divider-label" style="margin-top:0;">
+                        Keterangan Periode
+                    </div>
+
+                    <div class="kv">
+                        <span class="kv-lbl">Periode</span>
+                        <span class="kv-val">{{ $keterangan['periode_label'] }}</span>
+                    </div>
+
+                    <div class="kv">
+                        <span class="kv-lbl">Hari Minggu</span>
+                        <span class="kv-val">
+                            {{ implode(', ', $keterangan['minggu']) }}
+                            ({{ count($keterangan['minggu']) }} hari)
+                        </span>
+                    </div>
+
+                    @if ($keterangan['libur'] !== null)
+                        <div class="kv">
+                            <span class="kv-lbl">Hari libur nasional</span>
+                            <span class="kv-val">
+                                @if (count($keterangan['libur']) === 0)
+                                    -
+                                @else
+                                    @foreach ($keterangan['libur'] as $l)
+                                        {{ $l['tgl'] }}@if (!empty($l['keterangan'])) ({{ $l['keterangan'] }})@endif{{ !$loop->last ? ', ' : '' }}
+                                    @endforeach
+                                @endif
+                            </span>
+                        </div>
+                    @endif
+
+                    <div class="kv">
+                        <span class="kv-lbl">Hari kerja efektif</span>
+                        <span class="kv-val">{{ $keterangan['rumus_efektif'] }}</span>
+                    </div>
+
+                    @if ($keterangan['hari_efektif'] !== $keterangan['hitung_efektif'])
+                        <div class="kv">
+                            <span class="kv-lbl">Hari efektif untuk gaji</span>
+                            <span class="kv-val">{{ $keterangan['hari_efektif'] }} hari (ditetapkan Owner)</span>
+                        </div>
+                    @endif
+
+                    <div class="kv">
+                        <span class="kv-lbl">Hari tidak masuk</span>
+                        <span class="kv-val">{{ $keterangan['tidak_masuk'] }} hari</span>
+                    </div>
+
+                    @if ($keterangan['terlambat'] !== null)
+                        <div class="kv">
+                            <span class="kv-lbl">Hari terlambat</span>
+                            <span class="kv-val">
+                                @if (count($keterangan['terlambat']) === 0)
+                                    0 hari
+                                @else
+                                    {{ count($keterangan['terlambat']) }} hari
+                                    (tgl {{ implode(', ', $keterangan['terlambat']) }})
+                                @endif
+                            </span>
+                        </div>
+                    @endif
+
+                    <div class="field-hint" style="margin-top:10px;">
+                        Noted: diperhatikan dan diperbaiki ke depan.
+                    </div>
+
+                </div>
+
+            @endif
+
+
             <div class="divider-label" style="margin-top:0;">
                 Pendapatan
             </div>
@@ -160,13 +240,6 @@
 
             @else
 
-                @php
-                    $bonusKerajinan = (float) ($rincian['bonus_kerajinan'] ?? 0);
-                    $bonusKinerja   = (float) ($rincian['bonus_kinerja'] ?? 0);
-                    $thrSlip        = (float) ($rincian['thr'] ?? 0);
-                    $potonganTelat  = (float) ($rincian['potongan'] ?? 0);
-                @endphp
-
                 <div class="pay-row">
                     <div>
                         <div class="pay-label">Gaji Pokok</div>
@@ -203,61 +276,74 @@
                     </div>
                 </div>
 
-                {{-- Bonus Kerajinan (selalu tampil) --}}
-                <div class="pay-row">
-                    <div>
-                        <div class="pay-label">Bonus Kerajinan</div>
-                        <div class="pay-sub">Bonus periode ini</div>
-                    </div>
-                    <div class="pay-val {{ $bonusKerajinan > 0 ? 'pay-pos' : '' }}"
-                         style="{{ $bonusKerajinan > 0 ? '' : 'color:#9AA0A8;' }}">
-                        Rp {{ number_format($bonusKerajinan, 0, ',', '.') }}
-                    </div>
-                </div>
+                {{-- BONUS KERAJINAN + KETERANGAN --}}
+                @if (($rincian['bonus_kerajinan'] ?? 0) > 0 || ($keterangan['bonus_awal'] ?? 0) > 0)
+                    <div class="pay-row">
+                        <div>
+                            <div class="pay-label">Bonus Kerajinan</div>
 
-                {{-- Bonus Kinerja (selalu tampil) --}}
-                <div class="pay-row">
-                    <div>
-                        <div class="pay-label">Bonus Kinerja</div>
-                        <div class="pay-sub">Bonus periode ini</div>
+                            @if ($keterangan && $keterangan['terlambat'] !== null)
+                                @if ($keterangan['bonus_dipotong'] > 0)
+                                    <div class="pay-sub" style="color:var(--rust);">
+                                        Bonus Rp {{ number_format($keterangan['bonus_awal'], 0, ',', '.') }}
+                                        − Rp {{ number_format($keterangan['bonus_dipotong'], 0, ',', '.') }}
+                                        karena terlambat pada tgl
+                                        {{ implode(', ', $keterangan['terlambat']) }}
+                                        {{ $keterangan['bulan_nama'] }}
+                                    </div>
+                                @elseif (count($keterangan['terlambat']) > 0)
+                                    <div class="pay-sub" style="color:var(--rust);">
+                                        Catatan: terlambat pada tgl
+                                        {{ implode(', ', $keterangan['terlambat']) }}
+                                        {{ $keterangan['bulan_nama'] }}
+                                    </div>
+                                @endif
+                            @endif
+                        </div>
+                        <div class="pay-val pay-pos">
+                            Rp {{ number_format($rincian['bonus_kerajinan'], 0, ',', '.') }}
+                        </div>
                     </div>
-                    <div class="pay-val {{ $bonusKinerja > 0 ? 'pay-pos' : '' }}"
-                         style="{{ $bonusKinerja > 0 ? '' : 'color:#9AA0A8;' }}">
-                        Rp {{ number_format($bonusKinerja, 0, ',', '.') }}
-                    </div>
-                </div>
+                @endif
 
-                {{-- THR (hanya tampil jika ada di slip) --}}
-                @if ($thrSlip > 0)
+                {{-- BONUS KINERJA --}}
+                @if (($rincian['bonus_kinerja'] ?? 0) > 0)
+                    <div class="pay-row">
+                        <div>
+                            <div class="pay-label">Bonus Kinerja</div>
+                            {{-- <div class="pay-sub">Sesuai input Owner</div> --}}
+                        </div>
+                        <div class="pay-val pay-pos">
+                            Rp {{ number_format($rincian['bonus_kinerja'], 0, ',', '.') }}
+                        </div>
+                    </div>
+                @endif
+
+                @if (($rincian['thr'] ?? 0) > 0)
                     <div class="pay-row">
                         <div>
                             <div class="pay-label">THR</div>
                             <div class="pay-sub">Tunjangan Hari Raya</div>
                         </div>
                         <div class="pay-val pay-pos">
-                            Rp {{ number_format($thrSlip, 0, ',', '.') }}
+                            Rp {{ number_format($rincian['thr'], 0, ',', '.') }}
                         </div>
                     </div>
                 @endif
 
-                {{-- Potongan Telat (selalu tampil) --}}
-                <div class="divider-label">Potongan</div>
+                @if (($rincian['potongan'] ?? 0) > 0)
+                    <div class="divider-label">Potongan</div>
 
-                <div class="pay-row">
-                    <div>
-                        <div class="pay-label">Potongan Telat</div>
-                        <div class="pay-sub">Total potongan keterlambatan periode ini</div>
-                    </div>
-                    @if ($potonganTelat > 0)
+                    <div class="pay-row">
+                        <div>
+                            <div class="pay-label">Potongan Keterlambatan</div>
+                            <div class="pay-sub">Total potongan periode ini</div>
+                        </div>
                         <div class="pay-val pay-neg">
-                            − Rp {{ number_format($potonganTelat, 0, ',', '.') }}
+                            − Rp {{ number_format($rincian['potongan'], 0, ',', '.') }}
                         </div>
-                    @else
-                        <div class="pay-val" style="color:#9AA0A8;">
-                            Rp 0
-                        </div>
-                    @endif
-                </div>
+                    </div>
+                @endif
 
                 <div class="pay-total">
                     <div class="pay-label">Total Diterima</div>
@@ -280,6 +366,19 @@
                 </div>
 
             @endif
+
+
+            {{-- KERAHASIAAN GAJI (semua karyawan) --}}
+            <div style="display:flex; gap:8px; align-items:flex-start; margin-top:12px; padding:10px 12px; background:#FDF1EF; border:1px solid #F3D0CA; border-radius:10px; font-size:12px; color:#B5392B;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B5392B" stroke-width="2" style="flex-shrink:0; margin-top:1px;">
+                    <rect x="5" y="11" width="14" height="9" rx="2"/>
+                    <path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+                </svg>
+                <div>
+                    <strong>Gaji bersifat rahasia</strong>
+                    dan tidak boleh dibocorkan kepada siapa pun.
+                </div>
+            </div>
 
         @else
 
@@ -407,7 +506,7 @@ RIWAYAT GAJI
         <div style="overflow-x:auto;">
             <table style="width:100%; border-collapse:collapse; font-size:13px;">
                 <thead>
-                    <tr style="text-align:left; color:#9AA0A8; font-size:11px; text-transform:uppercase;">
+                    <tr style="text-align:left; color:#9aa89f; font-size:11px; text-transform:uppercase;">
                         <th style="padding:8px 6px; border-bottom:1px solid #EDEEF0;">Periode</th>
                         <th style="padding:8px 6px; border-bottom:1px solid #EDEEF0;">Diterbitkan</th>
                         <th style="padding:8px 6px; border-bottom:1px solid #EDEEF0; text-align:right;">Total Diterima</th>

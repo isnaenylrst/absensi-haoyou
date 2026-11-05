@@ -13,9 +13,16 @@ use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Models\Holiday;
 
 class PayrollController extends Controller
 {
+    /**
+     * false = Bonus Kerajinan TETAP dibayar penuh, hanya diberi keterangan terlambat.
+     * true  = Bonus Kerajinan menjadi Rp 0 jika ada keterlambatan di periode itu.
+     */
+    private const BONUS_KERAJINAN_HANGUS_JIKA_TERLAMBAT = false;
+
     /* ============================================================
      * HALAMAN PAYROLL BULANAN
      * ============================================================ */
@@ -219,7 +226,7 @@ class PayrollController extends Controller
     /* ============================================================
      * PUBLISH SEMUA PAYROLL
      * ============================================================ */
-    public function publishAll(Request $request): RedirectResponse
+        public function publishAll(Request $request): RedirectResponse
     {
         $this->authorizeOwner();
 
@@ -242,7 +249,8 @@ class PayrollController extends Controller
             ]);
         }
 
-        $employees = Employee::with('payrollComponent')->get();
+        $employees    = Employee::with('payrollComponent')->get();
+        $tanggalLibur = $this->ambilTanggalLibur($periode);
 
         foreach ($employees as $employee) {
 
@@ -261,10 +269,18 @@ class PayrollController extends Controller
                 $gajiPokokDiterima = $hariEfektif > 0 ? ($gajiPokok / $hariEfektif) * $hariHadir : 0;
                 $uangMakan         = (float) $settings->meal_rate * $hariHadir;
                 $uangBensin        = (float) $settings->transport_rate * $hariHadir;
-                $bonusKerajinan    = (float) ($component->bonus_kerajinan ?? 0);
                 $bonusKinerja      = (float) ($component->bonus_kinerja ?? 0);
                 $thr               = (float) $data->thr;
                 $potongan          = (float) $data->potongan_telat;
+
+                // Tanggal terlambat diambil dari absensi, disimpan di slip
+                $tanggalTerlambat = $this->ambilTanggalTerlambat($employee, $periode);
+
+                // Bonus kerajinan: nominal awal dari Owner
+                $bonusKerajinanAwal = (float) ($component->bonus_kerajinan ?? 0);
+                $bonusKerajinan = (self::BONUS_KERAJINAN_HANGUS_JIKA_TERLAMBAT && count($tanggalTerlambat) > 0)
+                    ? 0.0
+                    : $bonusKerajinanAwal;
 
                 $pendapatan = $gajiPokokDiterima + $uangMakan + $uangBensin
                             + $bonusKerajinan + $bonusKinerja + $thr;
@@ -276,19 +292,22 @@ class PayrollController extends Controller
                         'period_year'  => $periode->year,
                     ],
                     [
-                        'hari_efektif'     => $hariEfektif,
-                        'hari_hadir'       => $hariHadir,
-                        'gaji_pokok'       => $gajiPokokDiterima,
-                        'uang_makan'       => $uangMakan,
-                        'uang_bensin'      => $uangBensin,
-                        'bonus_kerajinan'  => $bonusKerajinan,
-                        'bonus_kinerja'    => $bonusKinerja,
-                        'potongan_telat'   => $potongan,
-                        'thr'              => $thr,
-                        'total_pendapatan' => $pendapatan,
-                        'total_potongan'   => $potongan,
-                        'total_diterima'   => $pendapatan - $potongan,
-                        'published_at'     => now(),
+                        'hari_efektif'         => $hariEfektif,
+                        'hari_hadir'           => $hariHadir,
+                        'gaji_pokok'           => $gajiPokokDiterima,
+                        'uang_makan'           => $uangMakan,
+                        'uang_bensin'          => $uangBensin,
+                        'bonus_kerajinan'      => $bonusKerajinan,
+                        'bonus_kerajinan_awal' => $bonusKerajinanAwal,
+                        'bonus_kinerja'        => $bonusKinerja,
+                        'potongan_telat'       => $potongan,
+                        'thr'                  => $thr,
+                        'tanggal_terlambat'    => $tanggalTerlambat,
+                        'tanggal_libur'        => $tanggalLibur,
+                        'total_pendapatan'     => $pendapatan,
+                        'total_potongan'       => $potongan,
+                        'total_diterima'       => $pendapatan - $potongan,
+                        'published_at'         => now(),
                     ]
                 );
 
@@ -404,6 +423,47 @@ class PayrollController extends Controller
     private function authorizeOwner(): void
     {
         abort_unless(auth()->user()->role === 'owner', 403);
+    }
+        /**
+     * Tanggal (angka hari) saat karyawan terlambat, urut naik.
+     * Kriteria sama dengan perhitungan potongan telat.
+     */
+    private function ambilTanggalTerlambat(Employee $employee, Carbon $periode): array
+    {
+        $start = $periode->copy()->startOfMonth()->toDateString();
+        $end   = $periode->copy()->endOfMonth()->toDateString();
+
+        return Attendance::where('employee_id', $employee->id)
+            ->whereBetween('tanggal', [$start, $end])
+            ->where('status', 'terlambat')
+            ->whereNotNull('check_out')
+            ->orderBy('tanggal')
+            ->pluck('tanggal')
+            ->map(fn ($t) => (int) Carbon::parse($t)->day)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Tanggal merah pada periode (yang jatuh di hari Minggu diabaikan
+     * supaya tidak dikurangkan dua kali).
+     */
+    private function ambilTanggalLibur(Carbon $periode): array
+    {
+        $start = $periode->copy()->startOfMonth()->toDateString();
+        $end   = $periode->copy()->endOfMonth()->toDateString();
+
+        return Holiday::whereBetween('tanggal', [$start, $end])
+            ->orderBy('tanggal')
+            ->get()
+            ->filter(fn ($h) => !$h->tanggal->isSunday())
+            ->map(fn ($h) => [
+                'tgl'        => (int) $h->tanggal->day,
+                'keterangan' => $h->keterangan,
+            ])
+            ->values()
+            ->all();
     }
 
     private function getPayslips(int $year, int $month)

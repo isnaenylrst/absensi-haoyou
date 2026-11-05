@@ -65,7 +65,7 @@ class PayslipController extends Controller
     /**
      * Tentukan slip yang dipilih.
      * - Ada ?periode=YYYY-MM valid & slipnya ada -> slip itu.
-     * - Selain itu -> slip terbaru (kalau $fallbackLatest = true).
+     * - Selain itu -> slip terbaru.
      */
     private function resolvePayslip($employee, ?string $periode, bool $fallbackLatest = true): ?Payslip
     {
@@ -80,11 +80,6 @@ class PayslipController extends Controller
             }
         }
 
-        if (!$fallbackLatest) {
-            // Tanpa parameter periode: PDF mengunduh slip terbaru
-            return $this->latestPayslip($employee);
-        }
-
         return $this->latestPayslip($employee);
     }
 
@@ -97,13 +92,69 @@ class PayslipController extends Controller
     }
 
     /**
+     * Keterangan periode untuk slip KARYAWAN TETAP:
+     * rentang tanggal, hari Minggu, tanggal merah, hari efektif,
+     * hari tidak masuk, hari terlambat, dan keterangan bonus kerajinan.
+     */
+    private function buildKeterangan(Payslip $payslip): array
+    {
+        $awal = Carbon::createFromDate($payslip->period_year, $payslip->period_month, 1)->startOfDay();
+        $jumlahHari = $awal->daysInMonth;
+
+        // Hari Minggu (Sabtu tetap dihitung hari kerja)
+        $minggu = [];
+        for ($d = 1; $d <= $jumlahHari; $d++) {
+            if ($awal->copy()->day($d)->isSunday()) {
+                $minggu[] = $d;
+            }
+        }
+
+        // NULL = slip lama (diterbitkan sebelum fitur keterangan ada)
+        $libur = $payslip->tanggal_libur;
+        $jumlahLibur = is_array($libur) ? count($libur) : 0;
+
+        $hitungEfektif = $jumlahHari - count($minggu) - $jumlahLibur;
+
+        $rumus = $jumlahHari.' − '.count($minggu);
+        if ($jumlahLibur > 0) {
+            $rumus .= ' − '.$jumlahLibur;
+        }
+        $rumus .= ' = '.$hitungEfektif.' hari';
+
+        $hariEfektif = (int) $payslip->hari_efektif;
+        $tidakMasuk = max(0, $hariEfektif - (int) $payslip->hari_hadir);
+
+        $terlambat = $payslip->tanggal_terlambat; // NULL = slip lama
+
+        $bonusDibayar = (float) $payslip->bonus_kerajinan;
+        $bonusAwal = $terlambat === null
+            ? $bonusDibayar
+            : (float) $payslip->bonus_kerajinan_awal;
+
+        return [
+            'periode_label' => '1 – '.$jumlahHari.' '.$awal->translatedFormat('F Y'),
+            'bulan_nama' => $awal->translatedFormat('F'),
+            'jumlah_hari' => $jumlahHari,
+            'minggu' => $minggu,
+            'libur' => $libur,
+            'rumus_efektif' => $rumus,
+            'hitung_efektif' => $hitungEfektif,
+            'hari_efektif' => $hariEfektif,
+            'tidak_masuk' => $tidakMasuk,
+            'terlambat' => $terlambat,
+            'bonus_awal' => $bonusAwal,
+            'bonus_dibayar' => $bonusDibayar,
+            'bonus_dipotong' => max(0, $bonusAwal - $bonusDibayar),
+        ];
+    }
+
+    /**
      * Hitung semua data yang dibutuhkan halaman Gaji Saya & PDF slip gaji.
      */
     private function buildPayslipData($employee, ?Payslip $payslip): array
     {
         $payrollComponent = PayrollComponent::where('employee_id', $employee->id)->first();
 
-        // Tahun acuan THR: tahun slip yang dipilih, kalau tidak ada pakai tahun sekarang
         $thrYear = $payslip?->period_year ?? now()->year;
 
         $thrRecord = ThrRecord::where('employee_id', $employee->id)
@@ -126,13 +177,11 @@ class PayslipController extends Controller
 
         $thrEstimasi = $thrRecord?->amount ?? ($payrollComponent->base_salary ?? 0);
 
-        // ============================================================
-        // Rincian KARYAWAN TETAP - diambil dari angka yang tersimpan
-        // di payslips, supaya slip lama tidak berubah kalau rate diubah.
-        // ============================================================
+        // Rincian KARYAWAN TETAP - dari angka yang tersimpan di payslips
         $rincian = null;
         $tarifMakan = 0;
         $tarifBensin = 0;
+        $keterangan = null;
 
         if ($payslip && $employee->employee_type === 'tetap') {
             $rincian = [
@@ -145,7 +194,6 @@ class PayslipController extends Controller
                 'potongan' => $payslip->potongan_telat,
             ];
 
-            // Tarif per hari diturunkan dari nilai slip (bukan rate sekarang)
             if ($payslip->hari_hadir > 0) {
                 $tarifMakan = (float) $payslip->uang_makan / $payslip->hari_hadir;
                 $tarifBensin = (float) $payslip->uang_bensin / $payslip->hari_hadir;
@@ -153,12 +201,11 @@ class PayslipController extends Controller
                 $tarifMakan = (float) ($payrollComponent->meal_rate ?? 0);
                 $tarifBensin = (float) ($payrollComponent->transport_rate ?? 0);
             }
+
+            $keterangan = $this->buildKeterangan($payslip);
         }
 
-        // ============================================================
-        // Rincian PART TIME - dari slip yang tersimpan.
-        // Fallback ke payroll component hanya jika slip semuanya 0.
-        // ============================================================
+        // Rincian PART TIME
         $partTime = null;
         if ($payslip && $employee->employee_type === 'part_time') {
             $fee = (float) $payslip->gaji_pokok;
@@ -179,14 +226,12 @@ class PayslipController extends Controller
             ];
         }
 
-        // ============================================================
-        // Riwayat semua slip (untuk dropdown & tabel riwayat)
-        // ============================================================
+        // Riwayat semua slip (dropdown & tabel riwayat)
         $riwayat = Payslip::where('employee_id', $employee->id)
             ->orderByDesc('period_year')
             ->orderByDesc('period_month')
             ->get()
-            ->map(function (Payslip $p) use ($employee) {
+            ->map(function (Payslip $p) {
                 $tgl = Carbon::createFromDate($p->period_year, $p->period_month, 1);
 
                 return [
@@ -211,6 +256,7 @@ class PayslipController extends Controller
             'payrollComponent' => $payrollComponent,
             'rincian' => $rincian,
             'partTime' => $partTime,
+            'keterangan' => $keterangan,
             'tarifMakan' => $tarifMakan,
             'tarifBensin' => $tarifBensin,
             'thrEligible' => $thrEligible,

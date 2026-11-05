@@ -30,28 +30,39 @@
         table.rincian { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
         table.rincian th {
             text-align: left; font-size: 9px; text-transform: uppercase;
-            color: #9AA0A8; border-bottom: 1px solid #EDEEF0; padding: 8px 0;
+            color: #9aa89a; border-bottom: 1px solid #EDEEF0; padding: 8px 0;
         }
         table.rincian td { padding: 8px 0; border-bottom: 1px solid #F4F5F2; font-size: 11.5px; }
         table.rincian .label { font-weight: bold; }
-        table.rincian .sub { font-size: 9.5px; color: #9AA0A8; }
+        table.rincian .sub { font-size: 9.5px; color: #9AA0A8; font-weight: normal; }
+        table.rincian .sub-warn { font-size: 9.5px; color: #D34D3C; font-weight: normal; }
         table.rincian .val { text-align: right; font-weight: bold; }
         table.rincian .val-pos { color: #2F8A5B; }
         table.rincian .val-neg { color: #D34D3C; }
-        table.rincian .val-zero { color: #9AA0A8; }
+
+        table.ket { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+        table.ket td { padding: 4px 0; font-size: 11px; border-bottom: 1px solid #F4F5F2; }
+        table.ket .k { color: #6B7280; width: 150px; }
+        table.ket .v { font-weight: bold; }
 
         .section-label {
             font-size: 9px; text-transform: uppercase; letter-spacing: 1px;
-            color: #9AA0A8; font-weight: bold; margin: 14px 0 6px;
+            color: #2F8A5B; font-weight: bold; margin: 14px 0 6px;
         }
 
         .total-row { border-top: 2px solid #22262B; padding-top: 10px; margin-top: 8px; }
         .total-row table { width: 100%; }
         .total-label { font-size: 14px; font-weight: bold; }
-        .total-value { font-size: 18px; font-weight: bold; color: #DE8C0F; text-align: right; }
+        .total-value { font-size: 18px; font-weight: bold; color: #2F8A5B; text-align: right; }
+
+        .secret {
+            margin-top: 16px; padding: 8px 10px;
+            border: 1px solid #F3D0CA; background: #FDF1EF;
+            font-size: 10px; color: #B5392B;
+        }
 
         .footer {
-            margin-top: 40px; font-size: 9px; color: #9AA0A8;
+            margin-top: 30px; font-size: 9px; color: #9AA0A8;
             text-align: center; border-top: 1px solid #EDEEF0; padding-top: 10px;
         }
     </style>
@@ -104,6 +115,78 @@
     </table>
 
 
+    {{-- KETERANGAN PERIODE (khusus karyawan tetap) --}}
+    @if ($keterangan)
+
+        <div class="section-label">Keterangan Periode</div>
+
+        <table class="ket">
+            <tr>
+                <td class="k">Periode</td>
+                <td class="v">{{ $keterangan['periode_label'] }}</td>
+            </tr>
+            <tr>
+                <td class="k">Hari Minggu</td>
+                <td class="v">
+                    {{ implode(', ', $keterangan['minggu']) }}
+                    ({{ count($keterangan['minggu']) }} hari)
+                </td>
+            </tr>
+
+            @if ($keterangan['libur'] !== null)
+                <tr>
+                    <td class="k">Hari libur nasional</td>
+                    <td class="v">
+                        @if (count($keterangan['libur']) === 0)
+                            -
+                        @else
+                            @foreach ($keterangan['libur'] as $l)
+                                {{ $l['tgl'] }}@if (!empty($l['keterangan'])) ({{ $l['keterangan'] }})@endif{{ !$loop->last ? ', ' : '' }}
+                            @endforeach
+                        @endif
+                    </td>
+                </tr>
+            @endif
+
+            <tr>
+                <td class="k">Hari kerja efektif</td>
+                <td class="v">{{ $keterangan['rumus_efektif'] }}</td>
+            </tr>
+
+            @if ($keterangan['hari_efektif'] !== $keterangan['hitung_efektif'])
+                <tr>
+                    <td class="k">Hari efektif untuk gaji</td>
+                    <td class="v">{{ $keterangan['hari_efektif'] }} hari (ditetapkan Owner)</td>
+                </tr>
+            @endif
+
+            <tr>
+                <td class="k">Hari tidak masuk</td>
+                <td class="v">{{ $keterangan['tidak_masuk'] }} hari</td>
+            </tr>
+
+            @if ($keterangan['terlambat'] !== null)
+                <tr>
+                    <td class="k">Hari terlambat</td>
+                    <td class="v">
+                        @if (count($keterangan['terlambat']) === 0)
+                            0 hari
+                        @else
+                            {{ count($keterangan['terlambat']) }} hari
+                            (tgl {{ implode(', ', $keterangan['terlambat']) }})
+                        @endif
+                    </td>
+                </tr>
+            @endif
+        </table>
+
+        <div style="font-size:9.5px; color:#6B7280; margin-bottom:6px;">
+            Noted: diperhatikan dan diperbaiki ke depan.
+        </div>
+
+    @endif
+
+
     {{-- PENDAPATAN --}}
     <div class="section-label">Pendapatan</div>
 
@@ -137,13 +220,6 @@
             @endif
 
         @else
-
-            @php
-                $bonusKerajinan = (float) ($rincian['bonus_kerajinan'] ?? 0);
-                $bonusKinerja   = (float) ($rincian['bonus_kinerja'] ?? 0);
-                $thrSlip        = (float) ($rincian['thr'] ?? 0);
-                $potonganTelat  = (float) ($rincian['potongan'] ?? 0);
-            @endphp
 
             <tr>
                 <td class="label">
@@ -181,37 +257,56 @@
                 </td>
             </tr>
 
-            {{-- Bonus Kerajinan (selalu tampil) --}}
-            <tr>
-                <td class="label">
-                    Bonus Kerajinan
-                    <div class="sub">Bonus periode ini</div>
-                </td>
-                <td class="val {{ $bonusKerajinan > 0 ? 'val-pos' : 'val-zero' }}">
-                    Rp {{ number_format($bonusKerajinan, 0, ',', '.') }}
-                </td>
-            </tr>
+            {{-- BONUS KERAJINAN + KETERANGAN --}}
+            @if (($rincian['bonus_kerajinan'] ?? 0) > 0 || ($keterangan['bonus_awal'] ?? 0) > 0)
+                <tr>
+                    <td class="label">
+                        Bonus Kerajinan
 
-            {{-- Bonus Kinerja (selalu tampil) --}}
-            <tr>
-                <td class="label">
-                    Bonus Kinerja
-                    <div class="sub">Bonus periode ini</div>
-                </td>
-                <td class="val {{ $bonusKinerja > 0 ? 'val-pos' : 'val-zero' }}">
-                    Rp {{ number_format($bonusKinerja, 0, ',', '.') }}
-                </td>
-            </tr>
+                        @if ($keterangan && $keterangan['terlambat'] !== null)
+                            @if ($keterangan['bonus_dipotong'] > 0)
+                                <div class="sub-warn">
+                                    Bonus Rp {{ number_format($keterangan['bonus_awal'], 0, ',', '.') }}
+                                    − Rp {{ number_format($keterangan['bonus_dipotong'], 0, ',', '.') }}
+                                    karena terlambat pada tgl
+                                    {{ implode(', ', $keterangan['terlambat']) }}
+                                    {{ $keterangan['bulan_nama'] }}
+                                </div>
+                            @elseif (count($keterangan['terlambat']) > 0)
+                                <div class="sub-warn">
+                                    Catatan: terlambat pada tgl
+                                    {{ implode(', ', $keterangan['terlambat']) }}
+                                    {{ $keterangan['bulan_nama'] }}
+                                </div>
+                            @endif
+                        @endif
+                    </td>
+                    <td class="val val-pos">
+                        Rp {{ number_format($rincian['bonus_kerajinan'], 0, ',', '.') }}
+                    </td>
+                </tr>
+            @endif
 
-            {{-- THR (hanya jika ada di slip) --}}
-            @if ($thrSlip > 0)
+            @if (($rincian['bonus_kinerja'] ?? 0) > 0)
+                <tr>
+                    <td class="label">
+                        Bonus Kinerja
+                        {{-- <div class="sub">Sesuai input Owner</div> --}}
+                    </td>
+                    <td class="val val-pos">
+                        Rp {{ number_format($rincian['bonus_kinerja'], 0, ',', '.') }}
+                    </td>
+                </tr>
+            @endif
+
+            @if (($rincian['thr'] ?? 0) > 0)
                 <tr>
                     <td class="label">
                         THR
                         <div class="sub">Tunjangan Hari Raya</div>
                     </td>
                     <td class="val val-pos">
-                        Rp {{ number_format($thrSlip, 0, ',', '.') }}
+                        Rp {{ number_format($rincian['thr'], 0, ',', '.') }}
                     </td>
                 </tr>
             @endif
@@ -221,26 +316,20 @@
     </table>
 
 
-    {{-- POTONGAN (hanya karyawan tetap, selalu tampil) --}}
-    @if ($employee->employee_type !== 'part_time')
+    {{-- POTONGAN (hanya karyawan tetap) --}}
+    @if ($employee->employee_type !== 'part_time' && ($rincian['potongan'] ?? 0) > 0)
 
         <div class="section-label">Potongan</div>
 
         <table class="rincian">
             <tr>
                 <td class="label">
-                    Potongan Telat
-                    <div class="sub">Total potongan keterlambatan periode ini</div>
+                    Potongan Keterlambatan
+                    <div class="sub">Total potongan periode ini</div>
                 </td>
-                @if ($potonganTelat > 0)
-                    <td class="val val-neg">
-                        − Rp {{ number_format($potonganTelat, 0, ',', '.') }}
-                    </td>
-                @else
-                    <td class="val val-zero">
-                        Rp 0
-                    </td>
-                @endif
+                <td class="val val-neg">
+                    − Rp {{ number_format($rincian['potongan'], 0, ',', '.') }}
+                </td>
             </tr>
         </table>
 
@@ -276,6 +365,13 @@
         </div>
 
     @endif
+
+
+    {{-- KERAHASIAAN GAJI --}}
+    <div class="secret">
+        <strong>Gaji bersifat rahasia</strong>
+        dan tidak boleh dibocorkan kepada siapa pun.
+    </div>
 
 
     {{-- FOOTER --}}
